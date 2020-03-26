@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "556291589459",
+    "firebase_url": "https://testbase-def93.firebaseio.com",
+    "project_id": "testbase-def93",
+    "storage_bucket": "testbase-def93.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556291589459:android:173ad7ad90e56226a10da6",
+        "android_client_info": {
+          "package_name": "com.amdc.firebasetest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "556291589459-vpn82lmn8koiahraquj4vimlel21tt0j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.amdc.firebasetest",
+            "certificate_hash": "75a0a72d5fbb6d20f0af2357beaa2fc8b91669c2"
+          }
+        },
+        {
+          "client_id": "556291589459-v5on760ukucrf37lchc363dsgkocrrop.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDsTBZDvSw8KiK9qgDgmc3nVHxXLU3hDo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "556291589459-v5on760ukucrf37lchc363dsgkocrrop.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
