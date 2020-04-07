@@ -23,10 +23,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-
-/**
- * A simple {@link Fragment} subclass.
- */
 public class GroupsFragment extends Fragment {
     private View groupFragmentView;
     private ListView list_view;
@@ -35,7 +31,6 @@ public class GroupsFragment extends Fragment {
     private DatabaseReference GroupRef;
 
     public GroupsFragment() {
-        // Required empty public constructor
     }
 
     @Override

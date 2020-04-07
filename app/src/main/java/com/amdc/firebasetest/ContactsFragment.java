@@ -28,9 +28,6 @@ import java.util.Objects;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 
-/**
- * A simple {@link Fragment} subclass.
- */
 public class ContactsFragment extends Fragment {
     private RecyclerView myContactsList;
     private DatabaseReference ContactsRef, UsersRef;
@@ -65,7 +62,7 @@ public class ContactsFragment extends Fragment {
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         if (dataSnapshot.exists()) {
                             if (dataSnapshot.child("userState").hasChild("state")) {
-                                String state = Objects.requireNonNull(dataSnapshot.child("userState").child("state").getValue()).toString();
+                                String state = (String) dataSnapshot.child("userState").child("state").getValue();
 //                                String date = Objects.requireNonNull(dataSnapshot.child("userState").child("date").getValue()).toString();
 //                                String time = Objects.requireNonNull(dataSnapshot.child("userState").child("time").getValue()).toString();
                                 if (state.equals("online"))  holder.onlineIcon.setVisibility(View.VISIBLE);

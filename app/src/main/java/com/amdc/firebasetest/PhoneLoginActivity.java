@@ -52,13 +52,6 @@ public class PhoneLoginActivity extends AppCompatActivity {
                 loadingBar.show();
                 // Phone number to verify // Timeout duration // Timeout duration // Activity (for callback binding) // OnVerificationStateChangedCallbacks
                 PhoneAuthProvider.getInstance().verifyPhoneNumber(phoneNumber, 60, TimeUnit.SECONDS,PhoneLoginActivity.this, callbacks);
-//                PhoneAuthProvider.getInstance().verifyPhoneNumber(
-//                        phoneNumber,        // Phone number to verify
-//                        60,                 // Timeout duration
-//                        TimeUnit.SECONDS,   // Unit of timeout
-//                        PhoneLoginActivity.this,               // Activity (for callback binding)
-//                        callbacks);        // OnVerificationStateChangedCallbacks
-//
             }
         });
 

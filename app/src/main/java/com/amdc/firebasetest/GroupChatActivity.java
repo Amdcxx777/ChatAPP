@@ -31,8 +31,7 @@ public class GroupChatActivity extends AppCompatActivity {
     private ImageButton SendMessageButton;
     private EditText userMessageInput;
     private ScrollView mScrollView;
-    private TextView displayTextMessages, separator;
-    private FirebaseAuth mAuth;
+    private TextView displayTextMessages, displayNameMessages, displayTimeMessages, separator;
     private DatabaseReference UsersRef, GroupNameRef, GroupMessageKeyRef;
     private String currentGroupName, currentUserID, currentUserName, currentDate, currentTime;
 
@@ -43,7 +42,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
         currentGroupName = Objects.requireNonNull(Objects.requireNonNull(getIntent().getExtras()).get("groupName")).toString();
         Toast.makeText(GroupChatActivity.this, currentGroupName, Toast.LENGTH_SHORT).show();
-        mAuth = FirebaseAuth.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         if (mAuth.getCurrentUser() != null)  currentUserID = mAuth.getCurrentUser().getUid();
         UsersRef = FirebaseDatabase.getInstance().getReference().child("Users");
         GroupNameRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(currentGroupName);
@@ -62,13 +61,13 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
     private void InitializeFields() {
-//        mToolbar = findViewById(R.id.group_chat_bar_layout);
-//        setSupportActionBar(mToolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle(currentGroupName);
         SendMessageButton = findViewById(R.id.send_message_button);
         userMessageInput = findViewById(R.id.input_group_message);
         mScrollView = findViewById(R.id.my_scroll_view);
         displayTextMessages = findViewById(R.id.group_chat_text_display);
+        displayNameMessages = findViewById(R.id.group_chat_name_display);
+        displayTimeMessages = findViewById(R.id.group_chat_time_display);
 //        separator = findViewById(R.id.group_chat_separator);
     }
 
@@ -93,6 +92,7 @@ public class GroupChatActivity extends AppCompatActivity {
         });
     }
 
+    @SuppressLint("SetTextI18n")
     private void DisplayMessages(DataSnapshot dataSnapshot) {
         Iterator iterator = dataSnapshot.getChildren().iterator();
         while (iterator.hasNext()) {
@@ -100,7 +100,9 @@ public class GroupChatActivity extends AppCompatActivity {
             String chatMessage = (String) ((DataSnapshot)iterator.next()).getValue();
             String chatName = (String) ((DataSnapshot)iterator.next()).getValue();
             String chatTime = (String) ((DataSnapshot)iterator.next()).getValue();
-            displayTextMessages.append(chatName + " :\n" + chatMessage + "\n" + chatTime + "     " + chatDate + "\n\n\n");
+            displayNameMessages.setText(chatName);
+            displayTextMessages.setText(chatMessage);
+            displayTimeMessages.setText(chatTime + " - " + chatDate);
             mScrollView.fullScroll(ScrollView.FOCUS_DOWN);
         }
     }
@@ -123,11 +125,11 @@ public class GroupChatActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(message)) Toast.makeText(this, "Please write message first...", Toast.LENGTH_SHORT).show();
         else {
             Calendar calForDate = Calendar.getInstance();
-            SimpleDateFormat currentDateFormat = new SimpleDateFormat("MMM dd, yyyy");
+            SimpleDateFormat currentDateFormat = new SimpleDateFormat("dd.MM.yyyy");
             currentDate = currentDateFormat.format(calForDate.getTime());
 
             Calendar calForTime = Calendar.getInstance(); // time zone
-            SimpleDateFormat currentTimeFormat = new SimpleDateFormat("hh:mm a");
+            SimpleDateFormat currentTimeFormat = new SimpleDateFormat("HH:mm");
             currentTime = currentTimeFormat.format(calForTime.getTime());
 
             HashMap<String, Object> groupMessageKey = new HashMap<>();

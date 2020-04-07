@@ -77,12 +77,6 @@ public class LoginActivity extends AppCompatActivity {
                     loadingBar.dismiss();
                 }
             });
-//                } else {
-//                    String message = Objects.requireNonNull(task.getException()).toString();
-//                    Toast.makeText(LoginActivity.this, "Error : " + message, Toast.LENGTH_SHORT).show();
-//                }
-//
-//            });
         }
     }
 

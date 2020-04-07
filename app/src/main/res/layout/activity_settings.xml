@@ -8,9 +8,6 @@
     android:background="@drawable/background"
     tools:context=".SettingsActivity">
 
-    <!--    <include-->
-    <!--        layout="@layout/app_bar_layout"-->
-    <!--        android:id="@+id/settings_toolbar"/>-->
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/set_profile_image"
@@ -34,6 +31,7 @@
         android:drawableStart="@drawable/edit_profile"
         android:textColor="@color/colorPrimaryDark"
         android:textStyle="bold"
+        android:textSize="28sp"
         android:background="@drawable/inputs"
         android:layout_marginHorizontal="20dp"
         android:padding="4dp"
@@ -51,8 +49,9 @@
         android:paddingEnd="30dp"
         android:textAlignment="center"
         android:drawableStart="@drawable/edit_status"
-        android:textColor="@color/colorPrimaryDark"
+        android:textColor="@color/colorPrimary"
         android:textStyle="bold"
+        android:textSize="20sp"
         android:background="@drawable/inputs"
         android:layout_marginHorizontal="20dp"
         android:padding="4dp"
@@ -75,17 +74,6 @@
         android:textAllCaps="false"
         android:textSize="20sp"
         android:gravity="center_horizontal" />
-    <EditText
-        android:id="@+id/test_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/update_settings_button"
-        android:inputType="textMultiLine"
-        android:textAlignment="center"
-        android:textColor="@color/colorPrimaryDark"
-        android:layout_marginHorizontal="20dp"
-        android:padding="4dp"
-        android:layout_marginTop="10dp"
-        android:gravity="center_horizontal" />
+
 
 </RelativeLayout>

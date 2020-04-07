@@ -6,9 +6,12 @@
     android:layout_height="match_parent"
     tools:context=".GroupChatActivity">
 
-    <!--    <include-->
-    <!--        android:id="@+id/group_chat_bar_layout"-->
-    <!--        layout="@layout/app_bar_layout"/>-->
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/private_messages_list_from_users"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:layout_above="@+id/chat_linear_layout"-->
+<!--        android:layout_marginBottom="6dp"/>-->
 
     <ScrollView
         android:id="@+id/my_scroll_view"
@@ -22,27 +25,36 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/group_chat_text_display"
-                android:layout_width="match_parent"
+                android:id="@+id/group_chat_name_display"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
+                android:paddingHorizontal="5dp"
                 android:textAllCaps="false"
                 android:textSize="16sp"
-                android:background="@drawable/buttons"
+                android:textColor="@color/colorPrimaryDark"
+                android:layout_marginHorizontal="4dp" />
+
+            <TextView
+                android:id="@+id/group_chat_text_display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="5dp"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:background="@drawable/chat_backgroun"
                 android:textColor="@android:color/black"
-                android:layout_marginHorizontal="4dp"
-                android:layout_marginBottom="40dp" />
-            <!--            <TextView-->
-            <!--                android:id="@+id/group_chat_separator"-->
-            <!--                android:layout_width="match_parent"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:padding="5dp"-->
-            <!--                android:textAllCaps="false"-->
-            <!--                android:textSize="16sp"-->
-            <!--                android:background="@drawable/inputs"-->
-            <!--                android:textColor="@android:color/black"-->
-            <!--                android:layout_marginHorizontal="4dp"-->
-            <!--                android:layout_marginBottom="20dp"/>-->
+                android:layout_marginHorizontal="4dp" />
+
+            <TextView
+                android:id = "@+id/group_chat_time_display"
+                android:layout_width = "wrap_content"
+                android:layout_height = "wrap_content"
+                android:layout_marginEnd="10dp"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="40dp"
+                android:layout_marginStart="5dp"
+                android:textColor="@android:color/tab_indicator_text" />
 
         </LinearLayout>
     </ScrollView>
@@ -52,7 +64,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="@drawable/inputs"
         android:layout_marginHorizontal="5dp"
+        android:padding="2dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true">
 
@@ -69,7 +83,7 @@
             android:layout_width="50dp"
             android:layout_height="wrap_content"
             android:paddingVertical="5dp"
-            android:background="@color/colorWhite"
+            android:background="@color/colorInput"
             android:src="@drawable/send_message"
             tools:ignore="ContentDescription" />
 

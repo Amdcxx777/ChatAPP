@@ -51,7 +51,6 @@ public class RegisterActivity extends AppCompatActivity {
             loadingBar.setMessage("Please wait, creating new account for you...");
             loadingBar.setCanceledOnTouchOutside(true);
             loadingBar.show();
-//            mAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener(task -> {
             mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     String deviceToken = FirebaseInstanceId.getInstance().getToken(); //ID device (key)
@@ -81,14 +80,12 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void SendUserToLoginActivity() {
-//        Intent mainIntent = new Intent(RegisterActivity.this, MainActivity.class);
         Intent loginIntent = new Intent(RegisterActivity.this, LoginActivity.class);
         startActivity(loginIntent);
         finish();
     }
 
     private void SendUserToMainActivity() {
-//        Intent loginIntent = new Intent(RegisterActivity.this, LoginActivity.class);
         Intent mainIntent = new Intent(RegisterActivity.this, MainActivity.class);
         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(mainIntent);

@@ -15,9 +15,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -26,7 +23,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -40,7 +36,8 @@ public class SettingsActivity extends AppCompatActivity {
     private DatabaseReference RootRef;
 
     private Button UpdateAccountSettings;
-    private EditText userName, userStatus, test_text;
+    private EditText userName;
+    private EditText userStatus;
     private ImageView userProfileImage;
     private static final int GalleryPick = 1;
     private StorageReference UserProfileImagesRef;
@@ -53,7 +50,7 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        currentUserID = mAuth.getCurrentUser().getUid();
+        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef = FirebaseDatabase.getInstance().getReference();
         UserProfileImagesRef = FirebaseStorage.getInstance().getReference().child("Profile images");
         InitializeFields();
@@ -76,7 +73,6 @@ public class SettingsActivity extends AppCompatActivity {
         userName = findViewById(R.id.set_user_name);
         userStatus = findViewById(R.id.set_profile_status);
         userProfileImage = findViewById(R.id.set_profile_image);
-        test_text = findViewById(R.id.test_text);
         loadingBar = new ProgressDialog(this);
     }
     private void UpdateSettings() {
@@ -90,7 +86,7 @@ public class SettingsActivity extends AppCompatActivity {
             profileMap.put("name",setUserName);
             profileMap.put("status",setStatus);
             profileMap.put("image", photoUrl);
-            RootRef.child("Users").child(currentUserID).setValue(profileMap).addOnCompleteListener(task -> { //updateChildren
+            RootRef.child("Users").child(currentUserID).updateChildren(profileMap).addOnCompleteListener(task -> { //updateChildren (setValue)
                 if(task.isSuccessful()) {
                     SendUserToMainActivity();
                     Toast.makeText(SettingsActivity.this, "Profile Updated Successfully...", Toast.LENGTH_SHORT).show();
@@ -124,7 +120,7 @@ public class SettingsActivity extends AppCompatActivity {
                     userName.setText((String) dataSnapshot.child("name").getValue());
                     userStatus.setText((String) dataSnapshot.child("status").getValue());
                 } else {
-                    userName.setVisibility(View.VISIBLE); // открывает поле для введения имени
+//                    userName.setVisibility(View.VISIBLE); // открывает поле для введения имени
                     Toast.makeText(SettingsActivity.this, "Please set & update your profile information...", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -139,7 +135,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode==GalleryPick  &&  resultCode==RESULT_OK  &&  data!=null) {
-            Uri ImageUri = data.getData();
+//            Uri ImageUri = data.getData();
             CropImage.activity().setGuidelines(CropImageView.Guidelines.ON).setAspectRatio(1, 1).start(this);
         }
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
@@ -149,7 +145,7 @@ public class SettingsActivity extends AppCompatActivity {
                 loadingBar.setMessage("Please wait, your profile image is updating...");
                 loadingBar.setCanceledOnTouchOutside(false);
                 loadingBar.show();
-                final Uri resultUri = result.getUri();
+                final Uri resultUri = Objects.requireNonNull(result).getUri();
                 final StorageReference filePath = UserProfileImagesRef.child(currentUserID + ".jpg");
                 filePath.putFile(resultUri).addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> {
                     final String downloadUrl = uri.toString();
@@ -158,7 +154,7 @@ public class SettingsActivity extends AppCompatActivity {
                             Toast.makeText(SettingsActivity.this, "Profile image stored to firebase database successfully.", Toast.LENGTH_SHORT).show();
                             loadingBar.dismiss();
                         } else {
-                            String message = task.getException().getMessage();
+                            String message = Objects.requireNonNull(task.getException()).getMessage();
                             Toast.makeText(SettingsActivity.this, "Error Occurred..." + message, Toast.LENGTH_SHORT).show();
                             loadingBar.dismiss();
                         }

@@ -147,7 +147,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 switch (userMessagesList.get(position).getType()) {
                     case "pdf":
                     case "docx": {
-                        CharSequence[] options = new CharSequence[]{"Download and View this Document", "Delete For me", "Delete For EveryOne", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"Download and View this Document", "Delete For Me", "Delete For Everyone", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("Download/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
@@ -160,13 +160,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 messageViewHolder.itemView.getContext().startActivity(intent);
                             } else if (i == 2) {
                                 deleteMessageForEveryOne(position, messageViewHolder);
+                                Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
+                                messageViewHolder.itemView.getContext().startActivity(intent);
                             }
                         });
                         builder.show();
                         break;
                     }
                     case "text": { // for text
-                        CharSequence[] options = new CharSequence[]{"Delete For me", "Delete For EveryOne", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"Delete For Me", "Delete For Everyone", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("Delete Message").setIcon(R.drawable.delete);
                         builder.setItems(options, (dialogInterface, i) -> {
@@ -176,13 +178,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 messageViewHolder.itemView.getContext().startActivity(intent);
                             } else if (i == 1) {
                                 deleteMessageForEveryOne(position, messageViewHolder);
+                                Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
+                                messageViewHolder.itemView.getContext().startActivity(intent);
                             }
                         });
                         builder.show();
                         break;
                     }
                     case "image": { // for image
-                        CharSequence[] options = new CharSequence[]{"View This Image", "Delete For me", "Delete For EveryOne", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"View This Image", "Delete For Me", "Delete For Everyone", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("View/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
@@ -196,6 +200,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 messageViewHolder.itemView.getContext().startActivity(intent);
                             } else if (i == 2) {
                                 deleteMessageForEveryOne(position, messageViewHolder);
+                                Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
+                                messageViewHolder.itemView.getContext().startActivity(intent);
                             }
                         });
                         builder.show();
@@ -208,7 +214,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 switch (userMessagesList.get(position).getType()) {
                     case "pdf":
                     case "docx": {
-                        CharSequence[] options = new CharSequence[]{"Download and View this Document", "Delete For me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"Download and View this Document", "Delete For Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("Download/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
@@ -225,7 +231,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         break;
                     }
                     case "text": {
-                        CharSequence[] options = new CharSequence[]{"Delete for me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"Delete For Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("Delete Message").setIcon(R.drawable.delete);
                         builder.setItems(options, (dialogInterface, i) -> {
@@ -239,7 +245,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         break;
                     }
                     case "image": {
-                        CharSequence[] options = new CharSequence[]{"View This Image", "Delete for me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"View This Image", "Delete For Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("View/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {

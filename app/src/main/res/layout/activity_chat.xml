@@ -21,17 +21,17 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:background="@android:color/background_light"
+        android:background="@drawable/inputs"
         android:orientation="horizontal">
 
         <ImageButton
             android:id="@+id/send_files_btn"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginHorizontal="5dp"
+            android:layout_marginStart="5dp"
             android:src="@drawable/send_files"
             android:layout_alignParentStart="true"
-            android:backgroundTint="@android:color/white"
+            android:backgroundTint="@color/colorInput"
             tools:targetApi="lollipop"
             tools:ignore="ContentDescription" />
 
@@ -49,13 +49,13 @@
 
         <ImageButton
             android:id="@+id/send_message_btn"
-            android:layout_width="60dp"
+            android:layout_width="50dp"
             android:layout_height="50dp"
             android:src="@drawable/send_message"
+            android:layout_marginEnd="5dp"
             android:layout_alignParentEnd="true"
-            android:backgroundTint="@android:color/white"
-            android:contentDescription="@string/todo"
-            tools:targetApi="lollipop" />
+            android:backgroundTint="@color/colorInput"
+            android:contentDescription="@string/todo" />
     </RelativeLayout>
 
 </RelativeLayout>

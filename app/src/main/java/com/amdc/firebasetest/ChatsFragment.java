@@ -29,14 +29,10 @@ import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-
-/**
- * A simple {@link Fragment} subclass.
- */
 public class ChatsFragment extends Fragment {
     private RecyclerView chatsList;
     private DatabaseReference ChatsRef, UsersRef;
-    private String currentUserID="";
+    private String currentUserID = "";
     public ChatsFragment() {
     }
 
@@ -73,14 +69,16 @@ public class ChatsFragment extends Fragment {
                             }
                             final String retName = (String) dataSnapshot.child("name").getValue();
                             holder.userName.setText(retName);
-//                            holder.userStatus.setText("Last Seen: " + "\n" + "Date " + " Time");
+                            holder.userStatus.setText("Last Seen: " + "\n" + "Time" + " - " + "Date ");
                             if (dataSnapshot.child("userState").hasChild("state")) {
-                                String state = Objects.requireNonNull(dataSnapshot.child("userState").child("state").getValue()).toString();
-                                String date = Objects.requireNonNull(dataSnapshot.child("userState").child("date").getValue()).toString();
-                                String time = Objects.requireNonNull(dataSnapshot.child("userState").child("time").getValue()).toString();
-//
-                                if (state.equals("online"))  holder.userStatus.setText("online");
-                                else if (state.equals("offline"))  holder.userStatus.setText("Last Seen: " + date + "  " + time);
+                                String state = (String) dataSnapshot.child("userState").child("state").getValue();
+                                String date = (String) dataSnapshot.child("userState").child("date").getValue();
+                                String time = (String) dataSnapshot.child("userState").child("time").getValue();
+
+                                if (state != null) {
+                                    if (state.equals("online"))  holder.userStatus.setText("online");
+                                    else if (state.equals("offline"))  holder.userStatus.setText("Last Seen: " + time + " - " + date);
+                                }
                             }
                             else { holder.userStatus.setText("offline"); }
                             holder.itemView.setOnClickListener(view -> {
