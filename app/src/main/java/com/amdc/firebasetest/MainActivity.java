@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
     private String currentUserID;
-    private String stat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
 
         Objects.requireNonNull(getSupportActionBar()).setTitle("WhatsApp");
+
         ViewPager myViewPager = findViewById(R.id.main_tabs_pager);
         TabsAccessorAdapter myTabsAccessorAdapter = new TabsAccessorAdapter(getSupportFragmentManager());
         myViewPager.setAdapter(myTabsAccessorAdapter);

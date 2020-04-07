@@ -160,7 +160,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == 443 && resultCode == RESULT_OK && data != null && data.getData() != null) { //443, 438
             loadingBar.setTitle("Sending File");
-            loadingBar.setMessage("Please wait, we are sending...");
+            loadingBar.setMessage("Please wait, sending...");
             loadingBar.setCanceledOnTouchOutside(false);
             loadingBar.show();
             fileUri = data.getData();
