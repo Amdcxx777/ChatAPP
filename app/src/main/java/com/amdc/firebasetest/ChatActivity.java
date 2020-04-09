@@ -97,11 +97,12 @@ public class ChatActivity extends AppCompatActivity {
                     startActivityForResult(Intent.createChooser(intent,"Select PDF"),443);
                 }
                 if(i == 2) {
+                    checker = "doc";
                     checker = "docx";
                     Intent intent = new Intent();
                     intent.setAction(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/msword");
-                    startActivityForResult(Intent.createChooser(intent,"Select MSWORD FILE"),443);
+                    startActivityForResult(Intent.createChooser(intent,"Select Word Files"),443);
                 }
             });
             builder.show();
@@ -125,7 +126,7 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    @SuppressLint("RestrictedApi")
+    @SuppressLint({"RestrictedApi", "SimpleDateFormat"})
     private void InitializeControllers() {
         Objects.requireNonNull(getSupportActionBar()).setDefaultDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
@@ -147,12 +148,10 @@ public class ChatActivity extends AppCompatActivity {
         userMessagesList.setAdapter(messageAdapter);
 
         Calendar calendar = Calendar.getInstance();
-        @SuppressLint("SimpleDateFormat")
-        SimpleDateFormat currentDate = new SimpleDateFormat("dd.MMM.yyyy", Locale.US);
-        saveCurrentDate = currentDate.format(calendar.getTime());
-        @SuppressLint("SimpleDateFormat")
-        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm");
-        saveCurrentTime = currentTime.format(calendar.getTime());
+//        SimpleDateFormat currentDate = new SimpleDateFormat("dd.MMM.yyyy", Locale.US);
+        saveCurrentDate = new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(calendar.getTime());
+//        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm");
+        saveCurrentTime = new SimpleDateFormat("HH:mm").format(calendar.getTime());
     }
 
     @Override
@@ -175,7 +174,7 @@ public class ChatActivity extends AppCompatActivity {
                         filePath.getDownloadUrl().addOnSuccessListener(uri -> {
                     Map<String, Object> messageImageBody = new HashMap<>();
                     messageImageBody.put("message", uri.getPath());
-                    messageImageBody.put("name",fileUri.getLastPathSegment());
+                    messageImageBody.put("name", fileUri.getLastPathSegment());
                     messageImageBody.put("type", checker);
                     messageImageBody.put("from", messageSenderID);
                     messageImageBody.put("to", messageReceiverID);
@@ -184,8 +183,8 @@ public class ChatActivity extends AppCompatActivity {
                     messageImageBody.put("date", saveCurrentDate);
 
                     Map<String, Object> messageBodyDetail = new HashMap<>();
-                    messageBodyDetail.put(messageSenderRef+ "/" + messagePushID, messageImageBody);
-                    messageBodyDetail.put(messageReceiverRef+ "/" + messagePushID, messageImageBody);
+                    messageBodyDetail.put(messageSenderRef + "/" + messagePushID, messageImageBody);
+                    messageBodyDetail.put(messageReceiverRef + "/" + messagePushID, messageImageBody);
 
                     RootRef.updateChildren(messageBodyDetail);
                     loadingBar.dismiss();

@@ -1,6 +1,7 @@
 package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
@@ -98,7 +99,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     messageViewHolder.senderMessageTime.setVisibility(View.VISIBLE);
 
                     messageViewHolder.senderMessageText.setBackgroundResource(R.drawable.sender_messages_layout);
-                    messageViewHolder.senderMessageText.setTextColor(Color.BLACK); //color for sender message
+//                    messageViewHolder.senderMessageText.setTextColor(Color.BLACK); //color for sender message
                     messageViewHolder.senderMessageText.setText(messages.getMessage());
                     messageViewHolder.senderMessageTime.setText(messages.getTime() + " - " + messages.getDate());
                 } else {
@@ -107,7 +108,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     messageViewHolder.receiverMessageTime.setVisibility(View.VISIBLE);
 
                     messageViewHolder.receiverMessageText.setBackgroundResource(R.drawable.receiver_messages_layout);
-                    messageViewHolder.receiverMessageText.setTextColor(Color.BLACK); //color for receiver message
+//                    messageViewHolder.receiverMessageText.setTextColor(Color.BLACK); //color for receiver message
                     messageViewHolder.receiverMessageText.setText(messages.getMessage());
                     messageViewHolder.receiverMessageTime.setText(messages.getTime() + " - " + messages.getDate());
                 }
@@ -146,14 +147,31 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.itemView.setOnClickListener(view -> {
                 switch (userMessagesList.get(position).getType()) {
                     case "pdf":
+                    case "doc":
                     case "docx": {
-                        CharSequence[] options = new CharSequence[]{"Download and View this Document", "Delete For Me", "Delete For Everyone", "Cancel"};
+                        CharSequence[] options = new CharSequence[] {"Download and View this Document", "Delete For Me", "Delete For Everyone", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("Download/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
-                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(userMessagesList.get(position).getMessage()));
-                                messageViewHolder.itemView.getContext().startActivity(intent);
+
+                                Intent pdfViewIntent = new Intent(Intent.ACTION_VIEW);
+//                                Intent pdfViewIntent = new Intent(messageViewHolder.itemView.getContext(), ImageViewerActivity.class);
+//                                pdfViewIntent.putExtra("url", userMessagesList.get(position).getMessage());
+                                pdfViewIntent.setDataAndType(Uri.parse(userMessagesList.get(position).getMessage()),"application/*");
+                                Toast.makeText(messageViewHolder.itemView.getContext(), userMessagesList.get(position).getMessage(), Toast.LENGTH_SHORT).show();
+
+                                pdfViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+
+                                Intent intent = Intent.createChooser(pdfViewIntent, "Open File");
+                                try {
+                                    messageViewHolder.itemView.getContext().startActivity(intent);
+                                } catch (ActivityNotFoundException e) {
+                                    // Instruct the user to install a PDF reader here, or something
+                                }
+
+//                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(userMessagesList.get(position).getMessage()));
+//                                messageViewHolder.itemView.getContext().startActivity(intent);
                             } else if (i == 1) {
                                 deleteSentMessage(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
@@ -167,7 +185,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         builder.show();
                         break;
                     }
-                    case "text": { // for text
+                    case "text": { // sender messages for text
                         CharSequence[] options = new CharSequence[]{"Delete For Me", "Delete For Everyone", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("Delete Message").setIcon(R.drawable.delete);
@@ -185,7 +203,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         builder.show();
                         break;
                     }
-                    case "image": { // for image
+                    case "image": { // sender messages for image
                         CharSequence[] options = new CharSequence[]{"View This Image", "Delete For Me", "Delete For Everyone", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("View/Delete Message").setIcon(R.drawable.file);

@@ -26,12 +26,13 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-//    private ViewPager myViewPager;
-//    private TabLayout myTabLayout;
-//    private TabsAccessorAdapter myTabsAccessorAdapter;
+    private ViewPager myViewPager;
+    private TabLayout myTabLayout;
+    private TabsAccessorAdapter myTabsAccessorAdapter;
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
     private String currentUserID;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
-        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+//        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
 
         Objects.requireNonNull(getSupportActionBar()).setTitle("WhatsApp");
 
@@ -59,32 +60,17 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null)  SendUserToLoginActivity();
-        else
-//            RootRef.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                    if (dataSnapshot.child("userState").hasChild("state")) {
-//                        String state = (String) dataSnapshot.child("userState").child("state").getValue();
-//                        assert state != null;
-//                        if (state.equals("offline")) {
-//                            Toast.makeText(MainActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
-//                            updateUserStatus("online");
-//                        }
-//                    }
-//                }
-//                @Override
-//                public void onCancelled(@NonNull DatabaseError databaseError) { }
-//            });
-            Toast.makeText(MainActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
+        else {
             updateUserStatus("online");
             VerifyUserExistence();
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-//        FirebaseUser currentUser = mAuth.getCurrentUser();
-//        if (currentUser != null) updateUserStatus("online");
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) updateUserStatus("online");
     }
     @Override
     protected void onDestroy() {
@@ -100,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
         RootRef.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if((dataSnapshot.child("name").exists())) {} //Toast.makeText(MainActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
+                if((dataSnapshot.child("name").exists())) Toast.makeText(MainActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
                 else  SendUserToSettingsActivity();
             }
             @Override
@@ -177,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
         HashMap<String, Object> onlineStateMap = new HashMap<>();
         onlineStateMap.put("time", new SimpleDateFormat("HH:mm").format(calendar.getTime()));
-        onlineStateMap.put("date", new SimpleDateFormat("dd.MMM.yyyy").format(calendar.getTime()));
+        onlineStateMap.put("date", new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(calendar.getTime()));
         onlineStateMap.put("state", state);
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef.child("Users").child(currentUserID).child("userState").updateChildren(onlineStateMap);
