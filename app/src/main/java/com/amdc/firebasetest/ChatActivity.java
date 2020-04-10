@@ -148,9 +148,7 @@ public class ChatActivity extends AppCompatActivity {
         userMessagesList.setAdapter(messageAdapter);
 
         Calendar calendar = Calendar.getInstance();
-//        SimpleDateFormat currentDate = new SimpleDateFormat("dd.MMM.yyyy", Locale.US);
         saveCurrentDate = new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(calendar.getTime());
-//        SimpleDateFormat currentTime = new SimpleDateFormat("HH:mm");
         saveCurrentTime = new SimpleDateFormat("HH:mm").format(calendar.getTime());
     }
 
@@ -174,13 +172,15 @@ public class ChatActivity extends AppCompatActivity {
                         filePath.getDownloadUrl().addOnSuccessListener(uri -> {
                     Map<String, Object> messageImageBody = new HashMap<>();
                     messageImageBody.put("message", uri.getPath());
-                    messageImageBody.put("name", fileUri.getLastPathSegment());
+                    messageImageBody.put("name", fileUri.toString());
                     messageImageBody.put("type", checker);
                     messageImageBody.put("from", messageSenderID);
                     messageImageBody.put("to", messageReceiverID);
                     messageImageBody.put("messageID", messagePushID);
                     messageImageBody.put("time", saveCurrentTime);
                     messageImageBody.put("date", saveCurrentDate);
+                    String fileName = fileUri.getLastPathSegment();
+                            Toast.makeText(this, fileName, Toast.LENGTH_LONG).show();
 
                     Map<String, Object> messageBodyDetail = new HashMap<>();
                     messageBodyDetail.put(messageSenderRef + "/" + messagePushID, messageImageBody);
@@ -216,7 +216,7 @@ public class ChatActivity extends AppCompatActivity {
                         myUrl = Objects.requireNonNull(downloadUrl).toString();
                         Map<String, String> messageTextBody = new HashMap<>();
                         messageTextBody.put("message", myUrl);
-                        messageTextBody.put("name", fileUri.getLastPathSegment());
+                        messageTextBody.put("name", fileUri.toString());
                         messageTextBody.put("type", checker);
                         messageTextBody.put("from", messageSenderID);
                         messageTextBody.put("to", messageReceiverID);

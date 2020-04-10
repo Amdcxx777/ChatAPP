@@ -13,7 +13,9 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ChatActivity"
+        <activity android:name=".FilesViewerActivity"></activity>
+        <activity
+            android:name=".ChatActivity"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".GroupChatActivity"

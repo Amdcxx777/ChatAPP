@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
+import android.icu.text.Transliterator;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -160,44 +161,28 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     case "pdf":
                     case "doc":
                     case "docx": {
-                        CharSequence[] options = new CharSequence[] {"Download and View this Document", "Delete For Me", "Delete For Everyone", "Cancel"};
+                        CharSequence[] options = new CharSequence[] {"Download this Document", "Delete For Me", "Delete For Everyone", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("Download/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
-                            if (i == 0) {
-
-                                String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType();
+                            if (i == 0) { // download file
+                                String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType(); //get name file from storage
                                 storageReference = FirebaseStorage.getInstance().getReference();
                                 reference = storageReference.child("Document Files").child(fileNameForDownload);
                                 reference.getDownloadUrl().addOnSuccessListener(uri -> {
+                                    String fileName = Uri.parse(userMessagesList.get(position).getName()).getLastPathSegment(); //get name file from user into firebase
                                     DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
                                     DownloadManager.Request request = new DownloadManager.Request(uri);
                                     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                                    request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), DIRECTORY_DOWNLOADS, reference.getName());
+                                    request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), DIRECTORY_DOWNLOADS, fileName); //reference.getName()
+                                    assert downloadManager != null;
                                     downloadManager.enqueue(request);
-                                    Toast.makeText(messageViewHolder.itemView.getContext(), fileNameForDownload, Toast.LENGTH_LONG).show();
-//                                        lookingFile(uri);
-                                }).addOnFailureListener(e -> {
-                                    Toast.makeText(messageViewHolder.itemView.getContext(), "Error download", Toast.LENGTH_SHORT).show();
-                                });
 
-
-//
-//                                Intent pdfViewIntent = new Intent(Intent.ACTION_VIEW);
-////                                Intent pdfViewIntent = new Intent(messageViewHolder.itemView.getContext(), ImageViewerActivity.class);
-////                                pdfViewIntent.putExtra("url", userMessagesList.get(position).getMessage());
-//                                pdfViewIntent.setDataAndType(Uri.parse(userMessagesList.get(position).getMessage()),"application/*");
-//                                Toast.makeText(messageViewHolder.itemView.getContext(), userMessagesList.get(position).getMessage(), Toast.LENGTH_SHORT).show();
-//
-//                                pdfViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-//
-//                                Intent intent = Intent.createChooser(pdfViewIntent, "Open File");
-//                                try {
+//                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FilesViewerActivity.class);
+//                                    intent.putExtra("url", uri);
 //                                    messageViewHolder.itemView.getContext().startActivity(intent);
-//                                } catch (ActivityNotFoundException e) {
-//                                    // Instruct the user to install a PDF reader here, or something
-//                                }
 
+                                }).addOnFailureListener(e -> Toast.makeText(messageViewHolder.itemView.getContext(), "Error download", Toast.LENGTH_SHORT).show());
 //                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(userMessagesList.get(position).getMessage()));
 //                                messageViewHolder.itemView.getContext().startActivity(intent);
                             } else if (i == 1) {
@@ -260,13 +245,31 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 switch (userMessagesList.get(position).getType()) {
                     case "pdf":
                     case "docx": {
-                        CharSequence[] options = new CharSequence[]{"Download and View this Document", "Delete For Me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"Download this Document", "Delete For Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
                         builder.setTitle("Download/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
-                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(userMessagesList.get(position).getMessage()));
-                                messageViewHolder.itemView.getContext().startActivity(intent);
+                                String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType();
+                                storageReference = FirebaseStorage.getInstance().getReference();
+                                reference = storageReference.child("Document Files").child(fileNameForDownload);
+                                reference.getDownloadUrl().addOnSuccessListener(uri -> {
+                                    String fileName = Uri.parse(userMessagesList.get(position).getName()).getLastPathSegment(); //get name file from firebase
+                                    DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                                    DownloadManager.Request request = new DownloadManager.Request(uri);
+                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                    request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), DIRECTORY_DOWNLOADS, fileName); //reference.getName()
+                                    assert downloadManager != null;
+                                    downloadManager.enqueue(request);
+
+//                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FilesViewerActivity.class);
+//                                    intent.putExtra("url", uri);
+//                                    Toast.makeText(messageViewHolder.itemView.getContext(), uri.toString(), Toast.LENGTH_LONG).show();
+//                                    messageViewHolder.itemView.getContext().startActivity(intent);
+
+                                }).addOnFailureListener(e -> Toast.makeText(messageViewHolder.itemView.getContext(), "Error download", Toast.LENGTH_SHORT).show());
+//                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(userMessagesList.get(position).getMessage()));
+//                                messageViewHolder.itemView.getContext().startActivity(intent);
                             } else if (i == 1) {
                                 deleteReceiverMessage(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
