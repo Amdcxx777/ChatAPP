@@ -1,7 +1,9 @@
 package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
+import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
@@ -16,22 +18,30 @@ import android.app.AlertDialog;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static android.os.Environment.DIRECTORY_DOWNLOADS;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     private List<Messages> userMessagesList;
     private FirebaseAuth mAuth;
     private DatabaseReference usersRef;
+    private StorageReference storageReference, reference;
 
     MessageAdapter(List<Messages> userMessagesList) {
         this.userMessagesList = userMessagesList;
@@ -128,6 +138,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 }
                 break;
             case "pdf":
+            case "doc":
             case "docx":
                 if (fromUserID.equals(messageSenderId)) {
                     messageViewHolder.messageSenderPicture.setVisibility(View.VISIBLE);
@@ -155,20 +166,37 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
 
-                                Intent pdfViewIntent = new Intent(Intent.ACTION_VIEW);
-//                                Intent pdfViewIntent = new Intent(messageViewHolder.itemView.getContext(), ImageViewerActivity.class);
-//                                pdfViewIntent.putExtra("url", userMessagesList.get(position).getMessage());
-                                pdfViewIntent.setDataAndType(Uri.parse(userMessagesList.get(position).getMessage()),"application/*");
-                                Toast.makeText(messageViewHolder.itemView.getContext(), userMessagesList.get(position).getMessage(), Toast.LENGTH_SHORT).show();
+                                String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType();
+                                storageReference = FirebaseStorage.getInstance().getReference();
+                                reference = storageReference.child("Document Files").child(fileNameForDownload);
+                                reference.getDownloadUrl().addOnSuccessListener(uri -> {
+                                    DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                                    DownloadManager.Request request = new DownloadManager.Request(uri);
+                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                    request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), DIRECTORY_DOWNLOADS, reference.getName());
+                                    downloadManager.enqueue(request);
+                                    Toast.makeText(messageViewHolder.itemView.getContext(), fileNameForDownload, Toast.LENGTH_LONG).show();
+//                                        lookingFile(uri);
+                                }).addOnFailureListener(e -> {
+                                    Toast.makeText(messageViewHolder.itemView.getContext(), "Error download", Toast.LENGTH_SHORT).show();
+                                });
 
-                                pdfViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
-                                Intent intent = Intent.createChooser(pdfViewIntent, "Open File");
-                                try {
-                                    messageViewHolder.itemView.getContext().startActivity(intent);
-                                } catch (ActivityNotFoundException e) {
-                                    // Instruct the user to install a PDF reader here, or something
-                                }
+//
+//                                Intent pdfViewIntent = new Intent(Intent.ACTION_VIEW);
+////                                Intent pdfViewIntent = new Intent(messageViewHolder.itemView.getContext(), ImageViewerActivity.class);
+////                                pdfViewIntent.putExtra("url", userMessagesList.get(position).getMessage());
+//                                pdfViewIntent.setDataAndType(Uri.parse(userMessagesList.get(position).getMessage()),"application/*");
+//                                Toast.makeText(messageViewHolder.itemView.getContext(), userMessagesList.get(position).getMessage(), Toast.LENGTH_SHORT).show();
+//
+//                                pdfViewIntent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+//
+//                                Intent intent = Intent.createChooser(pdfViewIntent, "Open File");
+//                                try {
+//                                    messageViewHolder.itemView.getContext().startActivity(intent);
+//                                } catch (ActivityNotFoundException e) {
+//                                    // Instruct the user to install a PDF reader here, or something
+//                                }
 
 //                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(userMessagesList.get(position).getMessage()));
 //                                messageViewHolder.itemView.getContext().startActivity(intent);
