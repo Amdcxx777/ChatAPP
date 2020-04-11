@@ -139,6 +139,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 }
                 break;
             case "pdf":
+            case "xls":
+            case "xlsx":
             case "doc":
             case "docx":
                 if (fromUserID.equals(messageSenderId)) {
@@ -159,6 +161,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.itemView.setOnClickListener(view -> {
                 switch (userMessagesList.get(position).getType()) {
                     case "pdf":
+                    case "xls":
+                    case "xlsx":
                     case "doc":
                     case "docx": {
                         CharSequence[] options = new CharSequence[] {"Download this Document", "Delete For Me", "Delete For Everyone", "Cancel"};
@@ -244,6 +248,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.itemView.setOnClickListener(view -> {
                 switch (userMessagesList.get(position).getType()) {
                     case "pdf":
+                    case "xls":
+                    case "xlsx":
+                    case "doc":
                     case "docx": {
                         CharSequence[] options = new CharSequence[]{"Download this Document", "Delete For Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
@@ -333,8 +340,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             } else {
                 Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
             }
-        });
-    }
+        });    }
 
     private void deleteReceiverMessage(final int position, final MessageViewHolder holder) {
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
