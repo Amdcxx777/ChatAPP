@@ -5,12 +5,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.google.firebase.storage.StorageReference;
+
+import java.util.Objects;
+
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
 
 public class FilesViewerActivity extends AppCompatActivity {
@@ -29,9 +33,11 @@ public class FilesViewerActivity extends AppCompatActivity {
         progressBar.setVisibility(View.GONE);
 
 //        String imageUrl =  getIntent().getStringExtra("url");
-        Uri uri = Uri.parse(getIntent().getStringExtra("url"));
-        Toast.makeText(FilesViewerActivity.this, uri.toString(), Toast.LENGTH_LONG).show();
-        lookingFile(uri);
+//        Uri uri = Uri.parse(getIntent().getStringExtra("url"));
+//        Toast.makeText(FilesViewerActivity.this, uri.toString(), Toast.LENGTH_LONG).show();
+        String file = getIntent().getStringExtra("url");
+//        Uri uri = Uri.parse("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Document%20Files%2F-M4_GQJv-IpdmhC17GBm.pdf?alt=media&token=666eefe8-4124-4940-8786-6fd39d866d69");
+        lookingFile(file);
     }
 
 //    private void download() {
@@ -50,9 +56,12 @@ public class FilesViewerActivity extends AppCompatActivity {
 //    }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void lookingFile(Uri uri) {
+    private void lookingFile(String file) {
+//        Uri uri = Uri.parse(file);
+        Toast.makeText(FilesViewerActivity.this, file, Toast.LENGTH_SHORT).show();
         progressBar.setVisibility(View.VISIBLE);
-        String finalURL = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + uri;
+        String finalURL = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + file;
+//        String finalURL = "https://stackoverflow.com/questions/8017374/how-to-pass-a-uri-to-an-intent";
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setBuiltInZoomControls(true);
         webView.setWebChromeClient(new WebChromeClient() {
@@ -62,7 +71,7 @@ public class FilesViewerActivity extends AppCompatActivity {
                 getSupportActionBar().setTitle("Loading...");
                 if (newProgress == 100) { //indicated that loading is complite
                     progressBar.setVisibility(View.GONE);
-                    getSupportActionBar().setTitle(R.string.app_name);
+                    getSupportActionBar().setTitle(Html.fromHtml("<font color='#F3FB00'>" + "File Viewer" + "</font>"));
                 }
             }
         });

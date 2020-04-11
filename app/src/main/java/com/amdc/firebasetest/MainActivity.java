@@ -30,9 +30,6 @@ import java.util.Locale;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
-    private ViewPager myViewPager;
-    private TabLayout myTabLayout;
-    private TabsAccessorAdapter myTabsAccessorAdapter;
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
     private String currentUserID;
@@ -44,10 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
-//        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
-
         Objects.requireNonNull(getSupportActionBar()).setTitle("WhatsApp");
-
         ViewPager myViewPager = findViewById(R.id.main_tabs_pager);
         TabsAccessorAdapter myTabsAccessorAdapter = new TabsAccessorAdapter(getSupportFragmentManager());
         myViewPager.setAdapter(myTabsAccessorAdapter);
@@ -65,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
             VerifyUserExistence();
         }
     }
-
     @Override
     protected void onStop() {
         super.onStop();
@@ -79,15 +72,14 @@ public class MainActivity extends AppCompatActivity {
         if (currentUser != null) updateUserStatus("offline");
     }
 
-
-
     private void VerifyUserExistence() {
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if((dataSnapshot.child("name").exists())) Toast.makeText(MainActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
-                else  SendUserToSettingsActivity();
+//                if((dataSnapshot.child("name").exists())) {} //Toast.makeText(MainActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
+//                else  SendUserToSettingsActivity();
+                if((!dataSnapshot.child("name").exists())) SendUserToSettingsActivity();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -158,9 +150,6 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SimpleDateFormat")
     private void updateUserStatus(String state) { //status user
         Calendar calendar = Calendar.getInstance();
-//        String currentDate = new SimpleDateFormat("dd.MMM.yyyy").format(calendar.getTime());
-//        String currentTime = new SimpleDateFormat("HH:mm").format(calendar.getTime());
-
         HashMap<String, Object> onlineStateMap = new HashMap<>();
         onlineStateMap.put("time", new SimpleDateFormat("HH:mm").format(calendar.getTime()));
         onlineStateMap.put("date", new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(calendar.getTime()));

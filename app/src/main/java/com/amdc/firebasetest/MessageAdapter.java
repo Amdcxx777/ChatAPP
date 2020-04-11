@@ -2,12 +2,8 @@ package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.Icon;
-import android.icu.text.Transliterator;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,8 +15,6 @@ import android.app.AlertDialog;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -31,7 +25,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -41,7 +34,6 @@ import static android.os.Environment.DIRECTORY_DOWNLOADS;
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     private List<Messages> userMessagesList;
     private FirebaseAuth mAuth;
-    private DatabaseReference usersRef;
     private StorageReference storageReference, reference;
 
     MessageAdapter(List<Messages> userMessagesList) {
@@ -81,7 +73,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         Messages messages = userMessagesList.get(position);
         String fromUserID = messages.getFrom();
         String fromMessageType = messages.getType();
-        usersRef = FirebaseDatabase.getInstance().getReference().child("Users").child(fromUserID);
+        DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference().child("Users").child(fromUserID);
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -110,7 +102,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     messageViewHolder.senderMessageTime.setVisibility(View.VISIBLE);
 
                     messageViewHolder.senderMessageText.setBackgroundResource(R.drawable.sender_messages_layout);
-//                    messageViewHolder.senderMessageText.setTextColor(Color.BLACK); //color for sender message
                     messageViewHolder.senderMessageText.setText(messages.getMessage());
                     messageViewHolder.senderMessageTime.setText(messages.getTime() + " - " + messages.getDate());
                 } else {
@@ -119,40 +110,53 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     messageViewHolder.receiverMessageTime.setVisibility(View.VISIBLE);
 
                     messageViewHolder.receiverMessageText.setBackgroundResource(R.drawable.receiver_messages_layout);
-//                    messageViewHolder.receiverMessageText.setTextColor(Color.BLACK); //color for receiver message
                     messageViewHolder.receiverMessageText.setText(messages.getMessage());
                     messageViewHolder.receiverMessageTime.setText(messages.getTime() + " - " + messages.getDate());
                 }
                 break;
             case "image":
                 if (fromUserID.equals(messageSenderId)) {
-                    messageViewHolder.messageSenderPicture.setVisibility(View.VISIBLE);
-                    messageViewHolder.senderMessageTimeImage.setVisibility(View.VISIBLE);
+                    setVisibleForSender(messageViewHolder);
                     Picasso.get().load(messages.getMessage()).into(messageViewHolder.messageSenderPicture);
                     messageViewHolder.senderMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
                 } else {
-                    messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
-                    messageViewHolder.messageReceiverPicture.setVisibility(View.VISIBLE);
-                    messageViewHolder.receiverMessageTimeImage.setVisibility(View.VISIBLE);
+                    setVisibleForReceiver(messageViewHolder);
                     Picasso.get().load(messages.getMessage()).into(messageViewHolder.messageReceiverPicture);
                     messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
                 }
                 break;
             case "pdf":
+                if (fromUserID.equals(messageSenderId)) {
+                    setVisibleForSender(messageViewHolder);
+                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_pdf.png?alt=media&token=3deeefdf-472c-4fc8-ba70-dee1f444e54e").into(messageViewHolder.messageSenderPicture);
+                    messageViewHolder.senderMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
+                } else {
+                    setVisibleForReceiver(messageViewHolder);
+                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_pdf.png?alt=media&token=3deeefdf-472c-4fc8-ba70-dee1f444e54e").into(messageViewHolder.messageReceiverPicture);
+                    messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
+                }
+                break;
             case "xls":
             case "xlsx":
+                if (fromUserID.equals(messageSenderId)) {
+                    setVisibleForSender(messageViewHolder);
+                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_excel.png?alt=media&token=50cb92eb-acb0-4b63-8fcc-8237d7cea5b7").into(messageViewHolder.messageSenderPicture);
+                    messageViewHolder.senderMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
+                } else {
+                    setVisibleForReceiver(messageViewHolder);
+                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_excel.png?alt=media&token=50cb92eb-acb0-4b63-8fcc-8237d7cea5b7").into(messageViewHolder.messageReceiverPicture);
+                    messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
+                }
+                break;
             case "doc":
             case "docx":
                 if (fromUserID.equals(messageSenderId)) {
-                    messageViewHolder.messageSenderPicture.setVisibility(View.VISIBLE);
-                    messageViewHolder.senderMessageTimeImage.setVisibility(View.VISIBLE);
-                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ffile_icon.png?alt=media&token=cc6415bf-d918-4f31-ae36-c2be3cdd8f50").into(messageViewHolder.messageSenderPicture);
+                    setVisibleForSender(messageViewHolder);
+                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_world.png?alt=media&token=01a2ea3f-7df4-4b7c-86a4-ff9aded94a40").into(messageViewHolder.messageSenderPicture);
                     messageViewHolder.senderMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
                 } else {
-                    messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
-                    messageViewHolder.messageReceiverPicture.setVisibility(View.VISIBLE);
-                    messageViewHolder.receiverMessageTimeImage.setVisibility(View.VISIBLE);
-                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ffile_icon.png?alt=media&token=cc6415bf-d918-4f31-ae36-c2be3cdd8f50").into(messageViewHolder.messageReceiverPicture);
+                    setVisibleForReceiver(messageViewHolder);
+                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_world.png?alt=media&token=01a2ea3f-7df4-4b7c-86a4-ff9aded94a40").into(messageViewHolder.messageReceiverPicture);
                     messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
                 }
                 break;
@@ -181,6 +185,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                     request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), DIRECTORY_DOWNLOADS, fileName); //reference.getName()
                                     assert downloadManager != null;
                                     downloadManager.enqueue(request);
+
+                                    Intent fileView = new Intent(messageViewHolder.itemView.getContext(), FilesViewerActivity.class);
+                                    messageViewHolder.itemView.getContext().startActivity(fileView);
 
 //                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FilesViewerActivity.class);
 //                                    intent.putExtra("url", uri);
@@ -266,8 +273,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                     DownloadManager.Request request = new DownloadManager.Request(uri);
                                     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                                     request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), DIRECTORY_DOWNLOADS, fileName); //reference.getName()
-                                    assert downloadManager != null;
                                     downloadManager.enqueue(request);
+
+                                    Uri uriFile = uri;
+                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FilesViewerActivity.class);
+                                    intent.putExtra("url", uriFile);
+                                    messageViewHolder.itemView.getContext().startActivity(intent);
 
 //                                    Intent intent = new Intent(messageViewHolder.itemView.getContext(), FilesViewerActivity.class);
 //                                    intent.putExtra("url", uri);
@@ -321,6 +332,16 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 }
             });
         }
+    }
+
+    private void setVisibleForSender(MessageViewHolder messageViewHolder) {
+        messageViewHolder.messageSenderPicture.setVisibility(View.VISIBLE);
+        messageViewHolder.senderMessageTimeImage.setVisibility(View.VISIBLE);
+    }
+    private void setVisibleForReceiver(MessageViewHolder messageViewHolder) {
+        messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
+        messageViewHolder.messageReceiverPicture.setVisibility(View.VISIBLE);
+        messageViewHolder.receiverMessageTimeImage.setVisibility(View.VISIBLE);
     }
 
     @Override

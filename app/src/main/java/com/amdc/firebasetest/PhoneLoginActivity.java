@@ -31,7 +31,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_phone_login);
+        setContentView(R.layout.activity_login_phone);
 
         mAuth = FirebaseAuth.getInstance();
         SendVerificationCodeButton = findViewById(R.id.send_ver_code_button);
