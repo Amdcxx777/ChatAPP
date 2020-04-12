@@ -68,7 +68,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(@NonNull final MessageViewHolder messageViewHolder, final int position) { //final ?
+    public void onBindViewHolder(@NonNull final MessageViewHolder messageViewHolder, final int position) {
         String messageSenderId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         Messages messages = userMessagesList.get(position);
         String fromUserID = messages.getFrom();
