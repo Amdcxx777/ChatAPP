@@ -33,7 +33,9 @@ public class GroupChatActivity extends AppCompatActivity {
     private ScrollView mScrollView;
     private TextView displayTextMessages, displayNameMessages, displayTimeMessages, separator;
     private DatabaseReference UsersRef, GroupNameRef, GroupMessageKeyRef;
-    private String currentGroupName, currentUserID, currentUserName, currentDate, currentTime;
+    private String currentGroupName;
+    private String currentUserID;
+    private String currentUserName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,13 +126,13 @@ public class GroupChatActivity extends AppCompatActivity {
         String messageKEY = GroupNameRef.push().getKey();
         if (TextUtils.isEmpty(message)) Toast.makeText(this, "Please write message first...", Toast.LENGTH_SHORT).show();
         else {
-            Calendar calForDate = Calendar.getInstance();
-            SimpleDateFormat currentDateFormat = new SimpleDateFormat("dd.MM.yyyy");
-            currentDate = currentDateFormat.format(calForDate.getTime());
+//            Calendar calForDate = Calendar.getInstance();
+//            SimpleDateFormat currentDateFormat = new SimpleDateFormat("dd.MM.yyyy");
+//            String currentDate = new SimpleDateFormat("dd.MM.yyyy").format(Calendar.getInstance().getTime());
 
-            Calendar calForTime = Calendar.getInstance(); // time zone
-            SimpleDateFormat currentTimeFormat = new SimpleDateFormat("HH:mm");
-            currentTime = currentTimeFormat.format(calForTime.getTime());
+//            Calendar calForTime = Calendar.getInstance(); // time zone
+//            SimpleDateFormat currentTimeFormat = new SimpleDateFormat("HH:mm");
+//            String currentTime = new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime());
 
             HashMap<String, Object> groupMessageKey = new HashMap<>();
             GroupNameRef.updateChildren(groupMessageKey);
@@ -138,8 +140,8 @@ public class GroupChatActivity extends AppCompatActivity {
             HashMap<String, Object> messageInfoMap = new HashMap<>();
             messageInfoMap.put("name", currentUserName);
             messageInfoMap.put("message", message);
-            messageInfoMap.put("date", currentDate);
-            messageInfoMap.put("time", currentTime);
+            messageInfoMap.put("date", new SimpleDateFormat("dd.MM.yyyy").format(Calendar.getInstance().getTime()));
+            messageInfoMap.put("time", new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime()));
             GroupMessageKeyRef.updateChildren(messageInfoMap);
         }
     }
