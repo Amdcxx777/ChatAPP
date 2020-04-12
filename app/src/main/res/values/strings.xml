@@ -30,7 +30,7 @@
     <string name="cancel">Cancel</string>
     <string name="forget_password">Forget Password</string>
     <string name="phone_number">Phone number</string>
-    <string name="verification_code_here">Verification code here…</string>
+    <string name="verification_code_here">Verification code</string>
     <string name="hey_i_m_using_chat_app">hey i\'m using chat App.</string>
 
     <!-- TODO: Remove or change this placeholder text -->

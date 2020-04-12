@@ -54,7 +54,7 @@ public class RegisterActivity extends AppCompatActivity {
             mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     String deviceToken = FirebaseInstanceId.getInstance().getToken(); //ID device (key)
-                    String currentUserID = mAuth.getCurrentUser().getUid();
+                    String currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
                     RootRef.child("Users").child(currentUserID).setValue("");
                     RootRef.child("Users").child(currentUserID).child("device_token").setValue(deviceToken);
 
@@ -63,7 +63,7 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(RegisterActivity.this, "Account Created Successfully...", Toast.LENGTH_SHORT).show();
                     loadingBar.dismiss();
                 } else {
-                    String message = task.getException().toString();
+                    String message = Objects.requireNonNull(task.getException()).toString();
                     Toast.makeText(RegisterActivity.this, "Error : " + message, Toast.LENGTH_SHORT).show();
                     loadingBar.dismiss();
                 }
