@@ -57,8 +57,8 @@ public class FilesViewerActivity extends AppCompatActivity {
     @SuppressLint("SetJavaScriptEnabled")
     private void lookingFile(Uri uri) {
         progressBar.setVisibility(View.VISIBLE);
-        Toast.makeText(FilesViewerActivity.this, uri.toString(), Toast.LENGTH_LONG).show();
-        String finalURL = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + uri;
+//        Toast.makeText(FilesViewerActivity.this, uri.toString(), Toast.LENGTH_LONG).show();
+//        String finalURL = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + uri;
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setBuiltInZoomControls(true);
         webView.setWebChromeClient(new WebChromeClient() {
@@ -72,7 +72,7 @@ public class FilesViewerActivity extends AppCompatActivity {
                 }
             }
         });
-        webView.loadUrl(finalURL);
+        webView.loadUrl("https://drive.google.com/viewerng/viewer?embedded=true&url=" + uri);
     }
 }
 

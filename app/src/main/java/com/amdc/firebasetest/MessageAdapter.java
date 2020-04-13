@@ -160,11 +160,23 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
                 }
                 break;
+            case "zip":
+                if (fromUserID.equals(messageSenderId)) {
+                    setVisibleForSender(messageViewHolder);
+                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_zip.png?alt=media&token=d109ece1-1bef-4c12-9f6f-c987e8d368ab").into(messageViewHolder.messageSenderPicture);
+                    messageViewHolder.senderMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
+                } else {
+                    setVisibleForReceiver(messageViewHolder);
+                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_zip.png?alt=media&token=d109ece1-1bef-4c12-9f6f-c987e8d368ab").into(messageViewHolder.messageReceiverPicture);
+                    messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
+                }
+                break;
         }
         if (fromUserID.equals(messageSenderId)) { // alert dialog for sender messages
             messageViewHolder.itemView.setOnClickListener(view -> {
                 switch (userMessagesList.get(position).getType()) {
                     case "pdf":
+                    case "zip":
                     case "xls":
                     case "xlsx":
                     case "doc":
@@ -175,7 +187,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
                                 String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType(); //get name file from storage
-                                String fileName = Uri.parse(userMessagesList.get(position).getName()).getLastPathSegment(); //get name file from user into firebase
+                                String fileName = Uri.parse(userMessagesList.get(position).getName()).toString(); //get name file from user into firebase (getLastPathSegment())
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), FilesViewerActivity.class);
                                 intent.putExtra("fileNameForDownload", fileNameForDownload);
                                 intent.putExtra("fileName", fileName);
@@ -185,7 +197,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 storageReference = FirebaseStorage.getInstance().getReference();
                                 reference = storageReference.child("Document Files").child(fileNameForDownload);
                                 reference.getDownloadUrl().addOnSuccessListener(uri -> {
-                                    String fileName = Uri.parse(userMessagesList.get(position).getName()).getLastPathSegment(); //get name file from user into firebase
+                                    String fileName = Uri.parse(userMessagesList.get(position).getName()).toString(); //get name file from user into firebase (getLastPathSegment())
                                     DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
                                     DownloadManager.Request request = new DownloadManager.Request(uri);
                                     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
@@ -251,6 +263,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             messageViewHolder.itemView.setOnClickListener(view -> {
                 switch (userMessagesList.get(position).getType()) {
                     case "pdf":
+                    case "zip":
                     case "xls":
                     case "xlsx":
                     case "doc":
@@ -261,7 +274,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
                                 String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType(); //get name file from storage
-                                String fileName = Uri.parse(userMessagesList.get(position).getName()).getLastPathSegment(); //get name file from user into firebase
+                                String fileName = Uri.parse(userMessagesList.get(position).getName()).toString(); //get name file from user into firebase (getLastPathSegment())
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), FilesViewerActivity.class);
                                 intent.putExtra("fileNameForDownload", fileNameForDownload);
                                 intent.putExtra("fileName", fileName);
@@ -272,7 +285,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 storageReference = FirebaseStorage.getInstance().getReference();
                                 reference = storageReference.child("Document Files").child(fileNameForDownload);
                                 reference.getDownloadUrl().addOnSuccessListener(uri -> {
-                                    String fileName = Uri.parse(userMessagesList.get(position).getName()).getLastPathSegment(); //get name file from firebase
+                                    String fileName = Uri.parse(userMessagesList.get(position).getName()).toString(); //get name file from firebase (getLastPathSegment())
                                     DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
                                     DownloadManager.Request request = new DownloadManager.Request(uri);
                                     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
@@ -347,12 +360,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 .child(userMessagesList.get(position).getTo())
                 .child(userMessagesList.get(position).getMessageID())
                 .removeValue().addOnCompleteListener(task -> {
-            if(task.isSuccessful()) {
-                Toast.makeText(holder.itemView.getContext(),"Deleted Successfully.",Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
-            }
-        });    }
+            if(task.isSuccessful()) Toast.makeText(holder.itemView.getContext(),"Deleted Successfully.",Toast.LENGTH_SHORT).show();
+            else Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
+        });
+    }
 
     private void deleteReceiverMessage(final int position, final MessageViewHolder holder) {
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
@@ -361,11 +372,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 .child(userMessagesList.get(position).getFrom())
                 .child(userMessagesList.get(position).getMessageID())
                 .removeValue().addOnCompleteListener(task -> {
-            if(task.isSuccessful()) {
-                Toast.makeText(holder.itemView.getContext(), "Deleted Successfully.", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
-            }
+            if(task.isSuccessful()) Toast.makeText(holder.itemView.getContext(), "Deleted Successfully.", Toast.LENGTH_SHORT).show();
+            else Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -383,19 +391,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         .child(userMessagesList.get(position).getMessageID())
                         .removeValue().addOnCompleteListener(task1 -> { //delete sms with name file from receive messages
                     if(task1.isSuccessful()) {
-                        String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType(); //name file form storage
                         storageReference = FirebaseStorage.getInstance().getReference();
-                        storageReference.child("Document Files").child(fileNameForDownload)
-                                .delete().addOnCompleteListener(task2 -> { //delete file from storage
-                        if (task2.isSuccessful()) {
-                            Toast.makeText(holder.itemView.getContext(),"Deleted Successfully.",Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        if (userMessagesList.get(position).getType().equals("image")) { //for image
+                            String fileNameForDownload = userMessagesList.get(position).getMessageID() + ".jpg"; //name file form storage
+                            storageReference.child("Image Files").child(fileNameForDownload).delete().addOnCompleteListener(task2 -> {
+                                if (task2.isSuccessful()) Toast.makeText(holder.itemView.getContext(), "Deleted Successfully.", Toast.LENGTH_SHORT).show();
+                            });
+                        } else { //for files
+                            String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType(); //name file form storage
+                            storageReference.child("Document Files").child(fileNameForDownload).delete().addOnCompleteListener(task2 -> { //delete file from storage
+                                if (task2.isSuccessful()) Toast.makeText(holder.itemView.getContext(), "Deleted Successfully.", Toast.LENGTH_SHORT).show();
+                            });
+                        }
                     }
                 });
-            } else {
-                Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
-            }
+            } else  Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
         });
     }
 }

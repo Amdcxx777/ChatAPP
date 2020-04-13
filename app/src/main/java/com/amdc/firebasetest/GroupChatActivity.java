@@ -31,8 +31,9 @@ public class GroupChatActivity extends AppCompatActivity {
     private ImageButton SendMessageButton;
     private EditText userMessageInput;
     private ScrollView mScrollView;
-    private TextView displayTextMessages, displayNameMessages, displayTimeMessages, separator;
-    private DatabaseReference UsersRef, GroupNameRef, GroupMessageKeyRef;
+    private TextView displayTextMessages, displayNameMessages, displayTimeMessages;
+    private DatabaseReference UsersRef;
+    private DatabaseReference GroupNameRef;
     private String currentGroupName;
     private String currentUserID;
     private String currentUserName;
@@ -51,10 +52,8 @@ public class GroupChatActivity extends AppCompatActivity {
 
         InitializeFields();
         GetUserInfo();
-
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-
         SendMessageButton.setOnClickListener(view -> {
             SaveMessageInfoToDatabase();
             userMessageInput.setText("");
@@ -70,7 +69,6 @@ public class GroupChatActivity extends AppCompatActivity {
         displayTextMessages = findViewById(R.id.group_chat_text_display);
         displayNameMessages = findViewById(R.id.group_chat_name_display);
         displayTimeMessages = findViewById(R.id.group_chat_time_display);
-//        separator = findViewById(R.id.group_chat_separator);
     }
 
     @Override
@@ -126,23 +124,15 @@ public class GroupChatActivity extends AppCompatActivity {
         String messageKEY = GroupNameRef.push().getKey();
         if (TextUtils.isEmpty(message)) Toast.makeText(this, "Please write message first...", Toast.LENGTH_SHORT).show();
         else {
-//            Calendar calForDate = Calendar.getInstance();
-//            SimpleDateFormat currentDateFormat = new SimpleDateFormat("dd.MM.yyyy");
-//            String currentDate = new SimpleDateFormat("dd.MM.yyyy").format(Calendar.getInstance().getTime());
-
-//            Calendar calForTime = Calendar.getInstance(); // time zone
-//            SimpleDateFormat currentTimeFormat = new SimpleDateFormat("HH:mm");
-//            String currentTime = new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime());
-
             HashMap<String, Object> groupMessageKey = new HashMap<>();
             GroupNameRef.updateChildren(groupMessageKey);
-            GroupMessageKeyRef = GroupNameRef.child(Objects.requireNonNull(messageKEY));
+            DatabaseReference groupMessageKeyRef = GroupNameRef.child(Objects.requireNonNull(messageKEY));
             HashMap<String, Object> messageInfoMap = new HashMap<>();
             messageInfoMap.put("name", currentUserName);
             messageInfoMap.put("message", message);
             messageInfoMap.put("date", new SimpleDateFormat("dd.MM.yyyy").format(Calendar.getInstance().getTime()));
             messageInfoMap.put("time", new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime()));
-            GroupMessageKeyRef.updateChildren(messageInfoMap);
+            groupMessageKeyRef.updateChildren(messageInfoMap);
         }
     }
 }

@@ -74,9 +74,8 @@ public class ChatsFragment extends Fragment {
                                 String state = (String) dataSnapshot.child("userState").child("state").getValue();
                                 String date = (String) dataSnapshot.child("userState").child("date").getValue();
                                 String time = (String) dataSnapshot.child("userState").child("time").getValue();
-
                                 if (state != null) {
-                                    if (state.equals("online"))  holder.userStatus.setText("online");
+                                    if (state.equals("online"))  holder.userStatus.setText("online"); //receive status from base
                                     else if (state.equals("offline"))  holder.userStatus.setText("Last Seen: " + time + " - " + date);
                                 }
                             }

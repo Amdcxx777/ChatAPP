@@ -12,6 +12,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -77,10 +78,10 @@ public class ChatActivity extends AppCompatActivity {
         SendMessageButton.setOnClickListener(view -> SendMessage());
         DisplayLastSeen();
         SendFilesButton.setOnClickListener(view -> {
-            CharSequence[] options = new CharSequence[] {"Images", "PDF Files", "MS Word Files", "Excel Files", "All Type Files"};
+            CharSequence[] options = new CharSequence[] {"Images", "PDF Files", "Excel Files", "MS Word Files", "Zip Type Files"}; // list dialog-menu
             AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
-            builder.setTitle("Select File");
-            builder.setIcon(R.drawable.send_files);
+            builder.setTitle("Select File"); // title dialog-menu
+            builder.setIcon(R.drawable.send_files); //icon dialog-menu
             builder.setItems(options, (dialogInterface, i) -> {
                 if(i == 0) {
                     checker = "image";
@@ -97,26 +98,30 @@ public class ChatActivity extends AppCompatActivity {
                     startActivityForResult(Intent.createChooser(intent,"Select PDF"),443);
                 }
                 if(i == 2) {
-                    checker = "docx";
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    intent.setType("application/msword");
-                    startActivityForResult(Intent.createChooser(intent,"Select Word Files"),443);
-                }
-                if(i == 3) {
-                    checker = "xlsx";
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    intent.setType("application/vnd.ms-excel");
+                    checker = "xls";
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    final String[] mineTypes = {"application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"};
+                    intent.setType("*/*");
+                    intent.putExtra(Intent.EXTRA_MIME_TYPES, mineTypes);
                     startActivityForResult(Intent.createChooser(intent,"Select Excel Files"),443);
                 }
-//                if(i == 4) {
-//                    checker = "file";
-//                    Intent intent = new Intent();
-//                    intent.setAction(Intent.ACTION_GET_CONTENT);
-//                    intent.setType("application/*");
-//                    startActivityForResult(Intent.createChooser(intent,"Select All Files"),443);
-//                }
+                if(i == 3) {
+                    checker = "doc";
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    final String[] mineTypes = {"application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document"};
+                    intent.setType("*/*");
+                    intent.putExtra(Intent.EXTRA_MIME_TYPES, mineTypes);
+                    startActivityForResult(Intent.createChooser(intent,"Select Word Files"),443);
+                }
+                if(i == 4) {
+                    checker = "zip";
+                    Intent intent = new Intent();
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    intent.setType("application/zip");
+                    startActivityForResult(Intent.createChooser(intent,"Select Zip Files"),443);
+                }
             });
             builder.show();
         });
@@ -173,12 +178,8 @@ public class ChatActivity extends AppCompatActivity {
             loadingBar.setMessage("Please wait, sending...");
             loadingBar.setCanceledOnTouchOutside(false);
             loadingBar.show();
-//            final String messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
-//            final String messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
-//            DatabaseReference userMessageKeyRef = RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).push();
-//            final String messagePushID = userMessageKeyRef.getKey();
             fileUri = data.getData();
-            if(!checker.equals("image")) { // if choice file not image
+            if(!checker.equals("image")) { //  choice file not image
                 StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("Document Files");
                 final String messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
                 final String messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
@@ -189,7 +190,7 @@ public class ChatActivity extends AppCompatActivity {
                         filePath.getDownloadUrl().addOnSuccessListener(uri -> {
                     Map<String, Object> messageImageBody = new HashMap<>();
                     messageImageBody.put("message", uri.getPath());
-                    messageImageBody.put("name", fileUri.toString());
+                    messageImageBody.put("name", fileUri.getLastPathSegment()); // toString
                     messageImageBody.put("type", checker);
                     messageImageBody.put("from", messageSenderID);
                     messageImageBody.put("to", messageReceiverID);
@@ -210,15 +211,13 @@ public class ChatActivity extends AppCompatActivity {
                     double p = (100.0 * taskSnapshot.getBytesTransferred())/taskSnapshot.getTotalByteCount();
                     loadingBar.setMessage((int) p + "% Uploading...");
                 });
-            }
-            else {
+            } else { //  choice file image
                 StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("Image Files");
                 final String messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
                 final String messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
                 DatabaseReference userMessageKeyRef = RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).push();
                 final String messagePushID = userMessageKeyRef.getKey();
                 final StorageReference filePath = storageReference.child(messagePushID + "." + "jpg");
-
                 StorageTask uploadTask = filePath.putFile(fileUri);
                 uploadTask.continueWithTask(task -> {
                     if(!task.isSuccessful()) {
