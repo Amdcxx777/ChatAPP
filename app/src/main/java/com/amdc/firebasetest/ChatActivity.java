@@ -73,8 +73,8 @@ public class ChatActivity extends AppCompatActivity {
         String messageReceiverName = (String) getIntent().getExtras().get("visit_user_name");
         String messageReceiverImage = (String) getIntent().getExtras().get("visit_image");
         InitializeControllers();
-        userName.setText(messageReceiverName);
-        Picasso.get().load(messageReceiverImage).placeholder(R.drawable.profile_image).into(userImage);
+        userName.setText(messageReceiverName); // for chat bar
+        Picasso.get().load(messageReceiverImage).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
         SendMessageButton.setOnClickListener(view -> SendMessage());
         DisplayLastSeen();
         SendFilesButton.setOnClickListener(view -> {
@@ -258,7 +258,7 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private void DisplayLastSeen() {
+    private void DisplayLastSeen() { // status for chat bar
         RootRef.child("Users").child(messageReceiverID).addValueEventListener(new ValueEventListener() {
             @SuppressLint("SetTextI18n")
             @Override

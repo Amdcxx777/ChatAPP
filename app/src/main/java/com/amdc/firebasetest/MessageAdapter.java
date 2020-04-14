@@ -108,7 +108,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
                     messageViewHolder.receiverMessageText.setVisibility(View.VISIBLE);
                     messageViewHolder.receiverMessageTime.setVisibility(View.VISIBLE);
-
                     messageViewHolder.receiverMessageText.setBackgroundResource(R.drawable.receiver_messages_layout);
                     messageViewHolder.receiverMessageText.setText(messages.getMessage());
                     messageViewHolder.receiverMessageTime.setText(messages.getTime() + " - " + messages.getDate());

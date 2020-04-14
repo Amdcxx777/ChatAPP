@@ -4,60 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background"
     tools:context=".GroupChatActivity">
 
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/private_messages_list_from_users"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:layout_above="@+id/chat_linear_layout"-->
-<!--        android:layout_marginBottom="6dp"/>-->
-
-    <ScrollView
-        android:id="@+id/my_scroll_view"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/private_messages_list_from_users"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/myLinearLayout">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/group_chat_name_display"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="5dp"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:textColor="@color/colorPrimaryDark"
-                android:layout_marginHorizontal="4dp" />
-
-            <TextView
-                android:id="@+id/group_chat_text_display"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="5dp"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:background="@drawable/chat_backgroun"
-                android:textColor="@android:color/black"
-                android:layout_marginHorizontal="4dp" />
-
-            <TextView
-                android:id = "@+id/group_chat_time_display"
-                android:layout_width = "wrap_content"
-                android:layout_height = "wrap_content"
-                android:layout_marginEnd="10dp"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="40dp"
-                android:layout_marginStart="5dp"
-                android:textColor="@android:color/tab_indicator_text" />
-
-        </LinearLayout>
-    </ScrollView>
+        android:layout_above="@+id/myLinearLayout"
+        android:layout_marginBottom="6dp"/>
 
     <LinearLayout
         android:id="@+id/myLinearLayout"
@@ -76,16 +31,18 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="@string/write_your_message_here"
-            android:padding="17dp" />
+            android:padding="17dp"
+            tools:ignore="Autofill,TextFields" />
 
         <ImageButton
             android:id="@+id/send_message_button"
             android:layout_width="50dp"
             android:layout_height="wrap_content"
-            android:paddingVertical="5dp"
+            android:paddingVertical="3dp"
+            android:paddingEnd="3dp"
             android:background="@color/colorInput"
             android:src="@drawable/send_message"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription,RtlSymmetry" />
 
     </LinearLayout>
 </RelativeLayout>
