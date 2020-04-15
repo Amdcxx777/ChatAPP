@@ -21,7 +21,8 @@
         android:orientation="horizontal"
         android:background="@drawable/inputs"
         android:layout_marginHorizontal="5dp"
-        android:padding="2dp"
+        android:layout_marginBottom="3dp"
+        android:padding="3dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true">
 
@@ -31,18 +32,17 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="@string/write_your_message_here"
-            android:padding="17dp"
+            android:paddingVertical="13dp"
             tools:ignore="Autofill,TextFields" />
 
         <ImageButton
             android:id="@+id/send_message_button"
             android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="3dp"
-            android:paddingEnd="3dp"
-            android:background="@color/colorInput"
+            android:layout_height="50dp"
             android:src="@drawable/send_message"
-            tools:ignore="ContentDescription,RtlSymmetry" />
+            android:layout_marginEnd="5dp"
+            android:layout_alignParentEnd="true"
+            android:backgroundTint="@color/colorInput" />
 
     </LinearLayout>
 </RelativeLayout>

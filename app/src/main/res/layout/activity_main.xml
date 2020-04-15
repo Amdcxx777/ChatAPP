@@ -8,16 +8,12 @@
     android:background="@drawable/background"
     tools:context=".MainActivity">
 
-
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:outlineAmbientShadowColor="@color/colorYellow"
-        android:layout_height="40dp">
-
-        <!--        <include-->
-        <!--            android:id="@+id/main_page_toolbar"-->
-        <!--            layout="@layout/app_bar_layout"/>-->
+        android:layout_height="40dp"
+        tools:ignore="UnusedAttribute">
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/main_tabs"

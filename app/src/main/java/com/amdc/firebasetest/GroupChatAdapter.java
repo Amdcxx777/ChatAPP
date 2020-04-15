@@ -32,7 +32,6 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
     GroupChatAdapter(List<Messages> userMessagesList) {
         this.userMessagesList = userMessagesList;
     }
-
     static class GroupMessageViewHolder extends RecyclerView.ViewHolder {
         private TextView displayTextMessages, displayNameMessages, displayTimeMessages;
         CircleImageView profileImage;
