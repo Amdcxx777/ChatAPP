@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
     private String currentUserID;
+    private long backPressureTime;
+    private Toast backToast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +79,6 @@ public class MainActivity extends AppCompatActivity {
         RootRef.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                if((dataSnapshot.child("name").exists())) {} //Toast.makeText(MainActivity.this, "Welcome", Toast.LENGTH_SHORT).show();
-//                else  SendUserToSettingsActivity();
                 if((!dataSnapshot.child("name").exists())) SendUserToSettingsActivity();
             }
             @Override
@@ -154,6 +154,19 @@ public class MainActivity extends AppCompatActivity {
         onlineStateMap.put("state", state);
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef.child("Users").child(currentUserID).child("userState").updateChildren(onlineStateMap);
+    }
+
+    @Override
+    public void onBackPressed() { // exit program
+        if(backPressureTime + 2000 > System.currentTimeMillis()){
+            backToast.cancel();
+            super.onBackPressed();
+            return;
+        } else {
+            backToast = Toast.makeText(getBaseContext(), "Click again to exit from Chat", Toast.LENGTH_SHORT);
+            backToast.show();
+        }
+        backPressureTime = System.currentTimeMillis();
     }
 }
 

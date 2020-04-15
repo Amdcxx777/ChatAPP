@@ -8,6 +8,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -54,7 +55,6 @@ public class SettingsActivity extends AppCompatActivity {
         RootRef = FirebaseDatabase.getInstance().getReference();
         UserProfileImagesRef = FirebaseStorage.getInstance().getReference().child("Profile images");
         InitializeFields();
-//        userName.setVisibility(View.INVISIBLE); // скрывает поле для введения имени
         UpdateAccountSettings.setOnClickListener(view -> UpdateSettings());
         RetrieveUserInfo();
         userProfileImage.setOnClickListener(view -> { // gallery
@@ -64,8 +64,7 @@ public class SettingsActivity extends AppCompatActivity {
             galleryIntent.setType("image/*");
             startActivityForResult(galleryIntent, GalleryPick);
         });
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        Objects.requireNonNull(getSupportActionBar()).setTitle("Account Settings");
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Account Settings" + "</font>"));
     }
 
     private void InitializeFields() {

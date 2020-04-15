@@ -75,8 +75,6 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
     private void InitializeFields() {
-//        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-//        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + currentGroupName + "</font>"));
         SendMessageButton = findViewById(R.id.send_message_button);
         userMessageInput = findViewById(R.id.input_group_message);
