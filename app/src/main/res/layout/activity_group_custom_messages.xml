@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/group_message_profile_images"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="5dp"
+        android:src="@drawable/profile_image" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_toEndOf = "@+id/group_message_profile_images"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/group_chat_name_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="5dp"
+            android:textAllCaps="false"
+            android:text="@string/name"
+            android:textSize="16sp"
+            android:textStyle = "bold"
+            android:textColor="@color/colorPrimaryDark"
+            android:layout_marginHorizontal="4dp" />
+
+        <TextView
+            android:id="@+id/group_chat_text_display"
+            android:layout_width = "wrap_content"
+            android:layout_height = "wrap_content"
+            android:layout_marginTop = "0dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="10dp"
+            android:background = "@drawable/receiver_messages_layout"
+            android:text = "@string/receiver_messages_here"
+            android:paddingVertical="3dp"
+            android:paddingHorizontal="10dp"
+            android:textSize = "14sp"
+            android:textStyle = "bold"
+            android:textColor = "@android:color/black" />
+
+        <TextView
+            android:id = "@+id/group_chat_time_display"
+            android:layout_width = "wrap_content"
+            android:layout_height = "wrap_content"
+            android:text="@string/time_of_sender"
+            android:textSize="10sp"
+            android:layout_marginStart="15dp"
+            android:textStyle="bold"
+            android:textColor="@android:color/tab_indicator_text"
+            tools:ignore="RtlSymmetry,SmallSp" />
+
+    </LinearLayout>
+
+</RelativeLayout>
