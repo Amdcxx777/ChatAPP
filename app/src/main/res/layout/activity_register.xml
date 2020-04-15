@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,7 +15,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:scaleType="fitCenter"
-        android:layout_alignParentLeft="true" />
+        tools:ignore="ContentDescription" />
 
     <EditText
         android:id="@+id/register_email"
@@ -31,8 +30,7 @@
         android:drawableStart="@drawable/email"
         android:layout_marginTop="25dp"
         android:layout_marginHorizontal="20dp"
-        android:layout_alignParentLeft="true"
-        android:drawableLeft="@drawable/email" />
+        tools:ignore="Autofill" />
 
     <EditText
         android:id="@+id/register_password"
@@ -47,8 +45,7 @@
         android:drawableStart="@drawable/password"
         android:layout_marginTop="10dp"
         android:layout_marginHorizontal="20dp"
-        android:drawableLeft="@drawable/password"
-        android:layout_alignParentLeft="true" />
+        tools:ignore="Autofill" />
 
     <Button
         android:id="@+id/register_button"

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -36,7 +35,6 @@
             tools:targetApi="lollipop"
             tools:ignore="ContentDescription" />
 
-
         <EditText
             android:id="@+id/input_message"
             android:layout_width="match_parent"
@@ -45,8 +43,8 @@
             android:paddingVertical="13dp"
             android:maxLines="5"
             android:layout_toEndOf="@+id/send_files_btn"
-            android:layout_toStartOf="@+id/send_message_btn" />
-
+            android:layout_toStartOf="@+id/send_message_btn"
+            tools:ignore="Autofill,TextFields" />
 
         <ImageButton
             android:id="@+id/send_message_btn"
