@@ -11,8 +11,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -27,7 +25,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,9 +34,7 @@ public class GroupChatActivity extends AppCompatActivity {
     private GroupChatAdapter groupChatAdapter;
     private RecyclerView userMessagesList;
     private final List<Messages> messagesList = new ArrayList<>();
-    private ScrollView mScrollView;
-    private TextView displayTextMessages, displayNameMessages, displayTimeMessages;
-    private DatabaseReference RootRef, UsersRef, GroupNameRef;
+    private DatabaseReference UsersRef, GroupNameRef;
     static String currentGroupName;
     private String currentUserID;
     private String currentUserName;
@@ -50,10 +45,7 @@ public class GroupChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_group_chat);
 
         currentGroupName = Objects.requireNonNull(Objects.requireNonNull(getIntent().getExtras()).get("groupName")).toString();
-        Toast.makeText(GroupChatActivity.this, currentGroupName, Toast.LENGTH_SHORT).show();
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        if (mAuth.getCurrentUser() != null)  currentUserID = mAuth.getCurrentUser().getUid();
-        RootRef = FirebaseDatabase.getInstance().getReference();
+        currentUserID = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         UsersRef = FirebaseDatabase.getInstance().getReference().child("Users");
         GroupNameRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(currentGroupName);
         InitializeFields();
@@ -73,9 +65,7 @@ public class GroupChatActivity extends AppCompatActivity {
                 userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
             }
             @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-//                if(dataSnapshot.exists()) DisplayMessages(dataSnapshot);
-            }
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) { }
             @Override
@@ -94,7 +84,6 @@ public class GroupChatActivity extends AppCompatActivity {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         userMessagesList.setLayoutManager(linearLayoutManager);
         userMessagesList.setAdapter(groupChatAdapter);
-//        mScrollView = findViewById(R.id.my_scroll_view);
     }
 
     private void GetUserInfo() {
@@ -112,8 +101,6 @@ public class GroupChatActivity extends AppCompatActivity {
     private void SaveMessageInfoToDatabase() {
         String message = userMessageInput.getText().toString();
         String messageKEY = GroupNameRef.push().getKey();
-        DatabaseReference userMessageKeyRef = RootRef.child("Groups").child(currentGroupName).push();
-        String messagePushID = userMessageKeyRef.getKey();
         if (TextUtils.isEmpty(message)) Toast.makeText(this, "Please write message first...", Toast.LENGTH_SHORT).show();
         else {
             HashMap<String, Object> groupMessageKey = new HashMap<>();
@@ -123,7 +110,7 @@ public class GroupChatActivity extends AppCompatActivity {
             messageInfoMap.put("name", currentUserName);
             messageInfoMap.put("from", currentUserID);
             messageInfoMap.put("type", "sms");
-            messageInfoMap.put("messageID", messagePushID);
+            messageInfoMap.put("messageID", messageKEY);
             messageInfoMap.put("message", message);
             messageInfoMap.put("date", new SimpleDateFormat("dd.MM.yyyy").format(Calendar.getInstance().getTime()));
             messageInfoMap.put("time", new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime()));

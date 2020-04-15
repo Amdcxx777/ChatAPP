@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,21 +18,16 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Objects;
-
 import de.hdodenhof.circleimageview.CircleImageView;
-
 import static com.amdc.firebasetest.GroupChatActivity.currentGroupName;
 
 public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.GroupMessageViewHolder> {
     private List<Messages> userMessagesList;
     private FirebaseAuth mAuth;
-    private StorageReference storageReference, reference;
-    private DatabaseReference GroupNameRef;
 
     GroupChatAdapter(List<Messages> userMessagesList) {
         this.userMessagesList = userMessagesList;
@@ -65,7 +59,6 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
         String messageSenderId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         Messages messages = userMessagesList.get(position);
         String fromUserID = messages.getFrom();
-//        String fromMessageType = messages.getType();
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference().child("Users").child(fromUserID);
         usersRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -98,17 +91,13 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
             });
         } else {
             holder.displayTextMessages.setBackgroundResource(R.drawable.sender_messages_layout);
-            holder.itemView.setOnClickListener(view -> {
-                Toast.makeText(holder.itemView.getContext(), "You cannot delete this message", Toast.LENGTH_SHORT).show();
-            });
+            holder.itemView.setOnClickListener(view -> Toast.makeText(holder.itemView.getContext(), "You cannot delete this message", Toast.LENGTH_SHORT).show());
         }
     }
 
-    private void deleteSentMessage(final int position, final GroupChatAdapter.GroupMessageViewHolder holder) {
+    private void deleteSentMessage(final int position, final GroupMessageViewHolder holder) {
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        rootRef.child("Groups").child(currentGroupName)
-                .child(userMessagesList.get(position).getFrom())
-                .child(userMessagesList.get(position).getMessageID())
+        rootRef.child("Groups").child(currentGroupName).child(userMessagesList.get(position).getMessageID())
                 .removeValue().addOnCompleteListener(task -> {
             if(task.isSuccessful()) Toast.makeText(holder.itemView.getContext(),"Deleted Successfully.",Toast.LENGTH_SHORT).show();
             else Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
@@ -116,7 +105,5 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
     }
 
     @Override
-    public int getItemCount() {
-        return userMessagesList.size();
-    }
+    public int getItemCount() { return userMessagesList.size(); }
 }
