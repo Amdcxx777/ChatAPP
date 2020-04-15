@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -50,8 +51,6 @@ public class GroupChatActivity extends AppCompatActivity {
         GroupNameRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(currentGroupName);
         InitializeFields();
         GetUserInfo();
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
         SendMessageButton.setOnClickListener(view -> {
             SaveMessageInfoToDatabase();
             userMessageInput.setText("");
@@ -76,7 +75,9 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
     private void InitializeFields() {
-        Objects.requireNonNull(getSupportActionBar()).setTitle(currentGroupName);
+//        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+//        Objects.requireNonNull(getSupportActionBar()).setDisplayShowHomeEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + currentGroupName + "</font>"));
         SendMessageButton = findViewById(R.id.send_message_button);
         userMessageInput = findViewById(R.id.input_group_message);
         groupChatAdapter = new GroupChatAdapter(messagesList);
