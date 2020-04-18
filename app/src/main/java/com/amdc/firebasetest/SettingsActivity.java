@@ -6,12 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.WindowManager;
@@ -32,9 +27,6 @@ import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -52,8 +44,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+        currentUserID = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         RootRef = FirebaseDatabase.getInstance().getReference();
         InitializeFields();
         UpdateAccountSettings.setOnClickListener(view -> UpdateSettings());
@@ -87,11 +78,9 @@ public class SettingsActivity extends AppCompatActivity {
             profileMap.put("status",setStatus);
             profileMap.put("image", photoUrl);
             RootRef.child("Users").child(currentUserID).updateChildren(profileMap).addOnCompleteListener(task -> { //updateChildren (setValue)
-                if(task.isSuccessful()) {
-                    SendUserToMainActivity();
+                if(task.isSuccessful()) { SendUserToMainActivity();
                     Toast.makeText(SettingsActivity.this, "Profile Updated Successfully...", Toast.LENGTH_SHORT).show();
-                } else {
-                    String message = Objects.requireNonNull(task.getException()).toString();
+                } else { String message = Objects.requireNonNull(task.getException()).toString();
                     Toast.makeText(SettingsActivity.this, "Error: " + message, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -134,27 +123,27 @@ public class SettingsActivity extends AppCompatActivity {
                 loadingBar.show();
                 final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("Profile images").child(currentUserID + ".jpg");
 
-                Bitmap bitmap = CropImage.getActivityResult(data).getBitmap();
-
-//                Drawable drawable = getDrawable(R.drawable.bird);
-//                Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
-                File file;
-                String path = Environment.getExternalStorageDirectory().toString();
-                file = new File(path, "UniqueFileName"+".jpg");
-
-                try {
-                    OutputStream stream = null;
-                    stream = new FileOutputStream(file);
-                    bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
-                    stream.flush();
-                    stream.close();
-                    Toast.makeText(SettingsActivity.this, "File saved successful", Toast.LENGTH_SHORT).show();
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(SettingsActivity.this, "Error saved file", Toast.LENGTH_SHORT).show();
-                }
-                Uri savedImageURI = Uri.parse(file.getAbsolutePath());
+//                Bitmap bitmap = CropImage.getActivityResult(data).getBitmap();
+//
+////                Drawable drawable = getDrawable(R.drawable.bird);
+////                Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
+//                File file;
+//                String path = Environment.getExternalStorageDirectory().toString();
+//                file = new File(path, "UniqueFileName"+".jpg");
+//
+//                try {
+//                    OutputStream stream = null;
+//                    stream = new FileOutputStream(file);
+//                    bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
+//                    stream.flush();
+//                    stream.close();
+//                    Toast.makeText(SettingsActivity.this, "File saved successful", Toast.LENGTH_SHORT).show();
+//                }
+//                catch (Exception e) {
+//                    e.printStackTrace();
+//                    Toast.makeText(SettingsActivity.this, "Error saved file", Toast.LENGTH_SHORT).show();
+//                }
+//                Uri savedImageURI = Uri.parse(file.getAbsolutePath());
 
 
                 filePath.putFile(Objects.requireNonNull(result).getUri()).addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> { // resultUr

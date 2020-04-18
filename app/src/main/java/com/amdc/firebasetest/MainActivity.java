@@ -64,12 +64,12 @@ public class MainActivity extends AppCompatActivity {
             VerifyUserExistence();
         }
     }
-    @Override
-    protected void onStop() {
-        super.onStop();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) updateUserStatus("online");
-    }
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        FirebaseUser currentUser = mAuth.getCurrentUser();
+//        if (currentUser != null) updateUserStatus("online");
+//    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -85,8 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 if((!dataSnapshot.child("name").exists())) SendUserToSettingsActivity();
             }
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-            }
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
     }
 

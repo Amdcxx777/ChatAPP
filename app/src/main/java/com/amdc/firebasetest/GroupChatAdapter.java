@@ -90,8 +90,9 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
                     }
                     if (i == 1) {
                         deleteSentMessage(position, holder);
-                        Intent intent = new Intent(holder.itemView.getContext(), GroupChatActivity.class);
-                        holder.itemView.getContext().startActivity(intent);
+                        Intent groupChatIntent = new Intent(holder.itemView.getContext(), GroupChatActivity.class);
+                        groupChatIntent.putExtra("groupName" , currentGroupName);
+                        holder.itemView.getContext().startActivity(groupChatIntent);
                     }
                 });
                 builder.show();

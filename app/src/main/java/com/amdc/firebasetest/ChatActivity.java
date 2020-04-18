@@ -135,9 +135,13 @@ public class ChatActivity extends AppCompatActivity {
                 userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
             }
             @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, String s) { }
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, String s) {
+                Toast.makeText(ChatActivity.this, "Child changed", Toast.LENGTH_SHORT).show();
+            }
             @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) { }
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                Toast.makeText(ChatActivity.this, "Child removed", Toast.LENGTH_SHORT).show();
+            }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, String s) { }
             @Override

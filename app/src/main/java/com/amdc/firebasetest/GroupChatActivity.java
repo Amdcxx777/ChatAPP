@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
@@ -70,7 +71,8 @@ public class GroupChatActivity extends AppCompatActivity {
             }
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                Toast.makeText(GroupChatActivity.this, "Child will be removed", Toast.LENGTH_SHORT).show();
+                GroupChatActivity.this.startActivity(new Intent(GroupChatActivity.this, GroupChatActivity.class).putExtra("groupName" , currentGroupName));
+                Toast.makeText(GroupChatActivity.this, currentUserName +": deleted his message", Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
