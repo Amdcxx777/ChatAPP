@@ -2,6 +2,8 @@ package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +29,7 @@ import static com.amdc.firebasetest.GroupChatActivity.currentGroupName;
 
 public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.GroupMessageViewHolder> {
     private List<Messages> userMessagesList;
+    DatabaseReference rootRef;
     private FirebaseAuth mAuth;
 
     GroupChatAdapter(List<Messages> userMessagesList) {
@@ -49,6 +52,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
     public GroupMessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_group_custom_messages, parent, false);
         mAuth = FirebaseAuth.getInstance();
+        rootRef = FirebaseDatabase.getInstance().getReference();
         return new GroupMessageViewHolder(view);
     }
 
@@ -76,13 +80,17 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
         if (fromUserID.equals(messageSenderId)) {
             holder.displayTextMessages.setBackgroundResource(R.drawable.receiver_messages_layout);
             holder.itemView.setOnClickListener(view -> {
-                CharSequence[] options = new CharSequence[] {"Delete message", "Cancel"};
+                CharSequence[] options = new CharSequence[] {"Copy text message", "Delete message", "Cancel"};
                 AlertDialog.Builder builder = new AlertDialog.Builder(holder.itemView.getContext());
                 builder.setTitle("Delete Message").setIcon(R.drawable.file);
                 builder.setItems(options, (dialogInterface, i) -> {
                     if (i == 0) {
+                        ((ClipboardManager) Objects.requireNonNull(holder.itemView.getContext().getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
+                        Toast.makeText(holder.itemView.getContext(),"Copied to clipboard",Toast.LENGTH_SHORT).show();
+                    }
+                    if (i == 1) {
                         deleteSentMessage(position, holder);
-                        Intent intent = new Intent(holder.itemView.getContext(), MainActivity.class);
+                        Intent intent = new Intent(holder.itemView.getContext(), GroupChatActivity.class);
                         holder.itemView.getContext().startActivity(intent);
                     }
                 });
@@ -90,12 +98,25 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
             });
         } else {
             holder.displayTextMessages.setBackgroundResource(R.drawable.sender_messages_layout);
-            holder.itemView.setOnClickListener(view -> Toast.makeText(holder.itemView.getContext(), "You cannot delete this message", Toast.LENGTH_SHORT).show());
+            holder.itemView.setOnClickListener(view -> {
+                CharSequence[] options = new CharSequence[] {"Copy text message", "Delete message", "Cancel"};
+                AlertDialog.Builder builder = new AlertDialog.Builder(holder.itemView.getContext());
+                builder.setTitle("Delete Message").setIcon(R.drawable.file);
+                builder.setItems(options, (dialogInterface, i) -> {
+                    if (i == 0) {
+                        ((ClipboardManager) Objects.requireNonNull(holder.itemView.getContext().getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
+                        Toast.makeText(holder.itemView.getContext(),"Copied to clipboard",Toast.LENGTH_SHORT).show();
+                    }
+                    if (i == 1) {
+                        Toast.makeText(holder.itemView.getContext(), "Not deleted! You can delete only your messages!", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                builder.show();
+            });
         }
     }
 
     private void deleteSentMessage(final int position, final GroupMessageViewHolder holder) {
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         rootRef.child("Groups").child(currentGroupName).child(userMessagesList.get(position).getMessageID())
                 .removeValue().addOnCompleteListener(task -> {
             if(task.isSuccessful()) Toast.makeText(holder.itemView.getContext(),"Deleted Successfully.",Toast.LENGTH_SHORT).show();

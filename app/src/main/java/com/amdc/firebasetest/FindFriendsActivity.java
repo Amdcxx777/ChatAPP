@@ -11,6 +11,7 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -35,6 +36,7 @@ public class FindFriendsActivity extends AppCompatActivity {
         UsersRef = FirebaseDatabase.getInstance().getReference().child("Users");
         findFriendsRecyclerList = findViewById(R.id.find_friends_recycler_list);
         findFriendsRecyclerList.setLayoutManager(new LinearLayoutManager(this));
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Find Friends" + "</font>"));
     }
 

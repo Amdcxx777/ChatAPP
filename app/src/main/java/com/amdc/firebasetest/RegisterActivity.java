@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.TextUtils;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -33,7 +35,8 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
         InitializeFields();
-        Objects.requireNonNull(getSupportActionBar()).setTitle("Registration account");
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Registration account" + "</font>"));
         AlreadyHaveAccountLink.setOnClickListener(view -> SendUserToLoginActivity());
         CreateAccountButton.setOnClickListener(view -> CreateNewAccount());
     }

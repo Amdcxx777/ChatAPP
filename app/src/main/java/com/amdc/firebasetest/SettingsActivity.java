@@ -6,11 +6,15 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.Html;
 import android.text.TextUtils;
-import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -24,26 +28,24 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Objects;
 
 public class SettingsActivity extends AppCompatActivity {
-    private String currentUserID;
+    private String currentUserID, photoUrl;
     private DatabaseReference RootRef;
-
     private Button UpdateAccountSettings;
-    private EditText userName;
-    private EditText userStatus;
+    private EditText userName, userStatus;
     private ImageView userProfileImage;
     private static final int GalleryPick = 1;
-    private StorageReference UserProfileImagesRef;
     private ProgressDialog loadingBar;
-    private String photoUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,18 +55,17 @@ public class SettingsActivity extends AppCompatActivity {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef = FirebaseDatabase.getInstance().getReference();
-        UserProfileImagesRef = FirebaseStorage.getInstance().getReference().child("Profile images");
         InitializeFields();
         UpdateAccountSettings.setOnClickListener(view -> UpdateSettings());
         RetrieveUserInfo();
         userProfileImage.setOnClickListener(view -> { // gallery
-//            UpdateSettings();
             Intent galleryIntent = new Intent();
             galleryIntent.setAction(Intent.ACTION_GET_CONTENT);
             galleryIntent.setType("image/*");
             startActivityForResult(galleryIntent, GalleryPick);
         });
-        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Account Settings" + "</font>"));
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Setting Account" + "</font>"));
     }
 
     private void InitializeFields() {
@@ -101,27 +102,13 @@ public class SettingsActivity extends AppCompatActivity {
         RootRef.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if((dataSnapshot.exists()) && (dataSnapshot.hasChild("name") && (dataSnapshot.hasChild("image")))) {
-                    String retrieveProfilePhoto = (String) dataSnapshot.child("image").getValue();
-                    userName.setText((String) dataSnapshot.child("name").getValue());
+                if ((dataSnapshot.exists()) && (dataSnapshot.hasChild("name"))) {
+                    userName.setText((String) dataSnapshot.child("name").getValue()); // name
                     userStatus.setText((String) dataSnapshot.child("status").getValue()); //status
-                    photoUrl = retrieveProfilePhoto;
-                    Picasso.get().load(retrieveProfilePhoto).networkPolicy(NetworkPolicy.NO_CACHE).into(userProfileImage);
-                }
-                else if ((dataSnapshot.exists()) && (dataSnapshot.hasChild("name"))) {
-                    userName.setText((String) dataSnapshot.child("name").getValue());
-                    userStatus.setText((String) dataSnapshot.child("status").getValue());
-
-                } else if ((dataSnapshot.exists()) && (dataSnapshot.hasChild("image"))) {
-                    String retrieveProfilePhoto = (String) dataSnapshot.child("image").getValue();
-                    Picasso.get().load(retrieveProfilePhoto).networkPolicy(NetworkPolicy.NO_CACHE).into(userProfileImage);
-                    photoUrl = retrieveProfilePhoto;
-                    userName.setText((String) dataSnapshot.child("name").getValue());
-                    userStatus.setText((String) dataSnapshot.child("status").getValue());
-                } else {
-//                    userName.setVisibility(View.VISIBLE); // открывает поле для введения имени
-                    Toast.makeText(SettingsActivity.this, "Please set & update your profile information...", Toast.LENGTH_SHORT).show();
-                }
+                }if((dataSnapshot.exists()) && (dataSnapshot.hasChild("image"))) {
+                    photoUrl = (String) dataSnapshot.child("image").getValue();
+                    Picasso.get().load(photoUrl).placeholder(R.drawable.profile_image).into(userProfileImage);
+                } else Toast.makeText(SettingsActivity.this, "Please set & update your profile information...", Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -132,9 +119,11 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode==GalleryPick  &&  resultCode==RESULT_OK  &&  data!=null) {
-            CropImage.activity().setGuidelines(CropImageView.Guidelines.ON).setAspectRatio(1, 1).start(this);
+        if (requestCode == GalleryPick  &&  resultCode == RESULT_OK  &&  data != null) {
+        CropImage.activity().setGuidelines(CropImageView.Guidelines.ON)
+                    .setMinCropResultSize(100,100)
+                    .setMaxCropResultSize(600, 600)
+                    .setAspectRatio(1, 1).start(this);
         }
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
@@ -143,13 +132,35 @@ public class SettingsActivity extends AppCompatActivity {
                 loadingBar.setMessage("Please wait, your profile image is updating...");
                 loadingBar.setCanceledOnTouchOutside(false);
                 loadingBar.show();
-                final Uri resultUri = Objects.requireNonNull(result).getUri();
-                final StorageReference filePath = UserProfileImagesRef.child(currentUserID + ".jpg");
-                filePath.putFile(resultUri).addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> {
-                    final String downloadUrl = uri.toString();
-                    RootRef.child("Users").child(currentUserID).child("image").setValue(downloadUrl).addOnCompleteListener(task -> {
+                final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("Profile images").child(currentUserID + ".jpg");
+
+                Bitmap bitmap = CropImage.getActivityResult(data).getBitmap();
+
+//                Drawable drawable = getDrawable(R.drawable.bird);
+//                Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
+                File file;
+                String path = Environment.getExternalStorageDirectory().toString();
+                file = new File(path, "UniqueFileName"+".jpg");
+
+                try {
+                    OutputStream stream = null;
+                    stream = new FileOutputStream(file);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
+                    stream.flush();
+                    stream.close();
+                    Toast.makeText(SettingsActivity.this, "File saved successful", Toast.LENGTH_SHORT).show();
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(SettingsActivity.this, "Error saved file", Toast.LENGTH_SHORT).show();
+                }
+                Uri savedImageURI = Uri.parse(file.getAbsolutePath());
+
+
+                filePath.putFile(Objects.requireNonNull(result).getUri()).addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> { // resultUr
+                    RootRef.child("Users").child(currentUserID).child("image").setValue(uri.toString()).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            Toast.makeText(SettingsActivity.this, "Profile image stored to firebase database successfully.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SettingsActivity.this, "Profile image stored successfully.", Toast.LENGTH_SHORT).show();
                             loadingBar.dismiss();
                         } else {
                             String message = Objects.requireNonNull(task.getException()).getMessage();

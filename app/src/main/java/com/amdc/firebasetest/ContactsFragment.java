@@ -65,14 +65,14 @@ public class ContactsFragment extends Fragment {
                                 String state = (String) dataSnapshot.child("userState").child("state").getValue();
 //                                String date = Objects.requireNonNull(dataSnapshot.child("userState").child("date").getValue()).toString();
 //                                String time = Objects.requireNonNull(dataSnapshot.child("userState").child("time").getValue()).toString();
-                                if (state.equals("online"))  holder.onlineIcon.setVisibility(View.VISIBLE);
+                                if (Objects.requireNonNull(state).equals("online"))  holder.onlineIcon.setVisibility(View.VISIBLE);
                                 else if (state.equals("offline"))  holder.onlineIcon.setVisibility(View.INVISIBLE);
                             }
                             else { holder.onlineIcon.setVisibility(View.INVISIBLE); }
                             if (dataSnapshot.hasChild("image")) {
                                 holder.userName.setText((String) dataSnapshot.child("name").getValue());
                                 holder.userStatus.setText((String) dataSnapshot.child("status").getValue());
-                                Picasso.get().load((String) dataSnapshot.child("image").getValue()).placeholder(R.drawable.profile_image).into(holder.profileImage);
+                                Picasso.get().load((String) dataSnapshot.child("image").getValue()).resize(300, 300).placeholder(R.drawable.profile_image).into(holder.profileImage);
                             } else {
                                 holder.userName.setText((String) dataSnapshot.child("name").getValue());
                                 holder.userStatus.setText((String) dataSnapshot.child("status").getValue());

@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -35,6 +36,7 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Contact:" + "</font>"));
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         UserRef = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -48,7 +50,7 @@ public class ProfileActivity extends AppCompatActivity {
         userProfileName = findViewById(R.id.visit_user_name);
         userProfileStatus = findViewById(R.id.visit_profile_status);
         btnSendRequest = findViewById(R.id.send_message_request_button);
-        btnCancelRequest = findViewById(R.id.cancel_message_request_button);
+        btnCancelRequest = findViewById(R.id.decline_message_request_button);
         Current_State = "new";
         RetrieveUserInfo();
     }

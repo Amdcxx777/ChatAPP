@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.TextUtils;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -34,10 +36,9 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         UsersRef = FirebaseDatabase.getInstance().getReference().child("Users"); // need remove
-//        currentUser = mAuth.getCurrentUser();
-
         InitializeFields();
-        Objects.requireNonNull(getSupportActionBar()).setTitle("Login account");
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Login account" + "</font>"));
         NeedNewAccountLink.setOnClickListener(view -> SendUserToRegisterActivity());
         LoginButton.setOnClickListener(view -> AllowUserToLogin());
         PhoneLoginButton.setOnClickListener(view -> {
@@ -89,14 +90,6 @@ public class LoginActivity extends AppCompatActivity {
         ForgetPasswordLink = findViewById(R.id.forget_password_link); //not realization
         loadingBar = new ProgressDialog(this);
     }
-
-//    @Override
-//    protected void onStart() {
-//        super.onStart();
-//        if (currentUser != null) {
-//            SendUserToMainActivity();
-//        }
-//    }
 
     private void SendUserToMainActivity() {
         Intent mainIntent = new Intent(LoginActivity.this, MainActivity.class);

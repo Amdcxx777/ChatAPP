@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
+import android.view.WindowManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -36,6 +37,7 @@ public class FilesViewerActivity extends AppCompatActivity {
         webView = findViewById(R.id.webView);
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
         String fileName = getIntent().getStringExtra("fileName");
         String fileNameForDownload = getIntent().getStringExtra("fileNameForDownload");
         download(fileNameForDownload, fileName);

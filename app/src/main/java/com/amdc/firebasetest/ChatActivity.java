@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -146,6 +147,8 @@ public class ChatActivity extends AppCompatActivity {
 
     @SuppressLint({"RestrictedApi", "SimpleDateFormat"})
     private void InitializeControllers() {
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+
         Objects.requireNonNull(getSupportActionBar()).setDefaultDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
         LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -164,10 +167,8 @@ public class ChatActivity extends AppCompatActivity {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         userMessagesList.setLayoutManager(linearLayoutManager);
         userMessagesList.setAdapter(messageAdapter);
-
-        Calendar calendar = Calendar.getInstance();
-        saveCurrentDate = new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(calendar.getTime());
-        saveCurrentTime = new SimpleDateFormat("HH:mm").format(calendar.getTime());
+        saveCurrentDate = new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(Calendar.getInstance().getTime());
+        saveCurrentTime = new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime());
     }
 
     @Override
@@ -197,11 +198,9 @@ public class ChatActivity extends AppCompatActivity {
                     messageImageBody.put("messageID", messagePushID);
                     messageImageBody.put("time", saveCurrentTime);
                     messageImageBody.put("date", saveCurrentDate);
-
                     Map<String, Object> messageBodyDetail = new HashMap<>();
                     messageBodyDetail.put(messageSenderRef + "/" + messagePushID, messageImageBody);
                     messageBodyDetail.put(messageReceiverRef + "/" + messagePushID, messageImageBody);
-
                     RootRef.updateChildren(messageBodyDetail);
                     loadingBar.dismiss();
                 }).addOnFailureListener(e -> {
@@ -237,11 +236,9 @@ public class ChatActivity extends AppCompatActivity {
                         messageTextBody.put("messageID", messagePushID);
                         messageTextBody.put("time", saveCurrentTime);
                         messageTextBody.put("date", saveCurrentDate);
-
                         Map<String, Object> messageBodyDetails = new HashMap<>();
                         messageBodyDetails.put(messageSenderRef + "/" + messagePushID, messageTextBody);
                         messageBodyDetails.put(messageReceiverRef + "/" + messagePushID, messageTextBody);
-
                         RootRef.updateChildren(messageBodyDetails).addOnCompleteListener(task1 -> {
                             if (task1.isSuccessful()) {
                                 loadingBar.dismiss(); // ?
@@ -291,7 +288,6 @@ public class ChatActivity extends AppCompatActivity {
             String messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
             String messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
             DatabaseReference userMessageKeyRef = RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).push();
-
             String messagePushID = userMessageKeyRef.getKey();
             Map<String, String> messageTextBody = new HashMap<>();
             messageTextBody.put("message", messageText);
@@ -301,11 +297,9 @@ public class ChatActivity extends AppCompatActivity {
             messageTextBody.put("messageID", messagePushID);
             messageTextBody.put("time", saveCurrentTime);
             messageTextBody.put("date", saveCurrentDate);
-
             Map<String, Object> messageBodyDetails = new HashMap<>();
             messageBodyDetails.put(messageSenderRef + "/" + messagePushID, messageTextBody);
             messageBodyDetails.put(messageReceiverRef + "/" + messagePushID, messageTextBody);
-
             RootRef.updateChildren(messageBodyDetails).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     Toast.makeText(ChatActivity.this, "Message Sent Successfully...", Toast.LENGTH_SHORT).show();

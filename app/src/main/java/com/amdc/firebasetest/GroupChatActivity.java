@@ -10,6 +10,7 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -64,9 +65,13 @@ public class GroupChatActivity extends AppCompatActivity {
                 userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
             }
             @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Toast.makeText(GroupChatActivity.this, "Child will be changed", Toast.LENGTH_SHORT).show();
+            }
             @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) { }
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+                Toast.makeText(GroupChatActivity.this, "Child will be removed", Toast.LENGTH_SHORT).show();
+            }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
             @Override
@@ -75,7 +80,8 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
     private void InitializeFields() {
-        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + currentGroupName + "</font>"));
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Group chat: " + currentGroupName + "</font>"));
         SendMessageButton = findViewById(R.id.send_message_button);
         userMessageInput = findViewById(R.id.input_group_message);
         groupChatAdapter = new GroupChatAdapter(messagesList);

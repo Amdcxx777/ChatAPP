@@ -2,6 +2,7 @@ package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -203,11 +204,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                     request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), DIRECTORY_DOWNLOADS, fileName); //reference.getName()
                                     Objects.requireNonNull(downloadManager).enqueue(request);
                                 }).addOnFailureListener(e -> Toast.makeText(messageViewHolder.itemView.getContext(), "Error download", Toast.LENGTH_SHORT).show());
-                            } else if (i == 2) {
+                            } if (i == 2) {
                                 deleteMessageForEveryOne(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
                                 messageViewHolder.itemView.getContext().startActivity(intent);
-                            } else if (i == 3) {
+                            } if (i == 3) {
                                 deleteSentMessage(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
                                 messageViewHolder.itemView.getContext().startActivity(intent);
@@ -217,15 +218,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         break;
                     }
                     case "text": { // sender messages for text
-                        CharSequence[] options = new CharSequence[]{"Delete From Everywhere", "Delete Only From Me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"Copy text message", "Delete From Everywhere", "Delete Only From Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builder.setTitle("Delete Message").setIcon(R.drawable.delete);
+                        builder.setTitle("Cory/Delete Message").setIcon(R.drawable.delete);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
+                                ((ClipboardManager) Objects.requireNonNull(messageViewHolder.itemView.getContext().getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
+                                Toast.makeText(messageViewHolder.itemView.getContext(),"Copied to clipboard",Toast.LENGTH_SHORT).show();
+                            } if (i == 1) {
                                 deleteMessageForEveryOne(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
                                 messageViewHolder.itemView.getContext().startActivity(intent);
-                            } else if (i == 1) {
+                            } if (i == 2) {
                                 deleteSentMessage(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
                                 messageViewHolder.itemView.getContext().startActivity(intent);
@@ -243,11 +247,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), ImageViewerActivity.class);
                                 intent.putExtra("url", userMessagesList.get(position).getMessage());
                                 messageViewHolder.itemView.getContext().startActivity(intent);
-                            } else if (i == 1) {
+                            } if (i == 1) {
                                 deleteMessageForEveryOne(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
                                 messageViewHolder.itemView.getContext().startActivity(intent);
-                            } else if (i == 2) {
+                            } if (i == 2) {
                                 deleteSentMessage(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
                                 messageViewHolder.itemView.getContext().startActivity(intent);
@@ -278,8 +282,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 intent.putExtra("fileNameForDownload", fileNameForDownload);
                                 intent.putExtra("fileName", fileName);
                                 messageViewHolder.itemView.getContext().startActivity(intent);
-                            }
-                            if (i == 1) {
+                            } if (i == 1) {
                                 String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType();
                                 storageReference = FirebaseStorage.getInstance().getReference();
                                 reference = storageReference.child("Document Files").child(fileNameForDownload);
@@ -291,7 +294,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                     request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), DIRECTORY_DOWNLOADS, fileName); //reference.getName()
                                     Objects.requireNonNull(downloadManager).enqueue(request);
                                 }).addOnFailureListener(e -> Toast.makeText(messageViewHolder.itemView.getContext(), "Error download", Toast.LENGTH_SHORT).show());
-                            } else if (i == 2) {
+                            } if (i == 2) {
                                 deleteReceiverMessage(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
                                 messageViewHolder.itemView.getContext().startActivity(intent);
@@ -301,11 +304,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         break;
                     }
                     case "text": {
-                        CharSequence[] options = new CharSequence[]{"Delete From  Me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"Copy text message", "Delete From  Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
-                        builder.setTitle("Delete Message").setIcon(R.drawable.delete);
+                        builder.setTitle("Copy/Delete Message").setIcon(R.drawable.delete);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
+                                ((ClipboardManager) Objects.requireNonNull(messageViewHolder.itemView.getContext().getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
+                                Toast.makeText(messageViewHolder.itemView.getContext(),"Copied to clipboard",Toast.LENGTH_SHORT).show();
+                            } if (i == 1) {
                                 deleteReceiverMessage(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
                                 messageViewHolder.itemView.getContext().startActivity(intent);
@@ -323,7 +329,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), ImageViewerActivity.class);
                                 intent.putExtra("url", userMessagesList.get(position).getMessage());
                                 messageViewHolder.itemView.getContext().startActivity(intent);
-                            } else if (i == 1) {
+                            } if (i == 1) {
                                 deleteReceiverMessage(position, messageViewHolder);
                                 Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
                                 messageViewHolder.itemView.getContext().startActivity(intent);
