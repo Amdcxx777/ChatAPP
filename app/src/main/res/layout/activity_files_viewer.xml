@@ -6,10 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".FilesViewerActivity">
 
+    <include
+        layout="@layout/app_bar_layout"
+        android:id="@+id/activity_file_toolbar" />
+
     <WebView
         android:id="@+id/webView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_below="@+id/activity_file_toolbar"
+        tools:ignore="UnknownIdInLayout" />
 
     <ProgressBar
         android:id="@+id/progressBar"

@@ -68,7 +68,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.hasChild("image")) {
                     String receiverImage = Objects.requireNonNull(dataSnapshot.child("image").getValue()).toString();
-                    Picasso.get().load(receiverImage).placeholder(R.drawable.profile_image).into(holder.profileImage);
+                    Picasso.get().load(receiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(holder.profileImage);
                 }
             }
             @Override
@@ -118,8 +118,8 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
     }
 
     private void deleteSentMessage(final int position, final GroupMessageViewHolder holder) {
-        rootRef.child("Groups").child(currentGroupName).child(userMessagesList.get(position).getMessageID())
-                .removeValue().addOnCompleteListener(task -> {
+        rootRef.child("Groups").child(currentGroupName).child(userMessagesList.get(position)
+                .getMessageID()).removeValue().addOnCompleteListener(task -> {
             if(task.isSuccessful()) Toast.makeText(holder.itemView.getContext(),"Deleted Successfully.",Toast.LENGTH_SHORT).show();
             else Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
         });

@@ -83,6 +83,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
     private void InitializeFields() {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        setSupportActionBar(findViewById(R.id.group_chat_bar_layout)); // my toolbar
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Group chat: " + currentGroupName + "</font>"));
         SendMessageButton = findViewById(R.id.send_message_button);
         userMessageInput = findViewById(R.id.input_group_message);

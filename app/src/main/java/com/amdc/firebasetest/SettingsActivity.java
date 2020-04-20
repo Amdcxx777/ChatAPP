@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
@@ -55,8 +56,6 @@ public class SettingsActivity extends AppCompatActivity {
             galleryIntent.setType("image/*");
             startActivityForResult(galleryIntent, GalleryPick);
         });
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
-        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Setting Account" + "</font>"));
     }
 
     private void InitializeFields() {
@@ -65,6 +64,10 @@ public class SettingsActivity extends AppCompatActivity {
         userStatus = findViewById(R.id.set_profile_status);
         userProfileImage = findViewById(R.id.set_profile_image);
         loadingBar = new ProgressDialog(this);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        setSupportActionBar(findViewById(R.id.activity_settings_toolbar)); // my toolbar
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Setting Account" + "</font>"));
+
     }
     private void UpdateSettings() {
         String setUserName = userName.getText().toString();
@@ -96,7 +99,7 @@ public class SettingsActivity extends AppCompatActivity {
                     userStatus.setText((String) dataSnapshot.child("status").getValue()); //status
                 }if((dataSnapshot.exists()) && (dataSnapshot.hasChild("image"))) {
                     photoUrl = (String) dataSnapshot.child("image").getValue();
-                    Picasso.get().load(photoUrl).placeholder(R.drawable.profile_image).into(userProfileImage);
+                    Picasso.get().load(photoUrl).resize(300, 300).placeholder(R.drawable.profile_image).into(userProfileImage);
                 } else Toast.makeText(SettingsActivity.this, "Please set & update your profile information...", Toast.LENGTH_SHORT).show();
             }
             @Override
@@ -109,9 +112,10 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GalleryPick  &&  resultCode == RESULT_OK  &&  data != null) {
+            Uri ImageUri = data.getData();
         CropImage.activity().setGuidelines(CropImageView.Guidelines.ON)
                     .setMinCropResultSize(100,100)
-                    .setMaxCropResultSize(600, 600)
+                    .setMaxCropResultSize(300, 300)
                     .setAspectRatio(1, 1).start(this);
         }
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
@@ -121,6 +125,7 @@ public class SettingsActivity extends AppCompatActivity {
                 loadingBar.setMessage("Please wait, your profile image is updating...");
                 loadingBar.setCanceledOnTouchOutside(false);
                 loadingBar.show();
+                Uri resultUri = Objects.requireNonNull(result).getUri();
                 final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("Profile images").child(currentUserID + ".jpg");
 
 //                Bitmap bitmap = CropImage.getActivityResult(data).getBitmap();

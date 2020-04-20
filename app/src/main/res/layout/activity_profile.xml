@@ -4,16 +4,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background = "@drawable/profile_activity"
+    android:background="@drawable/background"
     tools:context=".ProfileActivity">
+
+    <include
+        android:id="@+id/activity_profile_toolbar"
+        layout="@layout/app_bar_layout" />
+
+    <RelativeLayout
+        android:id="@+id/profile_layout"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/activity_profile_toolbar"
+        android:layout_height="match_parent"
+        android:background = "@drawable/fuelback">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/visit_profile_image"
         android:layout_width="300dp"
         android:layout_height="300dp"
-        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="20dp"
         android:src="@drawable/profile_image" />
 
     <TextView
@@ -74,5 +84,6 @@
         android:textAllCaps="false"
         android:visibility="invisible" />
 
+    </RelativeLayout>
 
 </RelativeLayout>

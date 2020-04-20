@@ -36,7 +36,8 @@ public class RegisterActivity extends AppCompatActivity {
         RootRef = FirebaseDatabase.getInstance().getReference();
         InitializeFields();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
-        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Registration account" + "</font>"));
+        setSupportActionBar(findViewById(R.id.activity_register_toolbar)); // my toolbar
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Registration new account" + "</font>"));
         AlreadyHaveAccountLink.setOnClickListener(view -> SendUserToLoginActivity());
         CreateAccountButton.setOnClickListener(view -> CreateNewAccount());
     }
@@ -60,8 +61,6 @@ public class RegisterActivity extends AppCompatActivity {
                     String currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
                     RootRef.child("Users").child(currentUserID).setValue("");
                     RootRef.child("Users").child(currentUserID).child("device_token").setValue(deviceToken);
-
-//                    SendUserToLoginActivity();
                     SendUserToMainActivity();
                     Toast.makeText(RegisterActivity.this, "Account Created Successfully...", Toast.LENGTH_SHORT).show();
                     loadingBar.dismiss();

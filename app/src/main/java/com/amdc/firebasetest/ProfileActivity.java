@@ -37,6 +37,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        setSupportActionBar(findViewById(R.id.activity_profile_toolbar)); // my toolbar
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Contact:" + "</font>"));
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         UserRef = FirebaseDatabase.getInstance().getReference().child("Users");
@@ -61,7 +62,7 @@ public class ProfileActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if ((dataSnapshot.exists())  &&  (dataSnapshot.hasChild("image"))) {
                     String userImage = (String) dataSnapshot.child("image").getValue();
-                    Picasso.get().load(userImage).placeholder(R.drawable.profile_image).into(userProfileImage);
+                    Picasso.get().load(userImage).resize(300, 300).placeholder(R.drawable.profile_image).into(userProfileImage);
                 }
                     userProfileName.setText((String) dataSnapshot.child("name").getValue());
                     userProfileStatus.setText((String) dataSnapshot.child("status").getValue());

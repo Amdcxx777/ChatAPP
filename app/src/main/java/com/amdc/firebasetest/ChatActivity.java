@@ -2,8 +2,10 @@ package com.amdc.firebasetest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -61,6 +63,7 @@ public class ChatActivity extends AppCompatActivity {
     private String saveCurrentTime, saveCurrentDate;
     private String checker = "", myUrl = "";
     private Uri fileUri;
+    private int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +78,7 @@ public class ChatActivity extends AppCompatActivity {
         String messageReceiverImage = (String) getIntent().getExtras().get("visit_image");
         InitializeControllers();
         userName.setText(messageReceiverName); // for chat bar
-        Picasso.get().load(messageReceiverImage).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
+        Picasso.get().load(messageReceiverImage).resize(50, 50).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
         SendMessageButton.setOnClickListener(view -> SendMessage());
         DisplayLastSeen();
         SendFilesButton.setOnClickListener(view -> {
@@ -126,6 +129,7 @@ public class ChatActivity extends AppCompatActivity {
             });
             builder.show();
         });
+
         RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
@@ -140,7 +144,11 @@ public class ChatActivity extends AppCompatActivity {
             }
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                Toast.makeText(ChatActivity.this, "Child removed", Toast.LENGTH_SHORT).show();
+                position = messagesList.size() - 1;
+                messagesList.remove(position);
+                messageAdapter.notifyDataSetChanged();
+                userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
+//                Toast.makeText(ChatActivity.this, "Position: " + dataSnapshot.getChildrenCount(), Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, String s) { }
@@ -152,7 +160,7 @@ public class ChatActivity extends AppCompatActivity {
     @SuppressLint({"RestrictedApi", "SimpleDateFormat"})
     private void InitializeControllers() {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
-
+        setSupportActionBar(findViewById(R.id.chat_toolbar)); // my toolbar
         Objects.requireNonNull(getSupportActionBar()).setDefaultDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowCustomEnabled(true);
         LayoutInflater layoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -224,7 +232,7 @@ public class ChatActivity extends AppCompatActivity {
                 StorageTask uploadTask = filePath.putFile(fileUri);
                 uploadTask.continueWithTask(task -> {
                     if(!task.isSuccessful()) {
-                        throw task.getException();
+                        throw Objects.requireNonNull(task.getException());
                     }
                     return filePath.getDownloadUrl();
                 }).addOnCompleteListener((OnCompleteListener<Uri>) task -> {
@@ -244,12 +252,7 @@ public class ChatActivity extends AppCompatActivity {
                         messageBodyDetails.put(messageSenderRef + "/" + messagePushID, messageTextBody);
                         messageBodyDetails.put(messageReceiverRef + "/" + messagePushID, messageTextBody);
                         RootRef.updateChildren(messageBodyDetails).addOnCompleteListener(task1 -> {
-                            if (task1.isSuccessful()) {
-                                loadingBar.dismiss(); // ?
-                                Toast.makeText(ChatActivity.this, "Message Sent Successfully...", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(ChatActivity.this, "Error", Toast.LENGTH_SHORT).show();
-                            }
+                            if (!task1.isSuccessful()) Toast.makeText(ChatActivity.this, "Send Image Error", Toast.LENGTH_SHORT).show();
                             loadingBar.dismiss();
                             MessageInputText.setText("");
                         });
@@ -305,11 +308,7 @@ public class ChatActivity extends AppCompatActivity {
             messageBodyDetails.put(messageSenderRef + "/" + messagePushID, messageTextBody);
             messageBodyDetails.put(messageReceiverRef + "/" + messagePushID, messageTextBody);
             RootRef.updateChildren(messageBodyDetails).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    Toast.makeText(ChatActivity.this, "Message Sent Successfully...", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(ChatActivity.this, "Error", Toast.LENGTH_SHORT).show();
-                }
+                if (!task.isSuccessful()) Toast.makeText(ChatActivity.this, "Send Message Error", Toast.LENGTH_SHORT).show();
                 MessageInputText.setText("");
             });
         }

@@ -38,6 +38,7 @@ public class LoginActivity extends AppCompatActivity {
         UsersRef = FirebaseDatabase.getInstance().getReference().child("Users"); // need remove
         InitializeFields();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        setSupportActionBar(findViewById(R.id.activity_login_toolbar)); // my toolbar
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Login account" + "</font>"));
         NeedNewAccountLink.setOnClickListener(view -> SendUserToRegisterActivity());
         LoginButton.setOnClickListener(view -> AllowUserToLogin());

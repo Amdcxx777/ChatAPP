@@ -6,21 +6,24 @@
     android:background="@drawable/background"
     tools:context=".RegisterActivity">
 
+    <include
+        android:id="@+id/activity_register_toolbar"
+        layout="@layout/app_bar_layout" />
+
     <ImageView
         android:id="@+id/register_image"
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
         android:src="@drawable/singup_photo"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:scaleType="fitCenter"
+        android:layout_below="@+id/activity_register_toolbar"
         tools:ignore="ContentDescription" />
 
     <EditText
         android:id="@+id/register_email"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/register_image"
         android:hint="@string/email"
@@ -35,7 +38,7 @@
     <EditText
         android:id="@+id/register_password"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/register_email"
         android:hint="@string/password"

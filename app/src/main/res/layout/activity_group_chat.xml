@@ -7,10 +7,15 @@
     android:background="@drawable/background"
     tools:context=".GroupChatActivity">
 
+    <include
+        android:id="@+id/group_chat_bar_layout"
+        layout="@layout/app_bar_layout" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/private_messages_list_from_users"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/group_chat_bar_layout"
         android:layout_above="@+id/myLinearLayout"
         android:layout_marginBottom="6dp"/>
 
@@ -20,7 +25,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="@drawable/inputs"
-        android:layout_marginHorizontal="5dp"
+        android:layout_marginHorizontal="3dp"
         android:layout_marginBottom="3dp"
         android:padding="3dp"
         android:layout_alignParentBottom="true"
@@ -41,8 +46,8 @@
             android:layout_height="50dp"
             android:src="@drawable/send_message"
             android:layout_marginEnd="5dp"
-            android:layout_alignParentEnd="true"
-            android:backgroundTint="@color/colorInput" />
+            android:backgroundTint="@color/colorInput"
+            tools:ignore="ContentDescription,UnusedAttribute" />
 
     </LinearLayout>
 </RelativeLayout>

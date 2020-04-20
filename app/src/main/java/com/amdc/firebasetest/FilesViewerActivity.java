@@ -38,6 +38,9 @@ public class FilesViewerActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+
+        setSupportActionBar(findViewById(R.id.activity_file_toolbar)); // my toolbar
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "File viewer" + "</font>"));
         String fileName = getIntent().getStringExtra("fileName");
         String fileNameForDownload = getIntent().getStringExtra("fileNameForDownload");
         download(fileNameForDownload, fileName);

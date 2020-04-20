@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import androidx.appcompat.widget.Toolbar;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
+
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -37,6 +38,9 @@ public class FindFriendsActivity extends AppCompatActivity {
         findFriendsRecyclerList = findViewById(R.id.find_friends_recycler_list);
         findFriendsRecyclerList.setLayoutManager(new LinearLayoutManager(this));
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        setSupportActionBar(findViewById(R.id.find_friends_toolbar)); // my toolbar
+//        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Find Friends" + "</font>"));
     }
 
@@ -49,7 +53,7 @@ public class FindFriendsActivity extends AppCompatActivity {
             protected void onBindViewHolder(@NonNull FindFriendViewHolder holder, final int position, @NonNull Contacts model) {
                 holder.userName.setText(model.getName());
                 holder.userStatus.setText(model.getStatus());
-                Picasso.get().load(model.getImage()).placeholder(R.drawable.profile_image).into(holder.profileImage);
+                Picasso.get().load(model.getImage()).resize(90, 90).placeholder(R.drawable.profile_image).into(holder.profileImage); // user profile image
                 holder.itemView.setOnClickListener(e-> { // choice user from find friend
                     String visit_user_id = getRef(position).getKey();
                     Intent profileIntent = new Intent(FindFriendsActivity.this, ProfileActivity.class);

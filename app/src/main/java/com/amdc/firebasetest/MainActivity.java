@@ -1,12 +1,14 @@
 package com.amdc.firebasetest;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
@@ -15,6 +17,7 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -46,7 +49,9 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
-        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#03DAC5'>" + "WhatsApp" + "</font>"));
+
+        setSupportActionBar(findViewById(R.id.main_page_toolbar)); // my toolbar
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#03DAC5'>" + "WhatsApp" + "</font>")); // name toolbar
         ViewPager myViewPager = findViewById(R.id.main_tabs_pager);
         TabsAccessorAdapter myTabsAccessorAdapter = new TabsAccessorAdapter(getSupportFragmentManager());
         myViewPager.setAdapter(myTabsAccessorAdapter);
@@ -159,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() { // exit program
+    public void onBackPressed() { // exit program with request
         if(backPressureTime + 2000 > System.currentTimeMillis()){
             backToast.cancel();
             super.onBackPressed();

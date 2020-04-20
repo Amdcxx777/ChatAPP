@@ -41,6 +41,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login_phone);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        setSupportActionBar(findViewById(R.id.activity_login_phone_toolbar)); // my toolbar
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Login via phone" + "</font>"));
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();

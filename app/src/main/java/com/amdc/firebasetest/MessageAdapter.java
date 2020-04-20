@@ -35,7 +35,6 @@ import static android.os.Environment.DIRECTORY_DOWNLOADS;
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     private List<Messages> userMessagesList;
     String receiverImage, userToName, userToImage, toUserID;
-//    private FirebaseAuth mAuth;
     private StorageReference storageReference, reference;
 
     MessageAdapter(List<Messages> userMessagesList) {
@@ -93,7 +92,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.hasChild("image")) {
                     receiverImage = Objects.requireNonNull(dataSnapshot.child("image").getValue()).toString();
-                    Picasso.get().load(receiverImage).placeholder(R.drawable.profile_image).into(messageViewHolder.receiverProfileImage);
+                    Picasso.get().load(receiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(messageViewHolder.receiverProfileImage);
                 }
             }
             @Override
@@ -288,32 +287,32 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     case "doc":
                     case "docx": {
                         CharSequence[] options = new CharSequence[]{"Download and View this Document", "Download this Document", "Delete only From Me", "Cancel"};
-                        AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("Download/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
                                 String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType(); //get name file from storage
                                 String fileName = Uri.parse(userMessagesList.get(position).getName()).toString(); //get name file from user into firebase (getLastPathSegment())
-                                Intent intent = new Intent(messageViewHolder.itemView.getContext(), FilesViewerActivity.class);
+                                Intent intent = new Intent(context, FilesViewerActivity.class);
                                 intent.putExtra("fileNameForDownload", fileNameForDownload);
                                 intent.putExtra("fileName", fileName);
-                                messageViewHolder.itemView.getContext().startActivity(intent);
+                                context.startActivity(intent);
                             } if (i == 1) {
                                 String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType();
                                 storageReference = FirebaseStorage.getInstance().getReference();
                                 reference = storageReference.child("Document Files").child(fileNameForDownload);
                                 reference.getDownloadUrl().addOnSuccessListener(uri -> {
                                     String fileName = Uri.parse(userMessagesList.get(position).getName()).toString(); //get name file from firebase (getLastPathSegment())
-                                    DownloadManager downloadManager = (DownloadManager) messageViewHolder.itemView.getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                                    DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
                                     DownloadManager.Request request = new DownloadManager.Request(uri);
                                     request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                                    request.setDestinationInExternalFilesDir(messageViewHolder.itemView.getContext(), DIRECTORY_DOWNLOADS, fileName); //reference.getName()
+                                    request.setDestinationInExternalFilesDir(context, DIRECTORY_DOWNLOADS, fileName); //reference.getName()
                                     Objects.requireNonNull(downloadManager).enqueue(request);
-                                }).addOnFailureListener(e -> Toast.makeText(messageViewHolder.itemView.getContext(), "Error download", Toast.LENGTH_SHORT).show());
+                                }).addOnFailureListener(e -> Toast.makeText(context, "Error download", Toast.LENGTH_SHORT).show());
                             } if (i == 2) {
                                 deleteReceiverMessage(position, messageViewHolder);
-                                Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
-                                messageViewHolder.itemView.getContext().startActivity(intent);
+                                Intent intent = new Intent(context, MainActivity.class);
+                                context.startActivity(intent);
                             }
                         });
                         builder.show();
@@ -321,16 +320,16 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     }
                     case "text": {
                         CharSequence[] options = new CharSequence[]{"Copy text message", "Delete From  Me", "Cancel"};
-                        AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("Copy/Delete Message").setIcon(R.drawable.delete);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
-                                ((ClipboardManager) Objects.requireNonNull(messageViewHolder.itemView.getContext().getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
-                                Toast.makeText(messageViewHolder.itemView.getContext(),"Copied to clipboard",Toast.LENGTH_SHORT).show();
+                                ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
+                                Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
                             } if (i == 1) {
                                 deleteReceiverMessage(position, messageViewHolder);
-                                Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
-                                messageViewHolder.itemView.getContext().startActivity(intent);
+                                Intent intent = new Intent(context, MainActivity.class);
+                                context.startActivity(intent);
                             }
                         });
                         builder.show();
@@ -338,17 +337,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     }
                     case "image": {
                         CharSequence[] options = new CharSequence[]{"View this Image", "Delete From Me", "Cancel"};
-                        AlertDialog.Builder builder = new AlertDialog.Builder(messageViewHolder.itemView.getContext());
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("View/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
-                                Intent intent = new Intent(messageViewHolder.itemView.getContext(), ImageViewerActivity.class);
+                                Intent intent = new Intent(context, ImageViewerActivity.class);
                                 intent.putExtra("url", userMessagesList.get(position).getMessage());
-                                messageViewHolder.itemView.getContext().startActivity(intent);
+                                context.startActivity(intent);
                             } if (i == 1) {
                                 deleteReceiverMessage(position, messageViewHolder);
-                                Intent intent = new Intent(messageViewHolder.itemView.getContext(), MainActivity.class);
-                                messageViewHolder.itemView.getContext().startActivity(intent);
+                                Intent intent = new Intent(context, MainActivity.class);
+                                context.startActivity(intent);
                             }
                         });
                         builder.show();
@@ -400,6 +399,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private void deleteMessageForEveryOne(final int position, final MessageViewHolder holder) {
         final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+        final String type = userMessagesList.get(position).getType();
+        final String messageID = userMessagesList.get(position).getMessageID();
         rootRef.child("Messages")
                 .child(userMessagesList.get(position).getTo())
                 .child(userMessagesList.get(position).getFrom())
@@ -413,22 +414,22 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         .removeValue().addOnCompleteListener(task1 -> { //delete sms with name file from receive messages
                     if(task1.isSuccessful()) {
                         storageReference = FirebaseStorage.getInstance().getReference();
-                        if (userMessagesList.get(position).getType().equals("text")) {
+                        if (type.equals("text")) {
                             Toast.makeText(holder.itemView.getContext(), "Message Deleted Successfully.", Toast.LENGTH_SHORT).show();
-                            Intent chatIntent = new Intent(holder.itemView.getContext(), ChatActivity.class);
-                            chatIntent.putExtra("visit_user_id", toUserID);
-                            chatIntent.putExtra("visit_user_name", userToName);
-                            chatIntent.putExtra("visit_image", userToImage);
-                            holder.itemView.getContext().startActivity(chatIntent);
+//                            Intent chatIntent = new Intent(holder.itemView.getContext(), ChatActivity.class); //renew intent with deleted message
+//                            chatIntent.putExtra("visit_user_id", toUserID);
+//                            chatIntent.putExtra("visit_user_name", userToName);
+//                            chatIntent.putExtra("visit_image", userToImage);
+//                            holder.itemView.getContext().startActivity(chatIntent);
                         } else {
-                            if (userMessagesList.get(position).getType().equals("image")) { //for image
-                                String fileNameForDownload = userMessagesList.get(position).getMessageID() + ".jpg"; //name file form storage
+                            if (type.equals("image")) { //for image
+                                String fileNameForDownload = messageID + ".jpg"; //name file form storage
                                 storageReference.child("Image Files").child(fileNameForDownload).delete().addOnCompleteListener(task2 -> {
                                     if (task2.isSuccessful())
                                         Toast.makeText(holder.itemView.getContext(), "Deleted Successfully.", Toast.LENGTH_SHORT).show();
                                 });
                             } else { //for files
-                                String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType(); //name file form storage
+                                String fileNameForDownload = messageID + "." + type; //name file form storage
                                 storageReference.child("Document Files").child(fileNameForDownload).delete().addOnCompleteListener(task2 -> { //delete file from storage
                                     if (task2.isSuccessful())
                                         Toast.makeText(holder.itemView.getContext(), "Deleted Successfully.", Toast.LENGTH_SHORT).show();

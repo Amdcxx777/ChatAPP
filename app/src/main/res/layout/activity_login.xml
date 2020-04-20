@@ -7,11 +7,14 @@
     android:background="@drawable/background"
     tools:context=".LoginActivity">
 
+    <include
+        android:id="@+id/activity_login_toolbar"
+        layout="@layout/app_bar_layout" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true">
+        android:layout_below="@+id/activity_login_toolbar">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -24,12 +27,13 @@
                 android:src="@drawable/login_photo"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
-                android:scaleType="fitCenter" />
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
 
             <EditText
                 android:id="@+id/login_email"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/login_image"
                 android:hint="@string/email"
@@ -37,14 +41,14 @@
                 android:background="@drawable/inputs"
                 android:padding="1dp"
                 android:drawableStart="@drawable/email"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginLeft="17dp"
                 android:layout_marginRight="17dp" />
 
             <EditText
                 android:id="@+id/login_password"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/login_email"
                 android:hint="@string/password"
