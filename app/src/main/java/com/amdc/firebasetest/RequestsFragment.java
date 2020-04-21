@@ -152,7 +152,7 @@ public class RequestsFragment extends Fragment {
                             else if (Objects.equals(type, "sent")) {
                                 request_accept_btn = holder.itemView.findViewById(R.id.request_accept_btn);
                                 request_accept_btn.setText("Req Sent");
-                                request_accept_btn.setBackgroundResource(R.drawable.buttons);
+                                request_accept_btn.setBackgroundResource(R.drawable.button_blue);
                                 holder.itemView.findViewById(R.id.request_cancel_btn).setOnClickListener(v -> { // button cancel
                                     ChatRequestsRef.child(currentUserID).child(Objects.requireNonNull(listUserID)).removeValue().addOnCompleteListener(task -> {
                                         if (task.isSuccessful()) {
