@@ -6,6 +6,11 @@
     android:layout_height="match_parent"
     tools:context=".ImageViewerActivity">
 
+    <include
+        android:id="@+id/image_toolbar"
+        layout="@layout/app_bar_layout" />
+
+
     <com.github.chrisbanes.photoview.PhotoView
         android:id = "@+id/image_viewer"
         android:layout_width = "match_parent"

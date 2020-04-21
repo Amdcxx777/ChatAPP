@@ -62,10 +62,10 @@
 
                 <ImageView
                     android:id="@+id/user_online_status"
-                    android:layout_width="123dp"
-                    android:layout_height="50dp"
-                    android:src="@drawable/online"
-                    android:layout_margin="5dp"
+                    android:layout_width="50dp"
+                    android:layout_height="53dp"
+                    android:src="@drawable/online_vine"
+                    android:layout_marginTop="3dp"
                     android:visibility="invisible"
                     tools:ignore="ContentDescription" />
 

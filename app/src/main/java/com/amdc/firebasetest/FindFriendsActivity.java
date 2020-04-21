@@ -53,7 +53,7 @@ public class FindFriendsActivity extends AppCompatActivity {
             protected void onBindViewHolder(@NonNull FindFriendViewHolder holder, final int position, @NonNull Contacts model) {
                 holder.userName.setText(model.getName());
                 holder.userStatus.setText(model.getStatus());
-                Picasso.get().load(model.getImage()).resize(90, 90).placeholder(R.drawable.profile_image).into(holder.profileImage); // user profile image
+                Picasso.get().load(model.getImage()).resize(120, 120).placeholder(R.drawable.profile_image).into(holder.profileImage); // user profile image
                 holder.itemView.setOnClickListener(e-> { // choice user from find friend
                     String visit_user_id = getRef(position).getKey();
                     Intent profileIntent = new Intent(FindFriendsActivity.this, ProfileActivity.class);

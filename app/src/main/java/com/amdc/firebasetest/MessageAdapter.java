@@ -34,7 +34,7 @@ import static android.os.Environment.DIRECTORY_DOWNLOADS;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     private List<Messages> userMessagesList;
-    String receiverImage, userToName, userToImage, toUserID;
+    private String receiverImage;
     private StorageReference storageReference, reference;
 
     MessageAdapter(List<Messages> userMessagesList) {
@@ -73,15 +73,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         String messageSenderId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         Messages messages = userMessagesList.get(position);
         String fromUserID = messages.getFrom();
-        toUserID = messages.getTo();
+        String toUserID = messages.getTo();
         String fromMessageType = messages.getType();
         DatabaseReference usersFromRef = FirebaseDatabase.getInstance().getReference().child("Users").child(fromUserID);
         DatabaseReference usersToRef = FirebaseDatabase.getInstance().getReference().child("Users").child(toUserID);
         usersToRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                userToName = (String) dataSnapshot.child("name").getValue();
-                userToImage = (String) dataSnapshot.child("image").getValue();
+//                userToName = (String) dataSnapshot.child("name").getValue();
+//                userToImage = (String) dataSnapshot.child("image").getValue();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
@@ -108,6 +108,10 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         messageViewHolder.senderMessageTimeImage.setVisibility(View.GONE);
         messageViewHolder.receiverMessageTimeImage.setVisibility(View.GONE);
         messageViewHolder.messageReceiverPicture.setVisibility(View.GONE);
+        String imagePDF = "https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_pdf.png?alt=media&token=3deeefdf-472c-4fc8-ba70-dee1f444e54e";
+        String imageXML = "https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_excel.png?alt=media&token=50cb92eb-acb0-4b63-8fcc-8237d7cea5b7";
+        String imageDOC = "https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_world.png?alt=media&token=01a2ea3f-7df4-4b7c-86a4-ff9aded94a40";
+        String imageZIP = "https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_zip.png?alt=media&token=d109ece1-1bef-4c12-9f6f-c987e8d368ab";
         switch (fromMessageType) {
             case "text":
                 if (fromUserID.equals(messageSenderId)) {
@@ -124,65 +128,49 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     messageViewHolder.receiverMessageText.setBackgroundResource(R.drawable.receiver_messages_layout);
                     messageViewHolder.receiverMessageText.setText(messages.getMessage());
                     messageViewHolder.receiverMessageTime.setText(messages.getTime() + " - " + messages.getDate());
-                }
-                break;
+                } break;
             case "image":
-                if (fromUserID.equals(messageSenderId)) {
-                    setVisibleForSender(messageViewHolder);
-                    Picasso.get().load(messages.getMessage()).into(messageViewHolder.messageSenderPicture);
+                if (fromUserID.equals(messageSenderId)) { setVisibleForSender(messageViewHolder);
+                    Picasso.get().load(messages.getMessage()).resize(120, 120).into(messageViewHolder.messageSenderPicture);
                     messageViewHolder.senderMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
-                } else {
-                    setVisibleForReceiver(messageViewHolder);
-                    Picasso.get().load(messages.getMessage()).into(messageViewHolder.messageReceiverPicture);
+                } else { setVisibleForReceiver(messageViewHolder);
+                    Picasso.get().load(messages.getMessage()).resize(120, 120).into(messageViewHolder.messageReceiverPicture);
                     messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
-                }
-                break;
+                } break;
             case "pdf":
-                if (fromUserID.equals(messageSenderId)) {
-                    setVisibleForSender(messageViewHolder);
-                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_pdf.png?alt=media&token=3deeefdf-472c-4fc8-ba70-dee1f444e54e").into(messageViewHolder.messageSenderPicture);
+                if (fromUserID.equals(messageSenderId)) { setVisibleForSender(messageViewHolder);
+                    Picasso.get().load(imagePDF).resize(120, 120).into(messageViewHolder.messageSenderPicture);
                     messageViewHolder.senderMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
-                } else {
-                    setVisibleForReceiver(messageViewHolder);
-                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_pdf.png?alt=media&token=3deeefdf-472c-4fc8-ba70-dee1f444e54e").into(messageViewHolder.messageReceiverPicture);
+                } else { setVisibleForReceiver(messageViewHolder);
+                    Picasso.get().load(imagePDF).resize(120, 120).into(messageViewHolder.messageReceiverPicture);
                     messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
-                }
-                break;
+                } break;
             case "xls":
             case "xlsx":
-                if (fromUserID.equals(messageSenderId)) {
-                    setVisibleForSender(messageViewHolder);
-                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_excel.png?alt=media&token=50cb92eb-acb0-4b63-8fcc-8237d7cea5b7").into(messageViewHolder.messageSenderPicture);
+                if (fromUserID.equals(messageSenderId)) { setVisibleForSender(messageViewHolder);
+                    Picasso.get().load(imageXML).resize(120, 120).into(messageViewHolder.messageSenderPicture);
                     messageViewHolder.senderMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
-                } else {
-                    setVisibleForReceiver(messageViewHolder);
-                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_excel.png?alt=media&token=50cb92eb-acb0-4b63-8fcc-8237d7cea5b7").into(messageViewHolder.messageReceiverPicture);
+                } else { setVisibleForReceiver(messageViewHolder);
+                    Picasso.get().load(imageXML).resize(120, 120).into(messageViewHolder.messageReceiverPicture);
                     messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
-                }
-                break;
+                } break;
             case "doc":
             case "docx":
-                if (fromUserID.equals(messageSenderId)) {
-                    setVisibleForSender(messageViewHolder);
-                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_world.png?alt=media&token=01a2ea3f-7df4-4b7c-86a4-ff9aded94a40").into(messageViewHolder.messageSenderPicture);
+                if (fromUserID.equals(messageSenderId)) { setVisibleForSender(messageViewHolder);
+                    Picasso.get().load(imageDOC).resize(120, 120).into(messageViewHolder.messageSenderPicture);
                     messageViewHolder.senderMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
-                } else {
-                    setVisibleForReceiver(messageViewHolder);
-                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_world.png?alt=media&token=01a2ea3f-7df4-4b7c-86a4-ff9aded94a40").into(messageViewHolder.messageReceiverPicture);
+                } else { setVisibleForReceiver(messageViewHolder);
+                    Picasso.get().load(imageDOC).resize(120, 120).into(messageViewHolder.messageReceiverPicture);
                     messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
-                }
-                break;
+                } break;
             case "zip":
-                if (fromUserID.equals(messageSenderId)) {
-                    setVisibleForSender(messageViewHolder);
-                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_zip.png?alt=media&token=d109ece1-1bef-4c12-9f6f-c987e8d368ab").into(messageViewHolder.messageSenderPicture);
+                if (fromUserID.equals(messageSenderId)) { setVisibleForSender(messageViewHolder);
+                    Picasso.get().load(imageZIP).resize(120, 120).into(messageViewHolder.messageSenderPicture);
                     messageViewHolder.senderMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
-                } else {
-                    setVisibleForReceiver(messageViewHolder);
-                    Picasso.get().load("https://firebasestorage.googleapis.com/v0/b/testbase-def93.appspot.com/o/Image%20Files%2Ficon_zip.png?alt=media&token=d109ece1-1bef-4c12-9f6f-c987e8d368ab").into(messageViewHolder.messageReceiverPicture);
+                } else { setVisibleForReceiver(messageViewHolder);
+                    Picasso.get().load(imageZIP).resize(120, 120).into(messageViewHolder.messageReceiverPicture);
                     messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
-                }
-                break;
+                } break;
         }
         if (fromUserID.equals(messageSenderId)) { // alert dialog for sender messages
             messageViewHolder.itemView.setOnClickListener(view -> {
@@ -375,8 +363,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private void deleteSentMessage(final int position, final MessageViewHolder holder) {
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        rootRef.child("Messages")
-                .child(userMessagesList.get(position).getFrom())
+        rootRef.child("Messages").child(userMessagesList.get(position).getFrom())
                 .child(userMessagesList.get(position).getTo())
                 .child(userMessagesList.get(position).getMessageID())
                 .removeValue().addOnCompleteListener(task -> {
@@ -387,8 +374,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     private void deleteReceiverMessage(final int position, final MessageViewHolder holder) {
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-        rootRef.child("Messages")
-                .child(userMessagesList.get(position).getTo())
+        rootRef.child("Messages").child(userMessagesList.get(position).getTo())
                 .child(userMessagesList.get(position).getFrom())
                 .child(userMessagesList.get(position).getMessageID())
                 .removeValue().addOnCompleteListener(task -> {
@@ -401,14 +387,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         final String type = userMessagesList.get(position).getType();
         final String messageID = userMessagesList.get(position).getMessageID();
-        rootRef.child("Messages")
-                .child(userMessagesList.get(position).getTo())
+        rootRef.child("Messages").child(userMessagesList.get(position).getTo())
                 .child(userMessagesList.get(position).getFrom())
                 .child(userMessagesList.get(position).getMessageID())
                 .removeValue().addOnCompleteListener(task -> { // delete sms with name file from sender messages
             if(task.isSuccessful()) {
-                rootRef.child("Messages")
-                        .child(userMessagesList.get(position).getFrom())
+                rootRef.child("Messages").child(userMessagesList.get(position).getFrom())
                         .child(userMessagesList.get(position).getTo())
                         .child(userMessagesList.get(position).getMessageID())
                         .removeValue().addOnCompleteListener(task1 -> { //delete sms with name file from receive messages

@@ -74,8 +74,8 @@ public class LoginActivity extends AppCompatActivity {
                         }
                             });
                 } else {
-                    String message = Objects.requireNonNull(task.getException()).toString();
-                    Toast.makeText(LoginActivity.this, "Error : " + message, Toast.LENGTH_SHORT).show();
+//                    String message = Objects.requireNonNull(task.getException()).toString();
+                    Toast.makeText(LoginActivity.this, "Wrong login or password", Toast.LENGTH_SHORT).show();
                     loadingBar.dismiss();
                 }
             });

@@ -15,7 +15,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/private_messages_list_of_users"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/chat_toolbar"
         android:layout_above="@+id/chat_linear_layout"
@@ -28,6 +28,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:layout_marginHorizontal="3dp"
+        android:layout_marginBottom="3dp"
         android:padding="2dp"
         android:background="@drawable/inputs"
         android:orientation="horizontal">

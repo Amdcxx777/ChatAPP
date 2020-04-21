@@ -2,10 +2,8 @@ package com.amdc.firebasetest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,7 +12,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -78,7 +75,7 @@ public class ChatActivity extends AppCompatActivity {
         String messageReceiverImage = (String) getIntent().getExtras().get("visit_image");
         InitializeControllers();
         userName.setText(messageReceiverName); // for chat bar
-        Picasso.get().load(messageReceiverImage).resize(50, 50).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
+        Picasso.get().load(messageReceiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
         SendMessageButton.setOnClickListener(view -> SendMessage());
         DisplayLastSeen();
         SendFilesButton.setOnClickListener(view -> {
@@ -89,15 +86,13 @@ public class ChatActivity extends AppCompatActivity {
             builder.setItems(options, (dialogInterface, i) -> {
                 if(i == 0) {
                     checker = "image";
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
                     startActivityForResult(Intent.createChooser(intent,"Select Image"),443); //443
                 }
                 if(i == 1) {
                     checker = "pdf";
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/pdf");
                     startActivityForResult(Intent.createChooser(intent,"Select PDF"),443);
                 }
@@ -121,8 +116,7 @@ public class ChatActivity extends AppCompatActivity {
                 }
                 if(i == 4) {
                     checker = "zip";
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/zip");
                     startActivityForResult(Intent.createChooser(intent,"Select Zip Files"),443);
                 }
