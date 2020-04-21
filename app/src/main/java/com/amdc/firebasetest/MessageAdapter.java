@@ -6,6 +6,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +37,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private List<Messages> userMessagesList;
     private String receiverImage;
     private StorageReference storageReference, reference;
+    static int positionSMS;
+//    static Messages messagesSMS;
 
     MessageAdapter(List<Messages> userMessagesList) {
         this.userMessagesList = userMessagesList;
@@ -72,6 +75,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         Context context = messageViewHolder.itemView.getContext();
         String messageSenderId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         Messages messages = userMessagesList.get(position);
+//        messagesSMS = messages;
         String fromUserID = messages.getFrom();
         String toUserID = messages.getTo();
         String fromMessageType = messages.getType();
@@ -204,14 +208,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                     request.setDestinationInExternalFilesDir(context, DIRECTORY_DOWNLOADS, fileName); //reference.getName()
                                     Objects.requireNonNull(downloadManager).enqueue(request);
                                 }).addOnFailureListener(e -> Toast.makeText(context, "Error download", Toast.LENGTH_SHORT).show());
-                            } if (i == 2) {
-                                deleteMessageForEveryOne(position, messageViewHolder);
-                                Intent intent = new Intent(context, MainActivity.class);
-                                context.startActivity(intent);
-                            } if (i == 3) {
-                                deleteSentMessage(position, messageViewHolder);
-                                Intent intent = new Intent(context, MainActivity.class);
-                                context.startActivity(intent);
+                            } if (i == 2) { deleteMessageForEveryOne(position, messageViewHolder);
+                            } if (i == 3) { deleteSentMessage(position, messageViewHolder);
                             }
                         });
                         builder.show();
@@ -225,18 +223,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                             if (i == 0) {
                                 ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
                                 Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
-                            } if (i == 1) {
-                                deleteMessageForEveryOne(position, messageViewHolder);
+                            } if (i == 1) { deleteMessageForEveryOne(position, messageViewHolder);
 //                                Intent chatIntent = new Intent(context, ChatActivity.class);
 //                                chatIntent.putExtra("visit_user_id", toUserID);
 //                                chatIntent.putExtra("visit_user_name", userToName);
 //                                chatIntent.putExtra("visit_image", userToImage);
 //                                context.startActivity(chatIntent);
-                            } if (i == 2) {
-                                deleteSentMessage(position, messageViewHolder);
-                                Intent intent = new Intent(context, MainActivity.class);
-                                context.startActivity(intent);
-                            }
+                            } if (i == 2) { deleteSentMessage(position, messageViewHolder); }
                         });
                         builder.show();
                         break;
@@ -250,15 +243,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 Intent intent = new Intent(context, ImageViewerActivity.class);
                                 intent.putExtra("url", userMessagesList.get(position).getMessage());
                                 context.startActivity(intent);
-                            } if (i == 1) {
-                                deleteMessageForEveryOne(position, messageViewHolder);
-                                Intent intent = new Intent(context, MainActivity.class);
-                                context.startActivity(intent);
-                            } if (i == 2) {
-                                deleteSentMessage(position, messageViewHolder);
-                                Intent intent = new Intent(context, MainActivity.class);
-                                context.startActivity(intent);
-                            }
+                            } if (i == 1) { deleteMessageForEveryOne(position, messageViewHolder);
+                            } if (i == 2) { deleteSentMessage(position, messageViewHolder); }
                         });
                         builder.show();
                         break;
@@ -297,11 +283,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                     request.setDestinationInExternalFilesDir(context, DIRECTORY_DOWNLOADS, fileName); //reference.getName()
                                     Objects.requireNonNull(downloadManager).enqueue(request);
                                 }).addOnFailureListener(e -> Toast.makeText(context, "Error download", Toast.LENGTH_SHORT).show());
-                            } if (i == 2) {
-                                deleteReceiverMessage(position, messageViewHolder);
-                                Intent intent = new Intent(context, MainActivity.class);
-                                context.startActivity(intent);
-                            }
+                            } if (i == 2) { deleteReceiverMessage(position, messageViewHolder); }
                         });
                         builder.show();
                         break;
@@ -314,11 +296,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                             if (i == 0) {
                                 ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
                                 Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
-                            } if (i == 1) {
-                                deleteReceiverMessage(position, messageViewHolder);
-                                Intent intent = new Intent(context, MainActivity.class);
-                                context.startActivity(intent);
-                            }
+                            } if (i == 1) { deleteReceiverMessage(position, messageViewHolder); }
                         });
                         builder.show();
                         break;
@@ -334,8 +312,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 context.startActivity(intent);
                             } if (i == 1) {
                                 deleteReceiverMessage(position, messageViewHolder);
-                                Intent intent = new Intent(context, MainActivity.class);
-                                context.startActivity(intent);
                             }
                         });
                         builder.show();
@@ -362,6 +338,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     private void deleteSentMessage(final int position, final MessageViewHolder holder) {
+        positionSMS = position;
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         rootRef.child("Messages").child(userMessagesList.get(position).getFrom())
                 .child(userMessagesList.get(position).getTo())
@@ -373,6 +350,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     private void deleteReceiverMessage(final int position, final MessageViewHolder holder) {
+        positionSMS = position;
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         rootRef.child("Messages").child(userMessagesList.get(position).getTo())
                 .child(userMessagesList.get(position).getFrom())
@@ -384,6 +362,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     private void deleteMessageForEveryOne(final int position, final MessageViewHolder holder) {
+        positionSMS = position;
         final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         final String type = userMessagesList.get(position).getType();
         final String messageID = userMessagesList.get(position).getMessageID();

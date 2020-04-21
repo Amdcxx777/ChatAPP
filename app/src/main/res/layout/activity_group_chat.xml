@@ -17,6 +17,7 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/group_chat_bar_layout"
         android:layout_above="@+id/myLinearLayout"
+        android:stackFromBottom="true"
         android:layout_marginBottom="6dp"/>
 
     <LinearLayout

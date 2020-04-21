@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import static com.amdc.firebasetest.MessageAdapter.positionSMS;
 
 public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageSenderID;
@@ -60,7 +61,6 @@ public class ChatActivity extends AppCompatActivity {
     private String saveCurrentTime, saveCurrentDate;
     private String checker = "", myUrl = "";
     private Uri fileUri;
-    private int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,11 +138,12 @@ public class ChatActivity extends AppCompatActivity {
             }
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                position = messagesList.size() - 1;
-                messagesList.remove(position);
-                messageAdapter.notifyDataSetChanged();
-                userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
-//                Toast.makeText(ChatActivity.this, "Position: " + dataSnapshot.getChildrenCount(), Toast.LENGTH_SHORT).show();
+                if(positionSMS != 0) {
+                    messagesList.remove(positionSMS);
+                    messageAdapter.notifyDataSetChanged();
+                    userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
+                    Toast.makeText(ChatActivity.this, "Position: " + positionSMS, Toast.LENGTH_SHORT).show();
+                }
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, String s) { }

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,9 +15,9 @@
         android:id="@+id/private_messages_list_of_users"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentEnd="true"
         android:layout_below="@+id/chat_toolbar"
         android:layout_above="@+id/chat_linear_layout"
+        android:stackFromBottom="true"
         android:layout_marginBottom="6dp"/>
 
     <RelativeLayout
@@ -53,7 +52,8 @@
             android:paddingVertical="13dp"
             android:maxLines="5"
             android:layout_toEndOf="@+id/send_files_btn"
-            android:layout_toStartOf="@+id/send_message_btn" />
+            android:layout_toStartOf="@+id/send_message_btn"
+            tools:ignore="Autofill,TextFields" />
 
 
         <ImageButton
@@ -64,7 +64,8 @@
             android:layout_marginEnd="3dp"
             android:layout_alignParentEnd="true"
             android:backgroundTint="@color/colorInput"
-            android:contentDescription="@string/todo" />
+            android:contentDescription="@string/todo"
+            tools:ignore="UnusedAttribute" />
     </RelativeLayout>
 
 </RelativeLayout>

@@ -69,6 +69,9 @@ public class RequestsFragment extends Fragment {
                         if (dataSnapshot.exists()) {
                             String type = (String) dataSnapshot.getValue();
                             if (Objects.equals(type, "received")) { // request type is received
+                                request_accept_btn = holder.itemView.findViewById(R.id.request_accept_btn); // button item from list
+                                request_accept_btn.setText("Accept"); // button text
+                                request_accept_btn.setBackgroundResource(R.drawable.btn_accept); // button background
                                 holder.itemView.findViewById(R.id.request_accept_btn).setOnClickListener(v -> { // button accept
                                     ContactsRef.child(currentUserID).child(Objects.requireNonNull(listUserID)).child("Contact").setValue("Saved").addOnCompleteListener(task -> {
                                         if (task.isSuccessful()) {

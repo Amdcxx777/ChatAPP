@@ -75,7 +75,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void ManageChatRequests() {
         ChatRequestRef.child(senderUserID).addValueEventListener(new ValueEventListener() {
-            @SuppressLint("SetTextI18n")
+            @SuppressLint({"SetTextI18n", "ResourceAsColor"})
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.hasChild(receiverUserID)) {
@@ -121,7 +121,7 @@ public class ProfileActivity extends AppCompatActivity {
         } else btnSendRequest.setVisibility(View.INVISIBLE); // button invisible if my account
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "ResourceAsColor"})
     private void RemoveSpecificContact() {
         ContactsRef.child(senderUserID).removeValue().addOnCompleteListener(task -> {
             if(task.isSuccessful()) {
@@ -138,7 +138,7 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "ResourceAsColor"})
     private void AcceptChatRequest() {
         ContactsRef.child(senderUserID).child(receiverUserID).child("Contacts").setValue("Saved").addOnCompleteListener(task -> {
             if(task.isSuccessful()) {
@@ -157,7 +157,7 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "ResourceAsColor"})
     private void SendChatRequest() {
         ChatRequestRef.child(senderUserID).child(receiverUserID).child("request_type").setValue("sent").addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -179,7 +179,7 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "ResourceAsColor"})
     private void CancelChatRequest() {
         ChatRequestRef.child(senderUserID).child(receiverUserID).removeValue().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {

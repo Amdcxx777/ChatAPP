@@ -31,6 +31,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import static com.amdc.firebasetest.GroupChatAdapter.positionGroupChatSMS;
+import static com.amdc.firebasetest.MessageAdapter.positionSMS;
+
 public class GroupChatActivity extends AppCompatActivity {
     private ImageButton SendMessageButton;
     private EditText userMessageInput;
@@ -71,8 +74,13 @@ public class GroupChatActivity extends AppCompatActivity {
             }
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                GroupChatActivity.this.startActivity(new Intent(GroupChatActivity.this, GroupChatActivity.class).putExtra("groupName" , currentGroupName));
-                Toast.makeText(GroupChatActivity.this, currentUserName +": deleted his message", Toast.LENGTH_SHORT).show();
+                if (positionGroupChatSMS != 0 ) {
+                    messagesList.remove(positionGroupChatSMS);
+                    groupChatAdapter.notifyDataSetChanged();
+                    userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
+//                GroupChatActivity.this.startActivity(new Intent(GroupChatActivity.this, GroupChatActivity.class).putExtra("groupName" , currentGroupName));
+                    Toast.makeText(GroupChatActivity.this, currentUserName + ": deleted his message", Toast.LENGTH_SHORT).show();
+                }
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
