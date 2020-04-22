@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
@@ -31,9 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-import static com.amdc.firebasetest.GroupChatAdapter.positionGroupChatSMS;
-import static com.amdc.firebasetest.MessageAdapter.positionSMS;
-
 public class GroupChatActivity extends AppCompatActivity {
     private ImageButton SendMessageButton;
     private EditText userMessageInput;
@@ -41,9 +37,8 @@ public class GroupChatActivity extends AppCompatActivity {
     private RecyclerView userMessagesList;
     private final List<Messages> messagesList = new ArrayList<>();
     private DatabaseReference UsersRef, GroupNameRef;
-    static String currentGroupName;
-    private String currentUserID;
-    private String currentUserName;
+    static String currentGroupName, currentUserID;
+    private String currentUserName, msmID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +55,7 @@ public class GroupChatActivity extends AppCompatActivity {
             SaveMessageInfoToDatabase();
             userMessageInput.setText("");
         });
+
         GroupNameRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -69,18 +65,16 @@ public class GroupChatActivity extends AppCompatActivity {
                 userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
             }
             @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                Toast.makeText(GroupChatActivity.this, "Child will be changed", Toast.LENGTH_SHORT).show();
-            }
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                if (positionGroupChatSMS != 0 ) {
-                    messagesList.remove(positionGroupChatSMS);
-                    groupChatAdapter.notifyDataSetChanged();
-                    userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
-//                GroupChatActivity.this.startActivity(new Intent(GroupChatActivity.this, GroupChatActivity.class).putExtra("groupName" , currentGroupName));
-                    Toast.makeText(GroupChatActivity.this, currentUserName + ": deleted his message", Toast.LENGTH_SHORT).show();
+                msmID = Objects.requireNonNull(dataSnapshot.getValue(Messages.class)).getMessageID();
+                for (int i = 0; i < messagesList.size(); i++) {
+                    if (msmID.equals(messagesList.get(i).getMessageID())) messagesList.remove(i);
                 }
+                groupChatAdapter.notifyDataSetChanged();
+                userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
+                Toast.makeText(GroupChatActivity.this, "User " + dataSnapshot.getValue(Messages.class).getName() + " deleted message", Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
@@ -126,6 +120,7 @@ public class GroupChatActivity extends AppCompatActivity {
             messageInfoMap.put("name", currentUserName);
             messageInfoMap.put("from", currentUserID);
             messageInfoMap.put("type", "sms");
+            messageInfoMap.put("action", "view");
             messageInfoMap.put("messageID", messageKEY);
             messageInfoMap.put("message", message);
             messageInfoMap.put("date", new SimpleDateFormat("dd.MM.yyyy").format(Calendar.getInstance().getTime()));

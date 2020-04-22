@@ -37,8 +37,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     private List<Messages> userMessagesList;
     private String receiverImage;
     private StorageReference storageReference, reference;
-    static int positionSMS;
-//    static Messages messagesSMS;
 
     MessageAdapter(List<Messages> userMessagesList) {
         this.userMessagesList = userMessagesList;
@@ -75,21 +73,20 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         Context context = messageViewHolder.itemView.getContext();
         String messageSenderId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         Messages messages = userMessagesList.get(position);
-//        messagesSMS = messages;
         String fromUserID = messages.getFrom();
-        String toUserID = messages.getTo();
+//        String toUserID = messages.getTo();
         String fromMessageType = messages.getType();
         DatabaseReference usersFromRef = FirebaseDatabase.getInstance().getReference().child("Users").child(fromUserID);
-        DatabaseReference usersToRef = FirebaseDatabase.getInstance().getReference().child("Users").child(toUserID);
-        usersToRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                userToName = (String) dataSnapshot.child("name").getValue();
-//                userToImage = (String) dataSnapshot.child("image").getValue();
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        });
+//        DatabaseReference usersToRef = FirebaseDatabase.getInstance().getReference().child("Users").child(toUserID);
+//        usersToRef.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+////                userToName = (String) dataSnapshot.child("name").getValue();
+////                userToImage = (String) dataSnapshot.child("image").getValue();
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) { }
+//        });
 
         usersFromRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -122,14 +119,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     messageViewHolder.senderMessageText.setVisibility(View.VISIBLE);
                     messageViewHolder.senderMessageTime.setVisibility(View.VISIBLE);
 
-                    messageViewHolder.senderMessageText.setBackgroundResource(R.drawable.sender_messages_layout);
+                    messageViewHolder.senderMessageText.setBackgroundResource(R.drawable.receiver_messages_layout); // receiver_messages_layout
                     messageViewHolder.senderMessageText.setText(messages.getMessage());
                     messageViewHolder.senderMessageTime.setText(messages.getTime() + " - " + messages.getDate());
                 } else {
                     messageViewHolder.receiverProfileImage.setVisibility(View.VISIBLE);
                     messageViewHolder.receiverMessageText.setVisibility(View.VISIBLE);
                     messageViewHolder.receiverMessageTime.setVisibility(View.VISIBLE);
-                    messageViewHolder.receiverMessageText.setBackgroundResource(R.drawable.receiver_messages_layout);
+                    messageViewHolder.receiverMessageText.setBackgroundResource(R.drawable.sender_messages_layout); // sender_messages_layout
                     messageViewHolder.receiverMessageText.setText(messages.getMessage());
                     messageViewHolder.receiverMessageTime.setText(messages.getTime() + " - " + messages.getDate());
                 } break;
@@ -224,11 +221,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                                 ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
                                 Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
                             } if (i == 1) { deleteMessageForEveryOne(position, messageViewHolder);
-//                                Intent chatIntent = new Intent(context, ChatActivity.class);
-//                                chatIntent.putExtra("visit_user_id", toUserID);
-//                                chatIntent.putExtra("visit_user_name", userToName);
-//                                chatIntent.putExtra("visit_image", userToImage);
-//                                context.startActivity(chatIntent);
                             } if (i == 2) { deleteSentMessage(position, messageViewHolder); }
                         });
                         builder.show();
@@ -338,7 +330,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     private void deleteSentMessage(final int position, final MessageViewHolder holder) {
-        positionSMS = position;
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         rootRef.child("Messages").child(userMessagesList.get(position).getFrom())
                 .child(userMessagesList.get(position).getTo())
@@ -350,7 +341,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     private void deleteReceiverMessage(final int position, final MessageViewHolder holder) {
-        positionSMS = position;
         DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         rootRef.child("Messages").child(userMessagesList.get(position).getTo())
                 .child(userMessagesList.get(position).getFrom())
@@ -362,7 +352,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     private void deleteMessageForEveryOne(final int position, final MessageViewHolder holder) {
-        positionSMS = position;
         final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         final String type = userMessagesList.get(position).getType();
         final String messageID = userMessagesList.get(position).getMessageID();

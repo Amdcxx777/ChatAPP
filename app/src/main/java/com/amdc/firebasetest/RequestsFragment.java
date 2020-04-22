@@ -174,7 +174,7 @@ public class RequestsFragment extends Fragment {
                                         holder.userName.setText((String) dataSnapshot.child("name").getValue());
                                         holder.userStatus.setText("request to " + dataSnapshot.child("name").getValue());
                                         holder.itemView.setOnClickListener(view -> {
-                                            CharSequence[] options12 = new CharSequence[] { "Cancel Chat Request"};
+                                            CharSequence[] options12 = new CharSequence[] { "Cancel Chat Request" };
                                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext()); //всплывающее меню
                                             builder.setTitle("Already Sent Request"); //заголовок всплывающего меню
                                             builder.setItems(options12, (dialogInterface, i) -> {

@@ -13,6 +13,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -30,12 +32,10 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
     private List<Messages> userMessagesList;
     private DatabaseReference rootRef;
     private FirebaseAuth mAuth;
-    static int positionGroupChatSMS;
 
     GroupChatAdapter(List<Messages> userMessagesList) {
         this.userMessagesList = userMessagesList;
     }
-
     static class GroupMessageViewHolder extends RecyclerView.ViewHolder {
         private TextView displayTextMessages, displayNameMessages, displayTimeMessages;
         CircleImageView profileImage;
@@ -90,11 +90,11 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
                         ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
                         Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
                     }
-                    if (i == 1) {
-                        deleteSentMessage(position, holder);
-//                        Intent groupChatIntent = new Intent(holder.itemView.getContext(), GroupChatActivity.class);
-//                        groupChatIntent.putExtra("groupName" , currentGroupName);
-//                        holder.itemView.getContext().startActivity(groupChatIntent);
+                    if (i == 1) { // delete message
+                        rootRef.child("Groups").child(currentGroupName).child(userMessagesList.get(position).getMessageID()).removeValue().addOnCompleteListener(task -> {
+                            if(task.isSuccessful()) Toast.makeText(holder.itemView.getContext(),"Deleted Successfully.",Toast.LENGTH_SHORT).show();
+                            else Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
+                        });
                     }
                 });
                 builder.show();
@@ -117,15 +117,6 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
                 builder.show();
             });
         }
-    }
-
-    private void deleteSentMessage(final int position, final GroupMessageViewHolder holder) {
-        positionGroupChatSMS = position;
-        rootRef.child("Groups").child(currentGroupName).child(userMessagesList.get(position)
-                .getMessageID()).removeValue().addOnCompleteListener(task -> {
-            if(task.isSuccessful()) Toast.makeText(holder.itemView.getContext(),"Deleted Successfully.",Toast.LENGTH_SHORT).show();
-            else Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
-        });
     }
 
     @Override

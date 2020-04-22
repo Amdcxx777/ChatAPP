@@ -45,7 +45,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import static com.amdc.firebasetest.MessageAdapter.positionSMS;
 
 public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageSenderID;
@@ -59,7 +58,7 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView userMessagesList;
     private ProgressDialog loadingBar;
     private String saveCurrentTime, saveCurrentDate;
-    private String checker = "", myUrl = "";
+    private String checker = "", myUrl = "", msmID;
     private Uri fileUri;
 
     @Override
@@ -138,12 +137,13 @@ public class ChatActivity extends AppCompatActivity {
             }
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                if(positionSMS != 0) {
-                    messagesList.remove(positionSMS);
+                msmID = Objects.requireNonNull(dataSnapshot.getValue(Messages.class)).getMessageID();
+                for (int i = 0; i < messagesList.size(); i++) {
+                    if (msmID.equals(messagesList.get(i).getMessageID())) messagesList.remove(i);
+                }
                     messageAdapter.notifyDataSetChanged();
                     userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
-                    Toast.makeText(ChatActivity.this, "Position: " + positionSMS, Toast.LENGTH_SHORT).show();
-                }
+                    Toast.makeText(ChatActivity.this, dataSnapshot.getValue(Messages.class).getName() + " deleted message", Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, String s) { }
