@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -35,8 +36,12 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.squareup.picasso.Picasso;
 
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +49,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.amdc.firebasetest.Decryption.decryptedBytes;
+import static com.amdc.firebasetest.Encryption.encryptedBytes;
 
 public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageSenderID;
@@ -127,23 +139,23 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 Messages messages = dataSnapshot.getValue(Messages.class);
+                try { new Decryption(Objects.requireNonNull(messages).getMessage()); } // message decrypted method
+                catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e) { Toast.makeText(ChatActivity.this, "Error decrypt", Toast.LENGTH_SHORT).show(); }
+                Objects.requireNonNull(messages).setMessage(new String(decryptedBytes, StandardCharsets.UTF_8)); // set decrypted message
                 messagesList.add(messages);
                 messageAdapter.notifyDataSetChanged();
                 userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
             }
             @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, String s) {
-                Toast.makeText(ChatActivity.this, "Child changed", Toast.LENGTH_SHORT).show();
-            }
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, String s) { }
             @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                msmID = Objects.requireNonNull(dataSnapshot.getValue(Messages.class)).getMessageID();
-                for (int i = 0; i < messagesList.size(); i++) {
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) { //when message was deleted
+                msmID = Objects.requireNonNull(dataSnapshot.getValue(Messages.class)).getMessageID(); // ID deleted message
+                for (int i = 0; i < messagesList.size(); i++) { //search deleted message from message list
                     if (msmID.equals(messagesList.get(i).getMessageID())) messagesList.remove(i);
                 }
                     messageAdapter.notifyDataSetChanged();
                     userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
-                    Toast.makeText(ChatActivity.this, dataSnapshot.getValue(Messages.class).getName() + " deleted message", Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, String s) { }
@@ -267,15 +279,9 @@ public class ChatActivity extends AppCompatActivity {
                     String date = (String) dataSnapshot.child("userState").child("date").getValue();
                     String time = (String) dataSnapshot.child("userState").child("time").getValue();
                     assert state != null;
-                    if (state.equals("online")) {
-                        userLastSeen.setText("online");
-                    }
-                    else if (state.equals("offline")) {
-                        userLastSeen.setText("Last Seen: " + time + " - " + date);
-                    }
-                } else {
-                    userLastSeen.setText("offline");
-                }
+                    if (state.equals("online"))  userLastSeen.setText("online");
+                    else if (state.equals("offline"))  userLastSeen.setText("Last Seen: " + time + " - " + date);
+                } else userLastSeen.setText("offline");
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
@@ -284,15 +290,18 @@ public class ChatActivity extends AppCompatActivity {
 
     private void SendMessage() {
         String messageText = MessageInputText.getText().toString();
-        if (TextUtils.isEmpty(messageText)) {
-            Toast.makeText(this, "first write your message...", Toast.LENGTH_SHORT).show();
-        } else {
+        if (TextUtils.isEmpty(messageText)) Toast.makeText(this, "first write your message...", Toast.LENGTH_SHORT).show();
+        else {
+            try { new Encryption(messageText);
+            } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException ex) {
+                Toast.makeText(this, "Key not valid", Toast.LENGTH_SHORT).show();
+            }
             String messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
             String messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
             DatabaseReference userMessageKeyRef = RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).push();
             String messagePushID = userMessageKeyRef.getKey();
             Map<String, String> messageTextBody = new HashMap<>();
-            messageTextBody.put("message", messageText);
+            messageTextBody.put("message", Arrays.toString(encryptedBytes)); // crypt text for send to firebase
             messageTextBody.put("type", "text");
             messageTextBody.put("from", messageSenderID);
             messageTextBody.put("to", messageReceiverID);

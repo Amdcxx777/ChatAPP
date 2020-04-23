@@ -69,12 +69,7 @@ public class MainActivity extends AppCompatActivity {
             VerifyUserExistence();
         }
     }
-//    @Override
-//    protected void onStop() {
-//        super.onStop();
-//        FirebaseUser currentUser = mAuth.getCurrentUser();
-//        if (currentUser != null) updateUserStatus("online");
-//    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -102,17 +97,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) { // item menu
         super.onOptionsItemSelected(item);
         if(item.getItemId() == R.id.main_create_group_option) RequestNewGroup();
         if(item.getItemId() == R.id.main_settings_option) SendUserToSettingsActivity();
         if (item.getItemId() == R.id.main_find_friends_option) SendUserToFindFriendsActivity();
-        if(item.getItemId() == R.id.main_logout_option) {
+        if(item.getItemId() == R.id.main_logout_option) RequestLogOut();
+        return true;
+    }
+
+    private void RequestLogOut() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.AlertDialog);
+        builder.setTitle("Are you sure you want to log out?");
+        builder.setPositiveButton("Exit", (dialogInterface, i) -> {
             updateUserStatus("offline");
             mAuth.signOut();
             SendUserToLoginActivity();
-        }
-        return true;
+        });
+        builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
+        builder.show();
     }
 
     private void RequestNewGroup() { // menu
