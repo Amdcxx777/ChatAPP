@@ -23,7 +23,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -66,7 +65,7 @@ public class ChatActivity extends AppCompatActivity {
     private ImageButton SendMessageButton, SendFilesButton;
     private EditText MessageInputText;
     private final List<Messages> messagesList = new ArrayList<>();
-    private MessageAdapter messageAdapter;
+    private ChatAdapter messageAdapter;
     private RecyclerView userMessagesList;
     private ProgressDialog loadingBar;
     private String saveCurrentTime, saveCurrentDate;
@@ -181,7 +180,7 @@ public class ChatActivity extends AppCompatActivity {
         SendMessageButton = findViewById(R.id.send_message_btn);
         SendFilesButton = findViewById(R.id.send_files_btn);
         MessageInputText = findViewById(R.id.input_message);
-        messageAdapter = new MessageAdapter(messagesList);
+        messageAdapter = new ChatAdapter(messagesList);
         userMessagesList = findViewById(R.id.private_messages_list_of_users);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         userMessagesList.setLayoutManager(linearLayoutManager);

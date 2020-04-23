@@ -74,7 +74,7 @@ public class GroupChatActivity extends AppCompatActivity {
                 }
                 groupChatAdapter.notifyDataSetChanged();
                 userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
-                Toast.makeText(GroupChatActivity.this, "User " + dataSnapshot.getValue(Messages.class).getName() + " deleted message", Toast.LENGTH_SHORT).show();
+                Toast.makeText(GroupChatActivity.this, "User " + Objects.requireNonNull(dataSnapshot.getValue(Messages.class)).getName() + " deleted message", Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }

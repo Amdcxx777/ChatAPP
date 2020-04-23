@@ -29,16 +29,16 @@ import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class ChatsFragment extends Fragment {
+public class ChatFragment extends Fragment {
     private RecyclerView chatsList;
     private DatabaseReference ChatsRef, UsersRef;
     private String currentUserID = "";
-    public ChatsFragment() {
+    public ChatFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View privateChatsView = inflater.inflate(R.layout.fragment_chats, container, false);
+        View privateChatsView = inflater.inflate(R.layout.fragment_chat, container, false);
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {currentUserID = currentUser.getUid();}

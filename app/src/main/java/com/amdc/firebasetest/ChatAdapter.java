@@ -6,7 +6,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,12 +32,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
 
-public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
+public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHolder> {
     private List<Messages> userMessagesList;
     private String receiverImage;
     private StorageReference storageReference, reference;
 
-    MessageAdapter(List<Messages> userMessagesList) {
+    ChatAdapter(List<Messages> userMessagesList) {
         this.userMessagesList = userMessagesList;
     }
 
@@ -189,7 +188,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                             if (i == 0) {
                                 String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType(); //get name file from storage
                                 String fileName = Uri.parse(userMessagesList.get(position).getName()).toString(); //get name file from user into firebase (getLastPathSegment())
-                                Intent intent = new Intent(context, FilesViewerActivity.class);
+                                Intent intent = new Intent(context, ViewerFilesActivity.class);
                                 intent.putExtra("fileNameForDownload", fileNameForDownload);
                                 intent.putExtra("fileName", fileName);
                                 context.startActivity(intent);
@@ -232,7 +231,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         builder.setTitle("View/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
-                                Intent intent = new Intent(context, ImageViewerActivity.class);
+                                Intent intent = new Intent(context, ViewerImagesActivity.class);
                                 intent.putExtra("url", userMessagesList.get(position).getMessage());
                                 context.startActivity(intent);
                             } if (i == 1) { deleteMessageForEveryOne(position, messageViewHolder);
@@ -259,7 +258,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                             if (i == 0) {
                                 String fileNameForDownload = userMessagesList.get(position).getMessageID() + "." + userMessagesList.get(position).getType(); //get name file from storage
                                 String fileName = Uri.parse(userMessagesList.get(position).getName()).toString(); //get name file from user into firebase (getLastPathSegment())
-                                Intent intent = new Intent(context, FilesViewerActivity.class);
+                                Intent intent = new Intent(context, ViewerFilesActivity.class);
                                 intent.putExtra("fileNameForDownload", fileNameForDownload);
                                 intent.putExtra("fileName", fileName);
                                 context.startActivity(intent);
@@ -299,7 +298,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                         builder.setTitle("View/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
-                                Intent intent = new Intent(context, ImageViewerActivity.class);
+                                Intent intent = new Intent(context, ViewerImagesActivity.class);
                                 intent.putExtra("url", userMessagesList.get(position).getMessage());
                                 context.startActivity(intent);
                             } if (i == 1) {

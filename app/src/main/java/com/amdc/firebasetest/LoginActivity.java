@@ -43,7 +43,7 @@ public class LoginActivity extends AppCompatActivity {
         NeedNewAccountLink.setOnClickListener(view -> SendUserToRegisterActivity());
         LoginButton.setOnClickListener(view -> AllowUserToLogin());
         PhoneLoginButton.setOnClickListener(view -> {
-            Intent phoneLoginIntent = new Intent(LoginActivity.this, PhoneLoginActivity.class);
+            Intent phoneLoginIntent = new Intent(LoginActivity.this, LoginPhoneActivity.class);
             startActivity(phoneLoginIntent);
         });
     }

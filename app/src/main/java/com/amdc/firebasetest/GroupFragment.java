@@ -23,12 +23,12 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class GroupsFragment extends Fragment {
+public class GroupFragment extends Fragment {
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> list_of_groups = new ArrayList<>();
     private DatabaseReference GroupRef;
 
-    public GroupsFragment() {
+    public GroupFragment() {
     }
 
     @Override

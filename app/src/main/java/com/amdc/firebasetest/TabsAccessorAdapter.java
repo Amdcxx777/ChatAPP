@@ -16,9 +16,9 @@ public class TabsAccessorAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return new ChatsFragment();
+                return new ChatFragment();
             case 1:
-                return new GroupsFragment();
+                return new GroupFragment();
             case 2:
                 return new ContactsFragment();
             case 3:

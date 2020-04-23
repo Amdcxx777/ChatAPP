@@ -9,10 +9,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
-import android.view.WindowManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -23,7 +21,7 @@ import java.util.Objects;
 
 import static android.os.Environment.DIRECTORY_DOWNLOADS;
 
-public class FilesViewerActivity extends AppCompatActivity {
+public class ViewerFilesActivity extends AppCompatActivity {
     StorageReference storageReference, reference;
     ProgressBar progressBar;
     WebView webView;
@@ -32,7 +30,7 @@ public class FilesViewerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_files_viewer);
+        setContentView(R.layout.activity_viewer_files);
 
         webView = findViewById(R.id.webView);
         progressBar = findViewById(R.id.progressBar);
@@ -50,10 +48,10 @@ public class FilesViewerActivity extends AppCompatActivity {
         storageReference = FirebaseStorage.getInstance().getReference();
         reference = storageReference.child("Document Files").child(fileNameForDownload);
         reference.getDownloadUrl().addOnSuccessListener(uri -> {
-            DownloadManager downloadManager = (DownloadManager) FilesViewerActivity.this.getSystemService(Context.DOWNLOAD_SERVICE);
+            DownloadManager downloadManager = (DownloadManager) ViewerFilesActivity.this.getSystemService(Context.DOWNLOAD_SERVICE);
             DownloadManager.Request request = new DownloadManager.Request(uri);
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            request.setDestinationInExternalFilesDir(FilesViewerActivity.this, DIRECTORY_DOWNLOADS, fileName);
+            request.setDestinationInExternalFilesDir(ViewerFilesActivity.this, DIRECTORY_DOWNLOADS, fileName);
             downloadManager.enqueue(request);
             lookingFile(uri);
         }).addOnFailureListener(e -> Toast.makeText(this, "Error download", Toast.LENGTH_SHORT).show());

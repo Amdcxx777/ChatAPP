@@ -12,13 +12,13 @@ import com.squareup.picasso.Picasso;
 
 import java.util.Objects;
 
-public class ImageViewerActivity extends AppCompatActivity {
+public class ViewerImagesActivity extends AppCompatActivity {
 
     @SuppressLint("ResourceType")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_image_viewer);
+        setContentView(R.layout.activity_viewer_image);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
         setSupportActionBar(findViewById(R.id.image_toolbar)); // my toolbar

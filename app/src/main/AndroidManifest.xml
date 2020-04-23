@@ -13,7 +13,7 @@
         android:roundIcon="@drawable/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".FilesViewerActivity" />
+        <activity android:name=".ViewerFilesActivity" />
         <activity
             android:name=".ChatActivity"
             android:parentActivityName=".MainActivity" />
@@ -22,9 +22,9 @@
         <activity android:name=".ProfileActivity" />
         <activity android:name=".SettingsActivity" />
         <activity android:name=".RegisterActivity" />
-        <activity android:name=".PhoneLoginActivity" />
+        <activity android:name=".LoginPhoneActivity" />
         <activity android:name=".LoginActivity" />
-        <activity android:name=".ImageViewerActivity" />
+        <activity android:name=".ViewerImagesActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
