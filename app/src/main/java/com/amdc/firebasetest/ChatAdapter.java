@@ -73,20 +73,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
         String messageSenderId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         Messages messages = userMessagesList.get(position);
         String fromUserID = messages.getFrom();
-//        String toUserID = messages.getTo();
         String fromMessageType = messages.getType();
         DatabaseReference usersFromRef = FirebaseDatabase.getInstance().getReference().child("Users").child(fromUserID);
-//        DatabaseReference usersToRef = FirebaseDatabase.getInstance().getReference().child("Users").child(toUserID);
-//        usersToRef.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-////                userToName = (String) dataSnapshot.child("name").getValue();
-////                userToImage = (String) dataSnapshot.child("image").getValue();
-//            }
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) { }
-//        });
-
         usersFromRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -181,7 +169,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                     case "xlsx":
                     case "doc":
                     case "docx": {
-                        CharSequence[] options = new CharSequence[] {"Download and View this Document", "Download this Document", "Delete From Everywhere", "Delete Only From Me", "Cancel"};
+                        CharSequence[] options = new CharSequence[] {"Download and View this Document", "Download this Document", "Delete from Everywhere", "Delete only from Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("Download/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
@@ -212,9 +200,9 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                         break;
                     }
                     case "text": { // sender messages for text
-                        CharSequence[] options = new CharSequence[]{"Copy text message", "Delete From Everywhere", "Delete Only From Me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"Copy text message", "Delete from Everywhere", "Delete only from Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                        builder.setTitle("Cory/Delete Message").setIcon(R.drawable.delete);
+                        builder.setTitle("Copy/Delete Message").setIcon(R.drawable.delete);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
                                 ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
@@ -226,7 +214,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                         break;
                     }
                     case "image": { // sender messages for image
-                        CharSequence[] options = new CharSequence[]{"View This Image", "Delete From Everywhere", "Delete Only From Me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"View this Image", "Delete from Everywhere", "Delete only from Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("View/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
@@ -251,7 +239,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                     case "xlsx":
                     case "doc":
                     case "docx": {
-                        CharSequence[] options = new CharSequence[]{"Download and View this Document", "Download this Document", "Delete only From Me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"Download and View this Document", "Download this Document", "Delete only from Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("Download/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
@@ -280,7 +268,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                         break;
                     }
                     case "text": {
-                        CharSequence[] options = new CharSequence[]{"Copy text message", "Delete From  Me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"Copy text message", "Delete from  Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("Copy/Delete Message").setIcon(R.drawable.delete);
                         builder.setItems(options, (dialogInterface, i) -> {
@@ -293,7 +281,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                         break;
                     }
                     case "image": {
-                        CharSequence[] options = new CharSequence[]{"View this Image", "Delete From Me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"View this Image", "Delete from Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("View/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
