@@ -92,6 +92,7 @@ public class GroupChatActivity extends AppCompatActivity {
         groupChatAdapter = new GroupChatAdapter(messagesList);
         userMessagesList = findViewById(R.id.private_messages_list_from_users);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setStackFromEnd(true); //  item into list gravity from end to up
         userMessagesList.setLayoutManager(linearLayoutManager);
         userMessagesList.setAdapter(groupChatAdapter);
     }

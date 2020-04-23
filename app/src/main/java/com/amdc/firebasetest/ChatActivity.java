@@ -183,6 +183,7 @@ public class ChatActivity extends AppCompatActivity {
         messageAdapter = new ChatAdapter(messagesList);
         userMessagesList = findViewById(R.id.private_messages_list_of_users);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setStackFromEnd(true); //  item into list gravity from end to up
         userMessagesList.setLayoutManager(linearLayoutManager);
         userMessagesList.setAdapter(messageAdapter);
         saveCurrentDate = new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(Calendar.getInstance().getTime());

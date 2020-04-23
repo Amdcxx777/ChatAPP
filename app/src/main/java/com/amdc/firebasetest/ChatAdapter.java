@@ -355,11 +355,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                         storageReference = FirebaseStorage.getInstance().getReference();
                         if (type.equals("text")) {
                             Toast.makeText(holder.itemView.getContext(), "Message Deleted Successfully.", Toast.LENGTH_SHORT).show();
-//                            Intent chatIntent = new Intent(holder.itemView.getContext(), ChatActivity.class); //renew intent with deleted message
-//                            chatIntent.putExtra("visit_user_id", toUserID);
-//                            chatIntent.putExtra("visit_user_name", userToName);
-//                            chatIntent.putExtra("visit_image", userToImage);
-//                            holder.itemView.getContext().startActivity(chatIntent);
                         } else {
                             if (type.equals("image")) { //for image
                                 String fileNameForDownload = messageID + ".jpg"; //name file form storage
