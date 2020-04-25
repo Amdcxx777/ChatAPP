@@ -1,17 +1,11 @@
 package com.amdc.firebasetest;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -21,6 +15,14 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,7 +37,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
 import com.squareup.picasso.Picasso;
 
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -54,7 +55,7 @@ import javax.crypto.NoSuchPaddingException;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.amdc.firebasetest.Decryption.decryptedBytes;
+import static com.amdc.firebasetest.Decryption.decryptedSMS;
 import static com.amdc.firebasetest.Encryption.encryptedBytes;
 
 public class ChatActivity extends AppCompatActivity {
@@ -72,6 +73,7 @@ public class ChatActivity extends AppCompatActivity {
     private String checker = "", myUrl = "", msmID;
     private Uri fileUri;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,7 +112,7 @@ public class ChatActivity extends AppCompatActivity {
                     checker = "xls";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    final String[] mineTypes = {"application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"};
+                    final String[] mineTypes = {"application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}; // filter xml files
                     intent.setType("*/*");
                     intent.putExtra(Intent.EXTRA_MIME_TYPES, mineTypes);
                     startActivityForResult(Intent.createChooser(intent,"Select Excel Files"),443);
@@ -119,7 +121,7 @@ public class ChatActivity extends AppCompatActivity {
                     checker = "doc";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    final String[] mineTypes = {"application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document"};
+                    final String[] mineTypes = {"application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document"}; // filter word files
                     intent.setType("*/*");
                     intent.putExtra(Intent.EXTRA_MIME_TYPES, mineTypes);
                     startActivityForResult(Intent.createChooser(intent,"Select Word Files"),443);
@@ -140,7 +142,7 @@ public class ChatActivity extends AppCompatActivity {
                 Messages messages = dataSnapshot.getValue(Messages.class);
                 try { new Decryption(Objects.requireNonNull(messages).getMessage()); } // message decrypted method
                 catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e) { Toast.makeText(ChatActivity.this, "Error decrypt", Toast.LENGTH_SHORT).show(); }
-                Objects.requireNonNull(messages).setMessage(new String(decryptedBytes, StandardCharsets.UTF_8)); // set decrypted message
+                Objects.requireNonNull(messages).setMessage(decryptedSMS); // set decrypted message
                 messagesList.add(messages);
                 messageAdapter.notifyDataSetChanged();
                 userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
@@ -288,6 +290,7 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private void SendMessage() {
         String messageText = MessageInputText.getText().toString();
         if (TextUtils.isEmpty(messageText)) Toast.makeText(this, "first write your message...", Toast.LENGTH_SHORT).show();

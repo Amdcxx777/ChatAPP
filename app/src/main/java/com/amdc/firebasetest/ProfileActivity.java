@@ -1,6 +1,7 @@
 package com.amdc.firebasetest;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
@@ -116,7 +117,16 @@ public class ProfileActivity extends AppCompatActivity {
                 if(Current_State.equals("new")) SendChatRequest();
                 if(Current_State.equals("request_send")) CancelChatRequest();
                 if(Current_State.equals("request_received")) AcceptChatRequest();
-                if(Current_State.equals("friends")) RemoveSpecificContact();
+                if(Current_State.equals("friends")) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialog); // alert dialog
+                    builder.setTitle("Are you sure? All messages with it will be deleted!");
+                    builder.setPositiveButton("Remove contact", (dialogInterface, i) -> RemoveSpecificContact());
+                    builder.setNegativeButton("Cancel", (dialogInterface, i) -> {
+                        dialogInterface.cancel();
+                        btnSendRequest.setEnabled(true);
+                    });
+                    builder.show();
+                }
             });
         } else btnSendRequest.setVisibility(View.INVISIBLE); // button invisible if my account
     }
