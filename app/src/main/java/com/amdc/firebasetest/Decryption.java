@@ -11,7 +11,7 @@ import javax.crypto.spec.SecretKeySpec;
 @SuppressLint("Registered")
 public class Decryption extends ChatActivity{
     static String decryptedSMS;
-    public Decryption(String sms) throws Exception {
+    public Decryption(String sms, String name) throws Exception {
         @SuppressLint("GetInstance")
         String[] msg = sms.substring(1, sms.length() - 1).split(", ");
         byte[] msgByte = new byte[msg.length];
@@ -25,7 +25,6 @@ public class Decryption extends ChatActivity{
         System.arraycopy(msgByte, 4, decText, 2, 1);
         System.arraycopy(msgByte, 6, decText, 3, 1);
         System.arraycopy(msgByte, 8, decText, 4, 12);
-
         byte[] decSol = new byte[4];
         System.arraycopy(msgByte, 1, decSol, 0, 1);
         System.arraycopy(msgByte, 3, decSol, 1, 1);
@@ -37,9 +36,8 @@ public class Decryption extends ChatActivity{
         System.arraycopy(part, 0, outKeySold, 0, part.length);
         System.arraycopy(decSol, 0, outKeySold, part.length, decSol.length);
         IvParameterSpec ivSpec = new IvParameterSpec(outKeySold);
-
         String transformation = "AES/CBC/PKCS5Padding";
-        SecretKeySpec key = new SecretKeySpec("5afzRx0owl7oDDE6".getBytes(), "ECB");
+        SecretKeySpec key = new SecretKeySpec(name.getBytes(), "ECB");
         Cipher decryptCipher = Cipher.getInstance(transformation);
         decryptCipher.init(Cipher.DECRYPT_MODE, key, ivSpec);
         try {

@@ -146,7 +146,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 Messages messages = dataSnapshot.getValue(Messages.class);
-                try { new Decryption(Objects.requireNonNull(messages).getMessage()); } // message decrypted method
+                try { new Decryption(Objects.requireNonNull(messages).getMessage(), "5afzRx0owl7oDDE6"); } // message decrypted method
                 catch (Exception e) { Toast.makeText(ChatActivity.this, "Error decrypt", Toast.LENGTH_SHORT).show(); }
                 Objects.requireNonNull(messages).setMessage(decryptedSMS); // set decrypted message
                 messagesList.add(messages);
@@ -301,7 +301,7 @@ public class ChatActivity extends AppCompatActivity {
         String messageText = MessageInputText.getText().toString();
         if (TextUtils.isEmpty(messageText)) Toast.makeText(this, "first write your message...", Toast.LENGTH_SHORT).show();
         else {
-            try { new Encryption(messageText);
+            try { new Encryption(messageText, "5afzRx0owl7oDDE6");
             } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException ex) {
                 Toast.makeText(this, "Key not valid", Toast.LENGTH_SHORT).show();
             }
