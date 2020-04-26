@@ -1,9 +1,6 @@
 package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
 
 import java.security.SecureRandom;
 
@@ -15,11 +12,10 @@ import javax.crypto.spec.SecretKeySpec;
 public class Encryption extends ChatActivity{
     static byte[] encryptedBytes;
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("GetInstance")
     public Encryption(String sms, String name) throws Exception {
         byte[] rnd = new byte[4];
-        SecureRandom.getInstanceStrong().nextBytes(rnd);
+        new SecureRandom().nextBytes(rnd);
         byte[] part = "uPidBkle+PUr".getBytes();
         byte[] outKeySold = new byte[16];
         System.arraycopy(part, 0, outKeySold, 0, part.length);
@@ -39,6 +35,6 @@ public class Encryption extends ChatActivity{
         System.arraycopy(rnd, 2, encryptedBytes, 5, 1);
         System.arraycopy(encode, 3, encryptedBytes, 6, 1);
         System.arraycopy(rnd, 3, encryptedBytes, 7, 1);
-        System.arraycopy(encode, 4, encryptedBytes, 8, 12);
+        System.arraycopy(encode, 4, encryptedBytes, 8, encode.length - 4);
     }
 }

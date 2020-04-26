@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:title="@string/view_without_security_key"
+        android:id="@+id/view_without_security_key"
+        app:showAsAction="never"> </item>
+
+    <item
+        android:title="@string/create_new_security_key"
+        android:id="@+id/create_new_security_key"
+        app:showAsAction="never"> </item>
+
+    <item
+        android:title="@string/settings"
+        android:id="@+id/chat_settings_option"
+        app:showAsAction="never"> </item>
+
+</menu>

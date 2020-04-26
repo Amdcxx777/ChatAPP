@@ -19,18 +19,17 @@ public class Decryption extends ChatActivity{
             try { msgByte[i] = Byte.parseByte(msg[i]);
             } catch (Exception ignored) {}
         }
-        byte[] decText = new byte[16];
+        byte[] decText = new byte[msgByte.length - 4];
         System.arraycopy(msgByte, 0, decText, 0, 1);
         System.arraycopy(msgByte, 2, decText, 1, 1);
         System.arraycopy(msgByte, 4, decText, 2, 1);
         System.arraycopy(msgByte, 6, decText, 3, 1);
-        System.arraycopy(msgByte, 8, decText, 4, 12);
+        System.arraycopy(msgByte, 8, decText, 4, msgByte.length - 8);
         byte[] decSol = new byte[4];
         System.arraycopy(msgByte, 1, decSol, 0, 1);
         System.arraycopy(msgByte, 3, decSol, 1, 1);
         System.arraycopy(msgByte, 5, decSol, 2, 1);
         System.arraycopy(msgByte, 7, decSol, 3, 1);
-
         byte[] part = "uPidBkle+PUr".getBytes();
         byte[] outKeySold = new byte[16];
         System.arraycopy(part, 0, outKeySold, 0, part.length);
@@ -40,10 +39,8 @@ public class Decryption extends ChatActivity{
         SecretKeySpec key = new SecretKeySpec(name.getBytes(), "ECB");
         Cipher decryptCipher = Cipher.getInstance(transformation);
         decryptCipher.init(Cipher.DECRYPT_MODE, key, ivSpec);
-        try {
-            byte[] decryptedBytes = decryptCipher.doFinal(decText);
+        try { byte[] decryptedBytes = decryptCipher.doFinal(decText);
             decryptedSMS = new String(decryptedBytes, StandardCharsets.UTF_8);
-        }
-        catch (Exception e) { decryptedSMS = sms;}
+        } catch (Exception e) { decryptedSMS = sms;}
     }
 }

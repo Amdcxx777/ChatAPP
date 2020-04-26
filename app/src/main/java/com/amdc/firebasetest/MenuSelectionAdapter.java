@@ -6,8 +6,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-public class TabsAccessorAdapter extends FragmentPagerAdapter {
-    TabsAccessorAdapter(@NonNull FragmentManager fm) {
+public class MenuSelectionAdapter extends FragmentPagerAdapter {
+    MenuSelectionAdapter(@NonNull FragmentManager fm) {
         super(fm);
     }
 

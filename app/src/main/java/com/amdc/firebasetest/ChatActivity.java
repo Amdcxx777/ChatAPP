@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -169,6 +171,22 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.chat_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) { // item menu
+        super.onOptionsItemSelected(item);
+        if(item.getItemId() == R.id.view_without_security_key);
+        if(item.getItemId() == R.id.create_new_security_key);
+        if (item.getItemId() == R.id.chat_settings_option);
+        return true;
     }
 
     @SuppressLint({"RestrictedApi", "SimpleDateFormat"})
