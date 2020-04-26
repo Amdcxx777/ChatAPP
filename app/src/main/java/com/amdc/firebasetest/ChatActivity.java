@@ -88,7 +88,13 @@ public class ChatActivity extends AppCompatActivity {
         InitializeControllers();
         userName.setText(messageReceiverName); // for chat bar
         Picasso.get().load(messageReceiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
-        SendMessageButton.setOnClickListener(view -> SendMessage());
+        SendMessageButton.setOnClickListener(view -> {
+            try {
+                SendMessage();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
         DisplayLastSeen();
         SendFilesButton.setOnClickListener(view -> {
             CharSequence[] options = new CharSequence[] {"Images", "PDF Files", "Excel Files", "MS Word Files", "Zip Type Files"}; // list dialog-menu
@@ -141,7 +147,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 Messages messages = dataSnapshot.getValue(Messages.class);
                 try { new Decryption(Objects.requireNonNull(messages).getMessage()); } // message decrypted method
-                catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e) { Toast.makeText(ChatActivity.this, "Error decrypt", Toast.LENGTH_SHORT).show(); }
+                catch (Exception e) { Toast.makeText(ChatActivity.this, "Error decrypt", Toast.LENGTH_SHORT).show(); }
                 Objects.requireNonNull(messages).setMessage(decryptedSMS); // set decrypted message
                 messagesList.add(messages);
                 messageAdapter.notifyDataSetChanged();
@@ -291,7 +297,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void SendMessage() {
+    private void SendMessage() throws Exception {
         String messageText = MessageInputText.getText().toString();
         if (TextUtils.isEmpty(messageText)) Toast.makeText(this, "first write your message...", Toast.LENGTH_SHORT).show();
         else {
