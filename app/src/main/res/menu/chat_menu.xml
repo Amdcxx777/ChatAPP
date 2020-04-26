@@ -5,16 +5,17 @@
     <item
         android:title="@string/view_without_security_key"
         android:id="@+id/view_without_security_key"
-        app:showAsAction="never"> </item>
+        android:checkable="true"
+        app:showAsAction="never"/>
 
     <item
         android:title="@string/create_new_security_key"
         android:id="@+id/create_new_security_key"
-        app:showAsAction="never"> </item>
+        app:showAsAction="never"/>
 
     <item
         android:title="@string/settings"
         android:id="@+id/chat_settings_option"
-        app:showAsAction="never"> </item>
+        app:showAsAction="never"/>
 
 </menu>

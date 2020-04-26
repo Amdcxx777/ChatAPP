@@ -74,12 +74,14 @@ public class ChatActivity extends AppCompatActivity {
     private String saveCurrentTime, saveCurrentDate;
     private String checker = "", myUrl = "", msmID;
     private Uri fileUri;
+    static boolean keyEnable;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
 
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         messageSenderID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
@@ -148,9 +150,15 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 Messages messages = dataSnapshot.getValue(Messages.class);
-                try { new Decryption(Objects.requireNonNull(messages).getMessage(), "5afzRx0owl7oDDE6"); } // message decrypted method
-                catch (Exception e) { Toast.makeText(ChatActivity.this, "Error decrypt", Toast.LENGTH_SHORT).show(); }
-                Objects.requireNonNull(messages).setMessage(decryptedSMS); // set decrypted message
+                if (!keyEnable) {
+                    try {
+                        new Decryption(Objects.requireNonNull(messages).getMessage(), "5afzRx0owl7oDDE6");
+                    }
+                    catch (Exception e) {
+                        Toast.makeText(ChatActivity.this, "Error decrypt", Toast.LENGTH_SHORT).show();
+                    }
+                    Objects.requireNonNull(messages).setMessage(decryptedSMS); // set decrypted message
+                }
                 messagesList.add(messages);
                 messageAdapter.notifyDataSetChanged();
                 userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
@@ -183,10 +191,20 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) { // item menu
         super.onOptionsItemSelected(item);
-        if(item.getItemId() == R.id.view_without_security_key);
+        if(item.getItemId() == R.id.view_without_security_key) checkerSecurity(item);
         if(item.getItemId() == R.id.create_new_security_key);
         if (item.getItemId() == R.id.chat_settings_option);
         return true;
+    }
+
+    private void checkerSecurity(MenuItem item) {
+        if (keyEnable) item.setChecked(true);
+        if(item.isChecked()) { item.setChecked(false);
+            keyEnable = false;
+        }
+        else { item.setChecked(true);
+            keyEnable = true;
+        }
     }
 
     @SuppressLint({"RestrictedApi", "SimpleDateFormat"})
