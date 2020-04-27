@@ -44,4 +44,5 @@
     <string name="find_friends">Find Friends</string>
     <string name="create_group">Create Group</string>
     <string name="logout">Logout</string>
+    <string name="information">Information</string>
 </resources>

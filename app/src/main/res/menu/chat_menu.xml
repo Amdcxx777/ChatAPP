@@ -18,4 +18,9 @@
         android:id="@+id/chat_settings_option"
         app:showAsAction="never"/>
 
+    <item
+        android:title="@string/information"
+        android:id="@+id/chat_inform"
+        app:showAsAction="never"/>
+
 </menu>

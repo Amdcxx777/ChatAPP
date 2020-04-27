@@ -5,7 +5,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -20,7 +19,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -59,9 +57,11 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.amdc.firebasetest.Decryption.decryptedSMS;
 import static com.amdc.firebasetest.Encryption.encryptedBytes;
+import static com.amdc.firebasetest.MainActivity.userSet;
 
 public class ChatActivity extends AppCompatActivity {
-    private String messageReceiverID, messageSenderID;
+    private String messageReceiverID, messageSenderID, messageReceiverName, messageReceiverImage,
+            saveCurrentTime, saveCurrentDate, checker = "", myUrl = "", msmID;
     private TextView userName, userLastSeen;
     private CircleImageView userImage;
     private DatabaseReference RootRef;
@@ -71,33 +71,27 @@ public class ChatActivity extends AppCompatActivity {
     private ChatAdapter messageAdapter;
     private RecyclerView userMessagesList;
     private ProgressDialog loadingBar;
-    private String saveCurrentTime, saveCurrentDate;
-    private String checker = "", myUrl = "", msmID;
+//    static String userSet;
     private Uri fileUri;
     static boolean keyEnable;
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         messageSenderID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef = FirebaseDatabase.getInstance().getReference();
         messageReceiverID = (String) Objects.requireNonNull(getIntent().getExtras()).get("visit_user_id");
-        String messageReceiverName = (String) getIntent().getExtras().get("visit_user_name");
-        String messageReceiverImage = (String) getIntent().getExtras().get("visit_image");
+        messageReceiverName = (String) getIntent().getExtras().get("visit_user_name");
+        messageReceiverImage = (String) getIntent().getExtras().get("visit_image");
         InitializeControllers();
         userName.setText(messageReceiverName); // for chat bar
         Picasso.get().load(messageReceiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
         SendMessageButton.setOnClickListener(view -> {
-            try {
-                SendMessage();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            try { SendMessage();
+            } catch (Exception e) { e.printStackTrace(); }
         });
         DisplayLastSeen();
         SendFilesButton.setOnClickListener(view -> {
@@ -151,12 +145,8 @@ public class ChatActivity extends AppCompatActivity {
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 Messages messages = dataSnapshot.getValue(Messages.class);
                 if (!keyEnable) {
-                    try {
-                        new Decryption(Objects.requireNonNull(messages).getMessage(), "5afzRx0owl7oDDE6");
-                    }
-                    catch (Exception e) {
-                        Toast.makeText(ChatActivity.this, "Error decrypt", Toast.LENGTH_SHORT).show();
-                    }
+                    try { new Decryption(Objects.requireNonNull(messages).getMessage(), userSet); }
+                    catch (Exception e) { Toast.makeText(ChatActivity.this, "Error decrypt", Toast.LENGTH_SHORT).show(); }
                     Objects.requireNonNull(messages).setMessage(decryptedSMS); // set decrypted message
                 }
                 messagesList.add(messages);
@@ -185,26 +175,63 @@ public class ChatActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.chat_menu, menu);
+        if (keyEnable) menu.findItem(R.id.view_without_security_key).setChecked(true); // change checker
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) { // item menu
         super.onOptionsItemSelected(item);
-        if(item.getItemId() == R.id.view_without_security_key) checkerSecurity(item);
-        if(item.getItemId() == R.id.create_new_security_key);
-        if (item.getItemId() == R.id.chat_settings_option);
+        if(item.getItemId() == R.id.view_without_security_key) checkerViewCrypt(item); // view crypt
+        if(item.getItemId() == R.id.create_new_security_key) createNewSecurityKey(); // new key
+//        if (item.getItemId() == R.id.chat_settings_option);
         return true;
     }
 
-    private void checkerSecurity(MenuItem item) {
-        if (keyEnable) item.setChecked(true);
-        if(item.isChecked()) { item.setChecked(false);
+    @SuppressLint("SetTextI18n")
+    private void createNewSecurityKey() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this,R.style.AlertDialog).setIcon(android.R.drawable.ic_menu_edit)
+                .setTitle("Create new personal key").setMessage("This key is valid in the current chat, the recipient must enter the same key before receiving messages.");
+        final EditText groupNameField = new EditText(ChatActivity.this);
+        groupNameField.setText(userSet);
+        builder.setView(groupNameField);
+        builder.setPositiveButton("Create", (dialogInterface, i) -> {
+            String userKey = groupNameField.getText().toString();
+            if (TextUtils.isEmpty(userKey)) Toast.makeText(this, "Please write key", Toast.LENGTH_SHORT).show();
+            if (userKey.length() != 16) Toast.makeText(this, "Incorrect key, key length must be 16 characters.", Toast.LENGTH_SHORT).show();
+            else {
+                userSet = userKey;
+                Intent chatIntent = new Intent(ChatActivity.this, ChatActivity.class); //renew view item
+                chatIntent.putExtra("visit_user_id", messageReceiverID);
+                chatIntent.putExtra("visit_user_name", messageReceiverName);
+                chatIntent.putExtra("visit_image", messageReceiverImage);
+                startActivity(chatIntent);
+            }
+
+        });
+        builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
+        builder.show();
+    }
+
+    private void checkerViewCrypt(MenuItem item) {
+        if(item.isChecked()) {
+            item.setChecked(false);
             keyEnable = false;
-        }
-        else { item.setChecked(true);
+        } else {
+            item.setChecked(true);
             keyEnable = true;
         }
+        Intent chatIntent = new Intent(ChatActivity.this, ChatActivity.class); //renew view item
+        chatIntent.putExtra("visit_user_id", messageReceiverID);
+        chatIntent.putExtra("visit_user_name", messageReceiverName);
+        chatIntent.putExtra("visit_image", messageReceiverImage);
+        startActivity(chatIntent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(ChatActivity.this, MainActivity.class);
+        startActivity(intent);
     }
 
     @SuppressLint({"RestrictedApi", "SimpleDateFormat"})
@@ -332,12 +359,11 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private void SendMessage() throws Exception {
         String messageText = MessageInputText.getText().toString();
         if (TextUtils.isEmpty(messageText)) Toast.makeText(this, "first write your message...", Toast.LENGTH_SHORT).show();
         else {
-            try { new Encryption(messageText, "5afzRx0owl7oDDE6");
+            try { new Encryption(messageText, userSet);
             } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException ex) {
                 Toast.makeText(this, "Key not valid", Toast.LENGTH_SHORT).show();
             }

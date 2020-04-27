@@ -14,8 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".ViewerFilesActivity" />
-        <activity
-            android:name=".ChatActivity"
+        <activity android:name=".ChatActivity"
             android:parentActivityName=".MainActivity" />
         <activity android:name=".GroupChatActivity" />
         <activity android:name=".FindFriendsActivity" />
@@ -28,7 +27,6 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

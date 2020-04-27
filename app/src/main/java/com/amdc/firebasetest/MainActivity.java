@@ -35,8 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
     private String currentUserID;
-    private long backPressureTime;
-    private Toast backToast;
+    static String userSet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
-
         setSupportActionBar(findViewById(R.id.main_page_toolbar)); // my toolbar
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#03DAC5'>" + "WhatsApp" + "</font>")); // name toolbar
         ViewPager myViewPager = findViewById(R.id.main_tabs_pager);
@@ -62,16 +60,10 @@ public class MainActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null)  SendUserToLoginActivity();
         else {
+            userSet = "5afzRx0owl7oDDE6";
             updateUserStatus("online");
             VerifyUserExistence();
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) updateUserStatus("offline");
     }
 
     private void VerifyUserExistence() {
@@ -119,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.AlertDialog);
         builder.setTitle("Create new Group");
         final EditText groupNameField = new EditText(MainActivity.this);
-        groupNameField.setHint("Title for group");
+        groupNameField.setHint("  title for new group");
         builder.setView(groupNameField);
         builder.setPositiveButton("Create", (dialogInterface, i) -> {
             String groupName = groupNameField.getText().toString();
@@ -154,10 +146,9 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("SimpleDateFormat")
     private void updateUserStatus(String state) { //status user
-        Calendar calendar = Calendar.getInstance();
         HashMap<String, Object> onlineStateMap = new HashMap<>();
-        onlineStateMap.put("time", new SimpleDateFormat("HH:mm").format(calendar.getTime()));
-        onlineStateMap.put("date", new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(calendar.getTime()));
+        onlineStateMap.put("time", new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime()));
+        onlineStateMap.put("date", new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(Calendar.getInstance().getTime()));
         onlineStateMap.put("state", state);
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef.child("Users").child(currentUserID).child("userState").updateChildren(onlineStateMap);
@@ -165,15 +156,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() { // exit program with request
-        if(backPressureTime + 2000 > System.currentTimeMillis()){
-            backToast.cancel();
-            super.onBackPressed();
-            return;
-        } else {
-            backToast = Toast.makeText(getBaseContext(), "Click again to exit from Chat", Toast.LENGTH_SHORT);
-            backToast.show();
-        }
-        backPressureTime = System.currentTimeMillis();
+        new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
+                .setMessage("Are you sure you want to exit from chat?").setPositiveButton("Yes", (dialog, which) -> {
+                    Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    FirebaseUser currentUser = mAuth.getCurrentUser();
+                    if (currentUser != null) updateUserStatus("offline");
+                    moveTaskToBack(true);
+                    finish();
+                    System.exit(0);
+                }).setNegativeButton("No", null).show();
     }
 }
 
