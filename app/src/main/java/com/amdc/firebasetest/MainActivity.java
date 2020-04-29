@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void RequestNewGroup() { // menu
+    private void RequestNewGroup() { // menu add new group
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.AlertDialog);
         builder.setTitle("Create new Group");
         final EditText groupNameField = new EditText(MainActivity.this);
@@ -154,17 +154,14 @@ public class MainActivity extends AppCompatActivity {
         RootRef.child("Users").child(currentUserID).child("userState").updateChildren(onlineStateMap);
     }
 
+    @SuppressLint("SimpleDateFormat")
     @Override
     public void onBackPressed() { // exit program with request
         new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
                 .setMessage("Are you sure you want to exit from chat?").setPositiveButton("Yes", (dialog, which) -> {
-                    Intent intent = new Intent(MainActivity.this, MainActivity.class);
-                    startActivity(intent);
                     FirebaseUser currentUser = mAuth.getCurrentUser();
                     if (currentUser != null) updateUserStatus("offline");
                     moveTaskToBack(true);
-                    finish();
-                    System.exit(0);
                 }).setNegativeButton("No", null).show();
     }
 }
