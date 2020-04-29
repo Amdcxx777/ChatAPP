@@ -10,12 +10,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -67,9 +65,9 @@ public class ProfileActivity extends AppCompatActivity {
                     String userImage = (String) dataSnapshot.child("image").getValue();
                     Picasso.get().load(userImage).resize(300, 300).placeholder(R.drawable.profile_image).into(userProfileImage);
                 }
-                    userProfileName.setText((String) dataSnapshot.child("name").getValue());
-                    userProfileStatus.setText((String) dataSnapshot.child("status").getValue());
-                    ManageChatRequests();
+                userProfileName.setText((String) dataSnapshot.child("name").getValue());
+                userProfileStatus.setText((String) dataSnapshot.child("status").getValue());
+                ManageChatRequests();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
@@ -79,8 +77,8 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                        Current_State = "friends";
-                        btnSendRequest.setText("Remove This Contact");
+                    Current_State = "friends";
+                    btnSendRequest.setText("Remove This Contact");
                 } else {
                     Current_State = "new";
                     btnSendRequest.setText("Send Message");
@@ -110,64 +108,38 @@ public class ProfileActivity extends AppCompatActivity {
                 }
             });
 
-            ChatRequestRef.addChildEventListener(new ChildEventListener() {
+            ChatRequestRef.child(senderUserID).addValueEventListener(new ValueEventListener() {
                 @SuppressLint("SetTextI18n")
                 @Override
-                public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if(dataSnapshot.hasChild(receiverUserID)) {
                         final String request_type = (String) dataSnapshot.child(receiverUserID).child("request_type").getValue();
-                        if(Objects.requireNonNull(request_type).equals("sent")) { //for sender
+                        if (Objects.requireNonNull(request_type).equals("sent")) { //for sender
                             Current_State = "request_send";
                             btnSendRequest.setText("Cancel Chat Request");
-                        }
-                        else if(request_type.equals("received")) { // for recipient
+                        } else if(request_type.equals("received")) { // for recipient
                             Current_State = "request_received";
                             btnSendRequest.setText("Accept Chat Request");
                             btnCancelRequest.setVisibility(View.VISIBLE);
                             btnCancelRequest.setEnabled(true);
-                            btnCancelRequest.setOnClickListener(view -> {
-                                NotificationRef.child(senderUserID).removeValue().addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) CancelChatRequest();
-                                });
+                            btnCancelRequest.setOnClickListener(view -> NotificationRef.child(senderUserID).removeValue().addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) CancelChatRequest();
+                            }));
+                        } else {
+                            ContactsRef.child(receiverUserID).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if (dataSnapshot.hasChild(receiverUserID)) {
+                                        Current_State = "friends";
+                                        btnSendRequest.setText("Remove this Contact");
+                                    }
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) { }
                             });
                         }
                     }
                 }
-
-                @Override
-                public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
-                @SuppressLint("SetTextI18n")
-                @Override
-                public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                    Current_State = "new";
-                    btnSendRequest.setText("Send Message");
-                    btnCancelRequest.setVisibility(View.INVISIBLE);
-                    btnCancelRequest.setEnabled(false);
-                    ContactsRef.child(receiverUserID).addChildEventListener(new ChildEventListener() {
-                        @SuppressLint("SetTextI18n")
-                        @Override
-                        public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                            Current_State = "friends";
-                            btnSendRequest.setText("Remove This Contact");
-                        }
-                        @Override
-                        public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
-                        @SuppressLint("SetTextI18n")
-                        @Override
-                        public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-                            Current_State = "new";
-                            btnSendRequest.setText("Send Message");
-                            btnCancelRequest.setVisibility(View.INVISIBLE);
-                            btnCancelRequest.setEnabled(false);
-                        }
-                        @Override
-                        public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) { }
-                    });
-                }
-                @Override
-                public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) { }
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) { }
             });
@@ -206,11 +178,11 @@ public class ProfileActivity extends AppCompatActivity {
                                     if (task3.isSuccessful()) {
                                         NotificationRef.child(senderUserID).removeValue().addOnCompleteListener(task4 -> {
                                             if (task4.isSuccessful()) {
-                                                Toast.makeText(this, "New Contact Saved", Toast.LENGTH_SHORT).show();
                                                 Current_State = "friends";
                                                 btnSendRequest.setText("Remove This Contact");
                                                 btnCancelRequest.setVisibility(View.INVISIBLE);
                                                 btnCancelRequest.setEnabled(false);
+                                                Toast.makeText(this, "New Contact Saved", Toast.LENGTH_SHORT).show();
                                             }
                                         });
                                     }
@@ -253,11 +225,11 @@ public class ProfileActivity extends AppCompatActivity {
                     if (task1.isSuccessful()) {
                         NotificationRef.child(receiverUserID).removeValue().addOnCompleteListener(task2 -> {
                             if (task2.isSuccessful()) {
-                                Toast.makeText(this, "Request has been canceled", Toast.LENGTH_SHORT).show();
                                 Current_State = "new";
                                 btnSendRequest.setText("Send Message");
                                 btnCancelRequest.setVisibility(View.INVISIBLE);
                                 btnCancelRequest.setEnabled(false);
+                                Toast.makeText(this, "Request has been canceled", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
