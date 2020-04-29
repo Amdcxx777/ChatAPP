@@ -151,7 +151,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     @SuppressLint({"SetTextI18n", "ResourceAsColor"})
     private void RemoveSpecificContact() {
-        ContactsRef.child(senderUserID).removeValue().addOnCompleteListener(task -> {
+        ContactsRef.child(senderUserID).child(receiverUserID).removeValue().addOnCompleteListener(task -> {
             if(task.isSuccessful()) {
                 ContactsRef.child(receiverUserID).child(senderUserID).removeValue().addOnCompleteListener(task1 -> {
                     if(task1.isSuccessful()) {
