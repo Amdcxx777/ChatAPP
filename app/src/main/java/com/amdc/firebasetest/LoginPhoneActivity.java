@@ -1,8 +1,5 @@
 package com.amdc.firebasetest;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +10,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
@@ -50,7 +50,6 @@ public class LoginPhoneActivity extends AppCompatActivity {
         InputPhoneNumber = findViewById(R.id.phone_nnumber_input);
         InputVerificationCode = findViewById(R.id.verification_code_input);
         loadingBar = new ProgressDialog(this);
-
         SendVerificationCodeButton.setOnClickListener(view -> {
             String phoneNumber = InputPhoneNumber.getText().toString();
             if (TextUtils.isEmpty(phoneNumber)) {
@@ -98,7 +97,6 @@ public class LoginPhoneActivity extends AppCompatActivity {
             }
 
             public void onCodeSent(@NonNull String verificationId, @NonNull PhoneAuthProvider.ForceResendingToken token) {
-                // Save verification ID and resending token so we can use them later
                 mVerificationId = verificationId;
                 mResendToken = token;
                 loadingBar.dismiss();
@@ -116,7 +114,6 @@ public class LoginPhoneActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 String deviceToken = FirebaseInstanceId.getInstance().getToken(); //ID device (key)
                 String currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
-//                RootRef.child("Users").child(currentUserID).setValue("");
                 RootRef.child("Users").child(currentUserID).child("device_token").setValue(deviceToken);
                 loadingBar.dismiss();
                 Toast.makeText(LoginPhoneActivity.this, "Congratulations, you're logged in successfully...", Toast.LENGTH_SHORT).show();

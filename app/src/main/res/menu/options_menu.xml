@@ -13,9 +13,26 @@
         app:showAsAction="never"> </item>
 
     <item
+        android:title="@string/user_setup"
+        android:id="@+id/user_settings"
+        app:showAsAction="never"> </item>
+
+    <item
         android:title="@string/settings"
         android:id="@+id/main_settings_option"
-        app:showAsAction="never"> </item>
+        app:showAsAction="never">
+
+        <menu>
+            <item android:id="@+id/sound"
+                android:title="@string/sound"
+                android:checkable="true"
+                android:checked="true"/>
+            <item android:id="@+id/vibration"
+                android:title="@string/vibration"
+                android:checkable="true"
+                android:checked="true"/>
+        </menu>
+    </item>
 
     <item
         android:title="@string/logout"

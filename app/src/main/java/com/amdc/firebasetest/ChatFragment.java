@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -25,11 +24,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.amdc.firebasetest.MainActivity.bell;
+import static com.amdc.firebasetest.MainActivity.sound;
+import static com.amdc.firebasetest.MainActivity.vibrator;
+import static com.amdc.firebasetest.MainActivity.vibro;
 
 public class ChatFragment extends Fragment {
     private RecyclerView chatsList;
@@ -67,18 +69,16 @@ public class ChatFragment extends Fragment {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
-                                try {
-                                    count = Integer.parseInt(((String) Objects.requireNonNull(dataSnapshot.child("Counter").getValue()))); // get counter value
-                                } catch (Exception e) {
-                                    Toast.makeText(holder.itemView.getContext(), "", Toast.LENGTH_SHORT).show();
-                                }
+                                try { count = Integer.parseInt(((String) Objects.requireNonNull(dataSnapshot.child("Counter").getValue()))); // get counter value
+                                } catch (Exception ignored) { }
                                 if (count != 0) {
                                     holder.itemView.findViewById(R.id.message_counter).setVisibility(View.VISIBLE); // visibility counter message
                                     holder.messCounter.setText(count + "");
+                                    if (bell) sound.start(); // sound when message was received
+                                    if (vibro) vibrator.vibrate(200); // vibrator when message was received
                                 }
                             }
                         }
-
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
                         }
@@ -106,14 +106,13 @@ public class ChatFragment extends Fragment {
                             }
                             else { holder.userStatus.setText("offline"); }
                             holder.itemView.setOnClickListener(view -> {
-                                final String messageCounterRef = "Message notifications/" + currentUserID + "/" + usersIDs; // counter messages
-                                final Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                messageCounter.put("Counter", 0 + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                final Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                messageBodyCounter.put(messageCounterRef, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                                RootRef.updateChildren(messageBodyCounter); // update counter messages
+//                                final String messageCounterRef = "Message notifications/" + currentUserID + "/" + usersIDs; // counter messages
+//                                final Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//                                messageCounter.put("Counter", 0 + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//                                final Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//                                messageBodyCounter.put(messageCounterRef, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//                                RootRef.updateChildren(messageBodyCounter); // update counter messages
                                 holder.itemView.findViewById(R.id.message_counter).setVisibility(View.INVISIBLE); // invisibility counter message
-
                                 Intent chatIntent = new Intent(getContext(), ChatActivity.class);
                                 chatIntent.putExtra("visit_user_id", usersIDs);
                                 chatIntent.putExtra("visit_user_name", retName);

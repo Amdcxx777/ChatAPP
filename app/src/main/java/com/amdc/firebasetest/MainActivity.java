@@ -2,7 +2,9 @@ package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -35,13 +37,18 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
     private String currentUserID;
+    static Vibrator vibrator;
+    static MediaPlayer sound;
     static String userSet;
+    static boolean bell = true, vibro = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        sound = MediaPlayer.create(this, R.raw.watter1);
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
@@ -66,14 +73,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    @Override
-//    protected void onDestroy() {
-//        super.onDestroy();
-//        FirebaseUser currentUser = mAuth.getCurrentUser();
-//        if (currentUser != null) updateUserStatus("offline");
-//        moveTaskToBack(true);
-//    }
-
     private void VerifyUserExistence() {
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
@@ -90,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.options_menu, menu);
+        if (bell) menu.findItem(R.id.sound).setChecked(true); // change checker
+        if (vibro) menu.findItem(R.id.vibration).setChecked(true); // change checker
         return true;
     }
 
@@ -97,9 +98,17 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) { // item menu
         super.onOptionsItemSelected(item);
         if(item.getItemId() == R.id.main_create_group_option) RequestNewGroup();
-        if(item.getItemId() == R.id.main_settings_option) SendUserToSettingsActivity();
+        if(item.getItemId() == R.id.user_settings) SendUserToSettingsActivity();
         if (item.getItemId() == R.id.main_find_friends_option) SendUserToFindFriendsActivity();
         if(item.getItemId() == R.id.main_logout_option) RequestLogOut();
+        if(item.getItemId() == R.id.sound) {
+            if(item.isChecked()) { item.setChecked(false); bell = false; }
+            else { item.setChecked(true); bell = true; }
+        }
+        if(item.getItemId() == R.id.vibration) {
+            if(item.isChecked()) { item.setChecked(false); vibro = false; }
+            else { item.setChecked(true); vibro = true; }
+        }
         return true;
     }
 

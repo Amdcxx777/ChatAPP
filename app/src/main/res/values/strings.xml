@@ -46,4 +46,7 @@
     <string name="logout">Logout</string>
     <string name="information">Information</string>
     <string name="_0">0</string>
+    <string name="user_setup">User Setup</string>
+    <string name="sound">Sound</string>
+    <string name="vibration">Vibration</string>
 </resources>

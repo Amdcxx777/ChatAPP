@@ -155,7 +155,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
-
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add/delete messages ~~~~~~~~~~~~~~~~~~~~~~~~~
         RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
@@ -223,20 +223,14 @@ public class ChatActivity extends AppCompatActivity {
                 chatIntent.putExtra("visit_image", messageReceiverImage);
                 startActivity(chatIntent);
             }
-
         });
         builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
         builder.show();
     }
 
     private void checkerViewCrypt(MenuItem item) {
-        if(item.isChecked()) {
-            item.setChecked(false);
-            keyEnable = false;
-        } else {
-            item.setChecked(true);
-            keyEnable = true;
-        }
+        if(item.isChecked()) { item.setChecked(false); keyEnable = false; }
+        else { item.setChecked(true); keyEnable = true; }
         Intent chatIntent = new Intent(ChatActivity.this, ChatActivity.class); //renew view item
         chatIntent.putExtra("visit_user_id", messageReceiverID);
         chatIntent.putExtra("visit_user_name", messageReceiverName);
@@ -246,6 +240,12 @@ public class ChatActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        final String messageCounterRef = "Message notifications/" + messageSenderID + "/" + messageReceiverID; // counter messages
+        final Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        messageCounter.put("Counter", 0 + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        final Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        messageBodyCounter.put(messageCounterRef, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        RootRef.updateChildren(messageBodyCounter); // update counter messages
         Intent intent = new Intent(ChatActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
