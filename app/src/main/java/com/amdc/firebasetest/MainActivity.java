@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        sound = MediaPlayer.create(this, R.raw.watter1);
+        sound = MediaPlayer.create(this, R.raw.viber);
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
