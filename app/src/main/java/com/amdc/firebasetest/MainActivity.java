@@ -66,13 +66,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) updateUserStatus("offline");
-        moveTaskToBack(true);
-    }
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        FirebaseUser currentUser = mAuth.getCurrentUser();
+//        if (currentUser != null) updateUserStatus("offline");
+//        moveTaskToBack(true);
+//    }
 
     private void VerifyUserExistence() {
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();

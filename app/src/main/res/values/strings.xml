@@ -45,4 +45,5 @@
     <string name="create_group">Create Group</string>
     <string name="logout">Logout</string>
     <string name="information">Information</string>
+    <string name="_0">0</string>
 </resources>

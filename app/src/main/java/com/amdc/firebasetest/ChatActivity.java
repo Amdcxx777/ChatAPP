@@ -24,7 +24,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -34,7 +33,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.StorageTask;
 import com.squareup.picasso.Picasso;
 
 import java.security.InvalidKeyException;
@@ -61,18 +59,18 @@ import static com.amdc.firebasetest.MainActivity.userSet;
 
 public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageSenderID, messageReceiverName, messageReceiverImage,
-            saveCurrentTime, saveCurrentDate, checker = "", myUrl = "", msmID;
+            saveCurrentTime, saveCurrentDate, checker = "", msmID;
     private TextView userName, userLastSeen;
+    private EditText MessageInputText;
     private CircleImageView userImage;
     private DatabaseReference RootRef;
     private ImageButton SendMessageButton, SendFilesButton;
-    private EditText MessageInputText;
     private final List<Messages> messagesList = new ArrayList<>();
     private ChatAdapter messageAdapter;
     private RecyclerView userMessagesList;
     private ProgressDialog loadingBar;
-//    static String userSet;
     private Uri fileUri;
+    private int count;
     static boolean keyEnable;
 
     @Override
@@ -139,12 +137,30 @@ public class ChatActivity extends AppCompatActivity {
             });
             builder.show();
         });
+        //~~~~~~~~~~~~~~~~~ read or create counter messages ~~~~~~~~~~~~~~~~~~~~~~~~~
+        RootRef.child("Message notifications").child(messageReceiverID).child(messageSenderID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    count = Integer.parseInt(((String) Objects.requireNonNull(dataSnapshot.child("Counter").getValue())));
+                } else {
+                    String messageCounterRef = "Message notifications/" + messageReceiverID + "/" + messageSenderID;
+                    Map<String, String> messageCounter = new HashMap<>();
+                    messageCounter.put("Counter", 0 + "");
+                    Map<String, Object> messageBodyDetails = new HashMap<>();
+                    messageBodyDetails.put(messageCounterRef, messageCounter);
+                    RootRef.updateChildren(messageBodyDetails);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
 
         RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                 Messages messages = dataSnapshot.getValue(Messages.class);
-                if (!keyEnable) {
+                if (!keyEnable && Objects.requireNonNull(messages).getType().equals("text")) { // security key flag
                     try { new Decryption(Objects.requireNonNull(messages).getMessage(), userSet); }
                     catch (Exception e) { Toast.makeText(ChatActivity.this, "Error decrypt", Toast.LENGTH_SHORT).show(); }
                     Objects.requireNonNull(messages).setMessage(decryptedSMS); // set decrypted message
@@ -162,7 +178,7 @@ public class ChatActivity extends AppCompatActivity {
                     if (msmID.equals(messagesList.get(i).getMessageID())) messagesList.remove(i);
                 }
                     messageAdapter.notifyDataSetChanged();
-                    userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount());
+                    userMessagesList.smoothScrollToPosition(Objects.requireNonNull(userMessagesList.getAdapter()).getItemCount()); // scroll to end
             }
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, String s) { }
@@ -308,35 +324,25 @@ public class ChatActivity extends AppCompatActivity {
                 DatabaseReference userMessageKeyRef = RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).push();
                 final String messagePushID = userMessageKeyRef.getKey();
                 final StorageReference filePath = storageReference.child(messagePushID + "." + "jpg");
-                StorageTask uploadTask = filePath.putFile(fileUri);
-                uploadTask.continueWithTask(task -> {
-                    if(!task.isSuccessful()) {
-                        throw Objects.requireNonNull(task.getException());
-                    }
-                    return filePath.getDownloadUrl();
-                }).addOnCompleteListener((OnCompleteListener<Uri>) task -> {
-                    if (task.isSuccessful()) {
-                        Uri downloadUrl = task.getResult();
-                        myUrl = Objects.requireNonNull(downloadUrl).toString();
-                        Map<String, String> messageTextBody = new HashMap<>();
-                        messageTextBody.put("message", myUrl);
-                        messageTextBody.put("name", fileUri.toString());
-                        messageTextBody.put("type", checker);
-                        messageTextBody.put("from", messageSenderID);
-                        messageTextBody.put("to", messageReceiverID);
-                        messageTextBody.put("messageID", messagePushID);
-                        messageTextBody.put("time", saveCurrentTime);
-                        messageTextBody.put("date", saveCurrentDate);
-                        Map<String, Object> messageBodyDetails = new HashMap<>();
-                        messageBodyDetails.put(messageSenderRef + "/" + messagePushID, messageTextBody);
-                        messageBodyDetails.put(messageReceiverRef + "/" + messagePushID, messageTextBody);
-                        RootRef.updateChildren(messageBodyDetails).addOnCompleteListener(task1 -> {
-                            if (!task1.isSuccessful()) Toast.makeText(ChatActivity.this, "Send Image Error", Toast.LENGTH_SHORT).show();
-                            loadingBar.dismiss();
-                            MessageInputText.setText("");
-                        });
-                    }
-                });
+                filePath.putFile(fileUri).addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> {
+                    Map<String, String> messageTextBody = new HashMap<>();
+                    messageTextBody.put("message", uri.toString());
+                    messageTextBody.put("name", fileUri.toString());
+                    messageTextBody.put("type", checker);
+                    messageTextBody.put("from", messageSenderID);
+                    messageTextBody.put("to", messageReceiverID);
+                    messageTextBody.put("messageID", messagePushID);
+                    messageTextBody.put("time", saveCurrentTime);
+                    messageTextBody.put("date", saveCurrentDate);
+                    Map<String, Object> messageBodyDetails = new HashMap<>();
+                    messageBodyDetails.put(messageSenderRef + "/" + messagePushID, messageTextBody);
+                    messageBodyDetails.put(messageReceiverRef + "/" + messagePushID, messageTextBody);
+                    RootRef.updateChildren(messageBodyDetails).addOnCompleteListener(task1 -> {
+                        if (!task1.isSuccessful()) Toast.makeText(ChatActivity.this, "Send Image Error", Toast.LENGTH_SHORT).show();
+                        loadingBar.dismiss();
+                        MessageInputText.setText("");
+                    });
+                }));
             }
         }
     }
@@ -364,12 +370,19 @@ public class ChatActivity extends AppCompatActivity {
         String messageText = MessageInputText.getText().toString();
         if (TextUtils.isEmpty(messageText)) Toast.makeText(this, "first write your message...", Toast.LENGTH_SHORT).show();
         else {
-            try { new Encryption(messageText, userSet);
+            try {
+                new Encryption(messageText, userSet);
             } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException ex) {
                 Toast.makeText(this, "Key not valid", Toast.LENGTH_SHORT).show();
             }
             String messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
             String messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
+            String messageCounterRef = "Message notifications/" + messageReceiverID + "/" + messageSenderID; // counter messages
+            Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            messageCounter.put("Counter", (count + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            messageBodyCounter.put(messageCounterRef, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            RootRef.updateChildren(messageBodyCounter); // update counter messages
             DatabaseReference userMessageKeyRef = RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).push();
             String messagePushID = userMessageKeyRef.getKey();
             Map<String, String> messageTextBody = new HashMap<>();

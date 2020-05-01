@@ -3,16 +3,16 @@ package com.amdc.firebasetest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -25,14 +25,17 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ChatFragment extends Fragment {
     private RecyclerView chatsList;
-    private DatabaseReference ChatsRef, UsersRef;
+    private DatabaseReference RootRef, ChatsRef, UsersRef;
     private String currentUserID = "";
+    private int count;
     public ChatFragment() {
     }
 
@@ -42,6 +45,7 @@ public class ChatFragment extends Fragment {
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {currentUserID = currentUser.getUid();}
+        RootRef = FirebaseDatabase.getInstance().getReference();
         ChatsRef = FirebaseDatabase.getInstance().getReference().child("Contacts").child(currentUserID);
         UsersRef = FirebaseDatabase.getInstance().getReference().child("Users");
         chatsList = privateChatsView.findViewById(R.id.chats_list);
@@ -58,6 +62,27 @@ public class ChatFragment extends Fragment {
             protected void onBindViewHolder(@NonNull final ChatsViewHolder holder, int position, @NonNull Contacts model) {
                 final String usersIDs = getRef(position).getKey();
                 final String[] retImage = {"default_image"};
+                    RootRef.child("Message notifications").child(currentUserID).child(Objects.requireNonNull(usersIDs)).addValueEventListener(new ValueEventListener() { // counter listener
+                        @SuppressLint("SetTextI18n")
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                try {
+                                    count = Integer.parseInt(((String) Objects.requireNonNull(dataSnapshot.child("Counter").getValue()))); // get counter value
+                                } catch (Exception e) {
+                                    Toast.makeText(holder.itemView.getContext(), "", Toast.LENGTH_SHORT).show();
+                                }
+                                if (count != 0) {
+                                    holder.itemView.findViewById(R.id.message_counter).setVisibility(View.VISIBLE); // visibility counter message
+                                    holder.messCounter.setText(count + "");
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                        }
+                    });
                 UsersRef.child(Objects.requireNonNull(usersIDs)).addValueEventListener(new ValueEventListener() {
                     @SuppressLint("SetTextI18n")
                     @Override
@@ -81,6 +106,14 @@ public class ChatFragment extends Fragment {
                             }
                             else { holder.userStatus.setText("offline"); }
                             holder.itemView.setOnClickListener(view -> {
+                                final String messageCounterRef = "Message notifications/" + currentUserID + "/" + usersIDs; // counter messages
+                                final Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                messageCounter.put("Counter", 0 + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                final Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                messageBodyCounter.put(messageCounterRef, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                RootRef.updateChildren(messageBodyCounter); // update counter messages
+                                holder.itemView.findViewById(R.id.message_counter).setVisibility(View.INVISIBLE); // invisibility counter message
+
                                 Intent chatIntent = new Intent(getContext(), ChatActivity.class);
                                 chatIntent.putExtra("visit_user_id", usersIDs);
                                 chatIntent.putExtra("visit_user_name", retName);
@@ -104,15 +137,16 @@ public class ChatFragment extends Fragment {
         chatsList.setAdapter(adapter);
         adapter.startListening();
     }
-//
+
     public static class  ChatsViewHolder extends RecyclerView.ViewHolder {
         CircleImageView profileImage;
-        TextView userStatus, userName;
+        TextView userStatus, userName, messCounter;
         ChatsViewHolder(@NonNull View itemView) {
             super(itemView);
             profileImage = itemView.findViewById(R.id.users_profile_image);
             userStatus = itemView.findViewById(R.id.user_status);
             userName = itemView.findViewById(R.id.user_profile_name);
+            messCounter = itemView.findViewById(R.id.message_counter);
         }
     }
 }
