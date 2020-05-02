@@ -159,7 +159,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                     messageViewHolder.receiverMessageTimeImage.setText(messages.getTime() + " - " + messages.getDate());
                 } break;
         }
-        if (fromUserID.equals(messageSenderId)) { // alert dialog for sender messages
+        if (fromUserID.equals(messageSenderId)) { // alert dialog for sender user
             messageViewHolder.itemView.setOnClickListener(view -> {
                 switch (userMessagesList.get(position).getType()) {
                     case "pdf":
@@ -229,7 +229,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                     }
                 }
             });
-        } else { // alert dialog for receiver messages
+        } else { // alert dialog for receiver user
             messageViewHolder.itemView.setOnClickListener(view -> {
                 switch (userMessagesList.get(position).getType()) {
                     case "pdf":
@@ -280,7 +280,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                         break;
                     }
                     case "image": {
-                        CharSequence[] options = new CharSequence[]{"View this Image", "Delete from Me", "Cancel"};
+                        CharSequence[] options = new CharSequence[]{"View this Image", "Download this Image", "Delete from Me", "Cancel"};
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("View/Delete Message").setIcon(R.drawable.file);
                         builder.setItems(options, (dialogInterface, i) -> {
@@ -289,6 +289,18 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                                 intent.putExtra("url", userMessagesList.get(position).getMessage());
                                 context.startActivity(intent);
                             } if (i == 1) {
+                                String fileNameForDownload = userMessagesList.get(position).getMessageID() + ".jpg";
+                                storageReference = FirebaseStorage.getInstance().getReference();
+                                reference = storageReference.child("Image Files").child(fileNameForDownload);
+                                reference.getDownloadUrl().addOnSuccessListener(uri -> {
+                                    String fileName = Uri.parse(userMessagesList.get(position).getName()).toString(); //get name file from firebase (getLastPathSegment())
+                                    DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+                                    DownloadManager.Request request = new DownloadManager.Request(uri);
+                                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                    request.setDestinationInExternalFilesDir(context, DIRECTORY_DOWNLOADS, fileName); //reference.getName()
+                                    Objects.requireNonNull(downloadManager).enqueue(request);
+                                }).addOnFailureListener(e -> Toast.makeText(context, "Error download", Toast.LENGTH_SHORT).show());
+                            } if (i == 2) {
                                 deleteReceiverMessage(position, messageViewHolder);
                             }
                         });

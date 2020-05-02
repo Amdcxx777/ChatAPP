@@ -65,12 +65,12 @@ public class ChatFragment extends Fragment {
                 final String usersIDs = getRef(position).getKey();
                 final String[] retImage = {"default_image"};
                     RootRef.child("Message notifications").child(currentUserID).child(Objects.requireNonNull(usersIDs)).addValueEventListener(new ValueEventListener() { // counter listener
-                        @SuppressLint("SetTextI18n")
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                try { count = Integer.parseInt(((String) Objects.requireNonNull(dataSnapshot.child("Counter").getValue()))); // get counter value
-                                } catch (Exception ignored) { }
+                        @SuppressLint("SetTextI18n") //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                        @Override //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) { //~~~~~~~~~~~
+                            if (dataSnapshot.exists()) { //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                try { count = Integer.parseInt(((String) Objects.requireNonNull(dataSnapshot.child("Counter").getValue()))); // get counter value for visible
+                                } catch (Exception ignored) { } //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                 if (count != 0) {
                                     holder.itemView.findViewById(R.id.message_counter).setVisibility(View.VISIBLE); // visibility counter message
                                     holder.messCounter.setText(count + "");
@@ -105,13 +105,7 @@ public class ChatFragment extends Fragment {
                                 }
                             }
                             else { holder.userStatus.setText("offline"); }
-                            holder.itemView.setOnClickListener(view -> {
-//                                final String messageCounterRef = "Message notifications/" + currentUserID + "/" + usersIDs; // counter messages
-//                                final Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//                                messageCounter.put("Counter", 0 + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//                                final Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//                                messageBodyCounter.put(messageCounterRef, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//                                RootRef.updateChildren(messageBodyCounter); // update counter messages
+                            holder.itemView.setOnClickListener(view -> { // click on item for choice
                                 holder.itemView.findViewById(R.id.message_counter).setVisibility(View.INVISIBLE); // invisibility counter message
                                 Intent chatIntent = new Intent(getContext(), ChatActivity.class);
                                 chatIntent.putExtra("visit_user_id", usersIDs);

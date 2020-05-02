@@ -58,8 +58,8 @@ import static com.amdc.firebasetest.Encryption.encryptedBytes;
 import static com.amdc.firebasetest.MainActivity.userSet;
 
 public class ChatActivity extends AppCompatActivity {
-    private String messageReceiverID, messageSenderID, messageReceiverName, messageReceiverImage,
-            saveCurrentTime, saveCurrentDate, checker = "", msmID;
+    private String messageReceiverID, messageSenderID, messageReceiverName, messageReceiverImage, saveCurrentTime,
+            saveCurrentDate, checker = "", msmID, messageSenderRef, messageReceiverRef, messageCounterOutput;
     private TextView userName, userLastSeen;
     private EditText MessageInputText;
     private CircleImageView userImage;
@@ -93,25 +93,22 @@ public class ChatActivity extends AppCompatActivity {
         });
         DisplayLastSeen();
         SendFilesButton.setOnClickListener(view -> {
-            CharSequence[] options = new CharSequence[] {"Images", "PDF Files", "Excel Files", "MS Word Files", "Zip Type Files"}; // list dialog-menu
+            CharSequence[] options = new CharSequence[] {"Images", "PDF Files", "Excel Files", "MS Word Files", "Zip Type Files", "Exit"}; // list dialog-menu
             AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
             builder.setTitle("Select File"); // title dialog-menu
             builder.setIcon(R.drawable.send_files); //icon dialog-menu
             builder.setItems(options, (dialogInterface, i) -> {
-                if(i == 0) {
-                    checker = "image";
+                if(i == 0) { checker = "image";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
                     startActivityForResult(Intent.createChooser(intent,"Select Image"),443); //443
                 }
-                if(i == 1) {
-                    checker = "pdf";
+                if(i == 1) { checker = "pdf";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/pdf");
                     startActivityForResult(Intent.createChooser(intent,"Select PDF"),443);
                 }
-                if(i == 2) {
-                    checker = "xls";
+                if(i == 2) { checker = "xls";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
                     final String[] mineTypes = {"application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}; // filter xml files
@@ -119,8 +116,7 @@ public class ChatActivity extends AppCompatActivity {
                     intent.putExtra(Intent.EXTRA_MIME_TYPES, mineTypes);
                     startActivityForResult(Intent.createChooser(intent,"Select Excel Files"),443);
                 }
-                if(i == 3) {
-                    checker = "doc";
+                if(i == 3) { checker = "doc";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
                     final String[] mineTypes = {"application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document"}; // filter word files
@@ -128,8 +124,7 @@ public class ChatActivity extends AppCompatActivity {
                     intent.putExtra(Intent.EXTRA_MIME_TYPES, mineTypes);
                     startActivityForResult(Intent.createChooser(intent,"Select Word Files"),443);
                 }
-                if(i == 4) {
-                    checker = "zip";
+                if(i == 4) { checker = "zip";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/zip");
                     startActivityForResult(Intent.createChooser(intent,"Select Zip Files"),443);
@@ -137,7 +132,7 @@ public class ChatActivity extends AppCompatActivity {
             });
             builder.show();
         });
-        //~~~~~~~~~~~~~~~~~ read or create counter messages ~~~~~~~~~~~~~~~~~~~~~~~~~
+        //~~~~~~~~~~~~~~~~~ read or create new counter messages ~~~~~~~~~~~~~~~~~~~~~~~~~
         RootRef.child("Message notifications").child(messageReceiverID).child(messageSenderID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -228,7 +223,7 @@ public class ChatActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void checkerViewCrypt(MenuItem item) {
+    private void checkerViewCrypt(MenuItem item) { // user key used or not used renew activity
         if(item.isChecked()) { item.setChecked(false); keyEnable = false; }
         else { item.setChecked(true); keyEnable = true; }
         Intent chatIntent = new Intent(ChatActivity.this, ChatActivity.class); //renew view item
@@ -240,11 +235,11 @@ public class ChatActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        final String messageCounterRef = "Message notifications/" + messageSenderID + "/" + messageReceiverID; // counter messages
-        final Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        messageCounter.put("Counter", 0 + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        final Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        messageBodyCounter.put(messageCounterRef, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        final String messageCounterInput = "Message notifications/" + messageSenderID + "/" + messageReceiverID; // counter input messages to zero
+        final Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        messageCounter.put("Counter", 0 + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        final Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~
+        messageBodyCounter.put(messageCounterInput, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         RootRef.updateChildren(messageBodyCounter); // update counter messages
         Intent intent = new Intent(ChatActivity.this, MainActivity.class);
         startActivity(intent);
@@ -274,6 +269,9 @@ public class ChatActivity extends AppCompatActivity {
         linearLayoutManager.setStackFromEnd(true); //  item into list gravity from end to up
         userMessagesList.setLayoutManager(linearLayoutManager);
         userMessagesList.setAdapter(messageAdapter);
+        messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
+        messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
+        messageCounterOutput = "Message notifications/" + messageReceiverID + "/" + messageSenderID; // counter messages
         saveCurrentDate = new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(Calendar.getInstance().getTime());
         saveCurrentTime = new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime());
     }
@@ -287,15 +285,12 @@ public class ChatActivity extends AppCompatActivity {
             loadingBar.setCanceledOnTouchOutside(false);
             loadingBar.show();
             fileUri = data.getData();
-            if(!checker.equals("image")) { //  choice file not image
+            if(!checker.equals("image")) { //  choice file not image for send
                 StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("Document Files");
-                final String messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
-                final String messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
                 DatabaseReference userMessageKeyRef = RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).push();
                 final String messagePushID = userMessageKeyRef.getKey();
                 final StorageReference filePath = storageReference.child(messagePushID + "." + checker);
-                filePath.putFile(fileUri).addOnSuccessListener(taskSnapshot ->
-                        filePath.getDownloadUrl().addOnSuccessListener(uri -> {
+                filePath.putFile(fileUri).addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> {
                     Map<String, Object> messageImageBody = new HashMap<>();
                     messageImageBody.put("message", uri.getPath());
                     messageImageBody.put("name", fileUri.getLastPathSegment()); // toString
@@ -316,11 +311,15 @@ public class ChatActivity extends AppCompatActivity {
                 })).addOnProgressListener(taskSnapshot -> {
                     double p = (100.0 * taskSnapshot.getBytesTransferred())/taskSnapshot.getTotalByteCount();
                     loadingBar.setMessage((int) p + "% Uploading...");
+                }).addOnCompleteListener(task -> {
+                    Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+                    messageCounter.put("Counter", (count + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+                    Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+                    messageBodyCounter.put(messageCounterOutput, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+                    RootRef.updateChildren(messageBodyCounter); // ~~~~~~~~ update counter messages ~~~~~~~~ add one for counter messages
                 });
-            } else { //  choice file image
+            } else { //  choice file image for send
                 StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("Image Files");
-                final String messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
-                final String messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
                 DatabaseReference userMessageKeyRef = RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).push();
                 final String messagePushID = userMessageKeyRef.getKey();
                 final StorageReference filePath = storageReference.child(messagePushID + "." + "jpg");
@@ -342,7 +341,16 @@ public class ChatActivity extends AppCompatActivity {
                         loadingBar.dismiss();
                         MessageInputText.setText("");
                     });
-                }));
+                })).addOnProgressListener(taskSnapshot -> {
+                    double p = (100.0 * taskSnapshot.getBytesTransferred())/taskSnapshot.getTotalByteCount();
+                    loadingBar.setMessage((int) p + "% Uploading...");
+                }).addOnCompleteListener(task -> {
+                    Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+                    messageCounter.put("Counter", (count + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+                    Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+                    messageBodyCounter.put(messageCounterOutput, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+                    RootRef.updateChildren(messageBodyCounter); // ~~~~~~~~ update counter messages ~~~~~~~~ add one for counter messages
+                });
             }
         }
     }
@@ -375,14 +383,11 @@ public class ChatActivity extends AppCompatActivity {
             } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException ex) {
                 Toast.makeText(this, "Key not valid", Toast.LENGTH_SHORT).show();
             }
-            String messageSenderRef = "Messages/" + messageSenderID + "/" + messageReceiverID;
-            String messageReceiverRef = "Messages/" + messageReceiverID + "/" + messageSenderID;
-            String messageCounterRef = "Message notifications/" + messageReceiverID + "/" + messageSenderID; // counter messages
-            Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            messageCounter.put("Counter", (count + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            messageBodyCounter.put(messageCounterRef, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            RootRef.updateChildren(messageBodyCounter); // update counter messages
+            Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+            messageCounter.put("Counter", (count + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+            Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+            messageBodyCounter.put(messageCounterOutput, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+            RootRef.updateChildren(messageBodyCounter); // ~~~~~~~~ update counter messages ~~~~~~~~ add one for counter messages
             DatabaseReference userMessageKeyRef = RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).push();
             String messagePushID = userMessageKeyRef.getKey();
             Map<String, String> messageTextBody = new HashMap<>();
