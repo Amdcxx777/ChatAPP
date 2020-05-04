@@ -35,8 +35,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,10 +44,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -61,7 +55,7 @@ public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageSenderID, messageReceiverName, messageReceiverImage, saveCurrentTime,
             saveCurrentDate, checker = "", msmID, messageSenderRef, messageReceiverRef, messageCounterOutput;
     private TextView userName, userLastSeen;
-    private EditText MessageInputText;
+    private EditText messageInputText;
     private CircleImageView userImage;
     private DatabaseReference RootRef;
     private ImageButton SendMessageButton, SendFilesButton;
@@ -262,7 +256,7 @@ public class ChatActivity extends AppCompatActivity {
         userLastSeen = findViewById(R.id.custom_user_last_seen);
         SendMessageButton = findViewById(R.id.send_message_btn);
         SendFilesButton = findViewById(R.id.send_files_btn);
-        MessageInputText = findViewById(R.id.input_message);
+        messageInputText = findViewById(R.id.input_message);
         messageAdapter = new ChatAdapter(messagesList);
         userMessagesList = findViewById(R.id.private_messages_list_of_users);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -339,7 +333,7 @@ public class ChatActivity extends AppCompatActivity {
                     RootRef.updateChildren(messageBodyDetails).addOnCompleteListener(task1 -> {
                         if (!task1.isSuccessful()) Toast.makeText(ChatActivity.this, "Send Image Error", Toast.LENGTH_SHORT).show();
                         loadingBar.dismiss();
-                        MessageInputText.setText("");
+                        messageInputText.setText("");
                     });
                 })).addOnProgressListener(taskSnapshot -> {
                     double p = (100.0 * taskSnapshot.getBytesTransferred())/taskSnapshot.getTotalByteCount();
@@ -375,14 +369,9 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void SendMessage() throws Exception {
-        String messageText = MessageInputText.getText().toString();
+        String messageText = messageInputText.getText().toString();
         if (TextUtils.isEmpty(messageText)) Toast.makeText(this, "first write your message...", Toast.LENGTH_SHORT).show();
-        else {
-            try {
-                new Encryption(messageText, userSet);
-            } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException ex) {
-                Toast.makeText(this, "Key not valid", Toast.LENGTH_SHORT).show();
-            }
+        else { new Encryption(messageText, userSet);
             Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
             messageCounter.put("Counter", (count + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
             Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
@@ -403,7 +392,7 @@ public class ChatActivity extends AppCompatActivity {
             messageBodyDetails.put(messageReceiverRef + "/" + messagePushID, messageTextBody);
             RootRef.updateChildren(messageBodyDetails).addOnCompleteListener(task -> {
                 if (!task.isSuccessful()) Toast.makeText(ChatActivity.this, "Send Message Error", Toast.LENGTH_SHORT).show();
-                MessageInputText.setText("");
+                messageInputText.setText("");
             });
         }
     }

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:title="@string/group_administrator"
+        android:id="@+id/group_admin"
+        app:showAsAction="never"/>
+
+    <item
+        android:title="@string/add_user_to_group"
+        android:id="@+id/add_user_to_group"
+        app:showAsAction="never"/>
+
+    <item
+        android:title="@string/view_group_users"
+        android:id="@+id/view_group_users"
+        app:showAsAction="never"/>
+
+    <item
+        android:title="@string/get_out_from_group"
+        android:id="@+id/get_out_from_group"
+        app:showAsAction="never"/>
+
+    <item
+        android:title="@string/settings"
+        android:id="@+id/group_chat_settings_option"
+        app:showAsAction="never">
+        <menu>
+            <item android:id="@+id/change_group_name"
+                android:title="@string/change_group_name"/>
+            <item android:id="@+id/change_crypt_key"
+                android:title="@string/change_crypt_key"/>
+            <item android:id="@+id/delete_user"
+                android:title="@string/delete_user"/>
+            <item android:id="@+id/delete_group"
+                android:title="@string/delete_group"/>
+        </menu>
+    </item>
+
+    <item
+        android:title="@string/information"
+        android:id="@+id/chat_inform"
+        app:showAsAction="never"/>
+
+</menu>

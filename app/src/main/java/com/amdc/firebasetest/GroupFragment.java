@@ -2,16 +2,16 @@ package com.amdc.firebasetest;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,6 +27,8 @@ public class GroupFragment extends Fragment {
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> list_of_groups = new ArrayList<>();
     private DatabaseReference GroupRef;
+    private String currentUserID;
+//    private Set<String> set;
 
     public GroupFragment() {
     }
@@ -37,6 +39,7 @@ public class GroupFragment extends Fragment {
 
         ListView list_view = groupFragmentView.findViewById(R.id.list_view);
         GroupRef = FirebaseDatabase.getInstance().getReference().child("Groups"); // list groups
+        currentUserID = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         arrayAdapter = new ArrayAdapter<>(Objects.requireNonNull(getContext()),android.R.layout.simple_list_item_1, list_of_groups);
         list_view.setAdapter(arrayAdapter);
         RetrieveAndDisplayGroups();
@@ -55,11 +58,25 @@ public class GroupFragment extends Fragment {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Set<String> set = new HashSet<>();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    set.add(snapshot.getKey());
+                    final GroupUsers[] groupUsers = new GroupUsers[1];
+                    GroupRef.child(Objects.requireNonNull(snapshot.getKey())).child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                groupUsers[0] = dataSnapshot.getValue(GroupUsers.class);
+                                if (currentUserID.equals(Objects.requireNonNull(groupUsers[0]).getUserID())) set.add(snapshot.getKey());
+                                list_of_groups.clear();
+                                list_of_groups.addAll(set);
+                                arrayAdapter.notifyDataSetChanged();
+                            }
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) { }
+                    });
                 }
-                list_of_groups.clear();
-                list_of_groups.addAll(set);
-                arrayAdapter.notifyDataSetChanged();
+//                list_of_groups.clear();
+//                list_of_groups.addAll(set);
+//                arrayAdapter.notifyDataSetChanged();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }

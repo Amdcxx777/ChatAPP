@@ -92,9 +92,11 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void ManageChatRequests() {
+        String visit = getIntent().getStringExtra("visit_view_admin");
         if(!senderUserID.equals(receiverUserID)) { // if not my account
             btnSendRequest.setEnabled(true);
-            btnSendRequest.setVisibility(View.VISIBLE); // button is visible if not main account
+            if (Objects.requireNonNull(visit).equals("visit_admin")) btnSendRequest.setVisibility(View.INVISIBLE);
+            else btnSendRequest.setVisibility(View.VISIBLE); // button is visible if not main account
             btnSendRequest.setOnClickListener(view -> {
                 if(Current_State.equals("new")) SendChatRequest();
                 if(Current_State.equals("request_send")) CancelChatRequest();

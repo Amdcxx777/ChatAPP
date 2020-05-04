@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void RequestLogOut() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.AlertDialog);
-        builder.setTitle("Are you sure you want to log out?");
+        builder.setTitle("Are you sure you want to log out and exit?");
         builder.setPositiveButton("Exit", (dialogInterface, i) -> {
             updateUserStatus("offline");
             mAuth.signOut();
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.AlertDialog);
         builder.setTitle("Create new Group");
         final EditText groupNameField = new EditText(MainActivity.this);
-        groupNameField.setHint("  title for new group");
+        groupNameField.setHint("   title for new group");
         builder.setView(groupNameField);
         builder.setPositiveButton("Create", (dialogInterface, i) -> {
             String groupName = groupNameField.getText().toString();
@@ -139,9 +139,29 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void CreateNewGroup(final String groupName) {
-        RootRef.child("Groups").child(groupName).setValue("").addOnCompleteListener(task -> {
-            if (task.isSuccessful()) Toast.makeText(MainActivity.this, groupName + "Group is Created Successfully", Toast.LENGTH_SHORT).show();
+    @SuppressLint("SimpleDateFormat")
+    private void CreateNewGroup(final String groupName) { // create new group with admin copyright and with settings
+        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+        String messagePushID = RootRef.child("Groups").child("Users").push().getKey();
+
+        HashMap<String, Object> userMap = new HashMap<>();
+        userMap.put("userID", currentUserID);
+        userMap.put("status", "admin");
+        userMap.put("time", new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime()));
+        userMap.put("date", new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(Calendar.getInstance().getTime()));
+
+        HashMap<String, Object> groupMap = new HashMap<>();
+        groupMap.put("admin", currentUserID);
+        groupMap.put("group_name", groupName);
+        groupMap.put("messageID", messagePushID);
+        groupMap.put("key", Objects.requireNonNull(messagePushID).substring(4));
+        groupMap.put("time", new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime()));
+        groupMap.put("date", new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(Calendar.getInstance().getTime()));
+
+        RootRef.child("Groups").child(groupName).child("Users").child(currentUserID).setValue(userMap).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) RootRef.child("Groups").child(groupName).child("Settings").setValue(groupMap).addOnCompleteListener(task1 -> {
+                if (task1.isSuccessful()) Toast.makeText(MainActivity.this, "Group is Created Successfully", Toast.LENGTH_SHORT).show();
+            });
         });
     }
 

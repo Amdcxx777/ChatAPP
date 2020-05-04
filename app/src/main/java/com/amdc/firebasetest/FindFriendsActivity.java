@@ -1,10 +1,5 @@
 package com.amdc.firebasetest;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
@@ -14,6 +9,10 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -39,8 +38,6 @@ public class FindFriendsActivity extends AppCompatActivity {
         findFriendsRecyclerList.setLayoutManager(new LinearLayoutManager(this));
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
         setSupportActionBar(findViewById(R.id.find_friends_toolbar)); // my toolbar
-//        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-//        getSupportActionBar().setDisplayShowHomeEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Find Friends" + "</font>"));
     }
 
@@ -58,6 +55,7 @@ public class FindFriendsActivity extends AppCompatActivity {
                     String visit_user_id = getRef(position).getKey();
                     Intent profileIntent = new Intent(FindFriendsActivity.this, ProfileActivity.class);
                     profileIntent.putExtra("visit_user_id", visit_user_id);
+                    profileIntent.putExtra("visit_view_admin", "visit_user");
                     startActivity(profileIntent);
                 });
             }

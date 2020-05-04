@@ -13,8 +13,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -91,9 +89,9 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
                         Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
                     }
                     if (i == 1) { // delete message
-                        rootRef.child("Groups").child(currentGroupName).child(userMessagesList.get(position).getMessageID()).removeValue().addOnCompleteListener(task -> {
-                            if(task.isSuccessful()) Toast.makeText(holder.itemView.getContext(),"Deleted Successfully.",Toast.LENGTH_SHORT).show();
-                            else Toast.makeText(holder.itemView.getContext(),"Error Occurred.",Toast.LENGTH_SHORT).show();
+                        rootRef.child("Groups").child(currentGroupName).child("Mesages").child(userMessagesList.get(position).getMessageID()).removeValue().addOnCompleteListener(task -> {
+                            if(task.isSuccessful()) Toast.makeText(holder.itemView.getContext(),"Deleted Successfully",Toast.LENGTH_SHORT).show();
+                            else Toast.makeText(holder.itemView.getContext(),"Delete Error",Toast.LENGTH_SHORT).show();
                         });
                     }
                 });
@@ -111,7 +109,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
                         Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
                     }
                     if (i == 1) {
-                        Toast.makeText(context, "Not deleted! You can delete only your messages!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "                  Not deleted!!!\nYou can delete only your messages!!!", Toast.LENGTH_SHORT).show();
                     }
                 });
                 builder.show();
