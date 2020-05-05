@@ -39,7 +39,7 @@ public class UserListActivity extends AppCompatActivity {
     private DatabaseReference ContactsRef, UsersRef, currentUserGroup;
     private FirebaseRecyclerOptions<Contacts> options;
     private RecyclerView myContactsList;
-    private String status;
+    private String currentUserID, status;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +50,12 @@ public class UserListActivity extends AppCompatActivity {
         myContactsList.setLayoutManager(new LinearLayoutManager(UserListActivity.this));
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
         setSupportActionBar(findViewById(R.id.user_toolbar)); // my toolbar
-        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Add new contacts to the group" + "</font>"));
         String groupName = (String) Objects.requireNonNull(getIntent().getExtras()).get("group");
         status = (String) Objects.requireNonNull(getIntent().getExtras()).get("status");
-        String currentUserID = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+        if (Objects.requireNonNull(status).equals("add")) Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Add new contacts to the group" + "</font>"));
+        if (Objects.requireNonNull(status).equals("view")) Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "View group contacts" + "</font>"));
+        if (Objects.requireNonNull(status).equals("delete")) Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Delete contacts from the group" + "</font>"));
+        currentUserID = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         ContactsRef = FirebaseDatabase.getInstance().getReference().child("Contacts").child(currentUserID);
         UsersRef = FirebaseDatabase.getInstance().getReference().child("Users");
         currentUserGroup = FirebaseDatabase.getInstance().getReference().child("Groups").child(Objects.requireNonNull(groupName)).child("Users");
@@ -123,12 +125,13 @@ public class UserListActivity extends AppCompatActivity {
     }
 
     public void deleteUserFromGroup(String userID) {
-        new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_menu_add).setTitle("Delete User")
-                .setMessage("Remove this contact from the group?").setPositiveButton("Yes", (dialog, which) -> {
-            currentUserGroup.child(userID).removeValue().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) Toast.makeText(this, "User deleted Successfully", Toast.LENGTH_SHORT).show();
-            });
-        }).setNegativeButton("No", null).show();
+        if (!currentUserID.equals(userID)) {
+            new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_delete).setTitle("Delete User")
+                    .setMessage("Delete this contact from the group?").setPositiveButton("Yes", (dialog, which) -> currentUserGroup.child(userID).removeValue().addOnCompleteListener(task -> {
+                if (task.isSuccessful())
+                    Toast.makeText(this, "User deleted Successfully", Toast.LENGTH_SHORT).show();
+            })).setNegativeButton("No", null).show();
+        } else Toast.makeText(this, "You cannot delete yourself!!!", Toast.LENGTH_SHORT).show();
     }
 
     public static class userViewHolder extends RecyclerView.ViewHolder {

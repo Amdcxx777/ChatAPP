@@ -8,13 +8,13 @@
         app:showAsAction="never"/>
 
     <item
-        android:title="@string/add_user_to_group"
-        android:id="@+id/add_user_to_group"
+        android:title="@string/view_group_users"
+        android:id="@+id/view_group_users"
         app:showAsAction="never"/>
 
     <item
-        android:title="@string/view_group_users"
-        android:id="@+id/view_group_users"
+        android:title="@string/add_user_to_group"
+        android:id="@+id/add_user_to_group"
         app:showAsAction="never"/>
 
     <item

@@ -135,23 +135,13 @@ public class GroupChatActivity extends AppCompatActivity {
         if(item.getItemId() == R.id.group_admin) viewGroupAdmin();
         if(item.getItemId() == R.id.add_user_to_group) addUserToGroup();
         if(item.getItemId() == R.id.view_group_users) viewUserGroup();
-        if(item.getItemId() == R.id.get_out_from_group) {}
+        if(item.getItemId() == R.id.get_out_from_group) RemoveFromGroup();
         if(item.getItemId() == R.id.change_group_name) changeNameGroup();
-        if(item.getItemId() == R.id.change_crypt_key) renewSecurityKey(); // new key
+        if(item.getItemId() == R.id.change_crypt_key) renewSecurityKey();
         if(item.getItemId() == R.id.delete_user) deleteUserFromGroup();
         if(item.getItemId() == R.id.delete_group) deleteGroup();
         if(item.getItemId() == R.id.chat_inform) {}
         return true;
-    }
-
-    private void deleteUserFromGroup() {
-        if (!currentUserID.equals(adminGroupID)) Toast.makeText(GroupChatActivity.this, "This function is available only to the administrator!!!", Toast.LENGTH_SHORT).show();
-        else {
-            Intent intentUser = new Intent(this, UserListActivity.class);
-            intentUser.putExtra("group", currentGroupName);
-            intentUser.putExtra("status", "delete");
-            startActivity(intentUser);
-        }
     }
 
     private void viewUserGroup() {
@@ -167,6 +157,16 @@ public class GroupChatActivity extends AppCompatActivity {
             Intent intentUser = new Intent(this, UserListActivity.class);
             intentUser.putExtra("group", currentGroupName);
             intentUser.putExtra("status", "add");
+            startActivity(intentUser);
+        }
+    }
+
+    private void deleteUserFromGroup() {
+        if (!currentUserID.equals(adminGroupID)) Toast.makeText(GroupChatActivity.this, "This function is available only to the administrator!!!", Toast.LENGTH_SHORT).show();
+        else {
+            Intent intentUser = new Intent(this, UserListActivity.class);
+            intentUser.putExtra("group", currentGroupName);
+            intentUser.putExtra("status", "delete");
             startActivity(intentUser);
         }
     }
@@ -242,6 +242,22 @@ public class GroupChatActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
+    }
+
+    private void RemoveFromGroup() {
+        if (!currentUserID.equals(adminGroupID)) {
+            new AlertDialog.Builder(GroupChatActivity.this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Get out from group")
+                    .setMessage("Are you sure??? Do you really want to leave the group?").setPositiveButton("Exit", (dialog, which) ->
+                            GroupNameRef.child("Users").child(currentUserID).removeValue().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Intent intent = new Intent(GroupChatActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            })).setNegativeButton("No", null).show();
+        } else {
+            Toast.makeText(GroupChatActivity.this, "You are the group administrator !!! Before leaving the group, you must appoint one of the group user as the administrator.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void deleteGroup() {
