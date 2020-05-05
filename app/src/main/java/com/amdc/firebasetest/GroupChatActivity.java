@@ -44,7 +44,7 @@ public class GroupChatActivity extends AppCompatActivity {
     private GroupChatAdapter groupChatAdapter;
     private RecyclerView userMessagesList;
     private final List<Messages> messagesList = new ArrayList<>();
-    private DatabaseReference UsersRef, GroupNameRef, GroupNameMessageRef, GroupRef;
+    private DatabaseReference UsersRef, GroupNameRef, GroupNameMessageRef;
     static String currentGroupName, currentUserID;
     private String currentUserName, msmID, snow, adminGroupID;
 
@@ -140,7 +140,7 @@ public class GroupChatActivity extends AppCompatActivity {
         if(item.getItemId() == R.id.change_crypt_key) renewSecurityKey();
         if(item.getItemId() == R.id.delete_user) deleteUserFromGroup();
         if(item.getItemId() == R.id.delete_group) deleteGroup();
-        if(item.getItemId() == R.id.chat_inform) {}
+//        if(item.getItemId() == R.id.chat_inform) {}
         return true;
     }
 
@@ -310,7 +310,7 @@ public class GroupChatActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-//        super.onBackPressed();
+        super.onBackPressed();
         Intent intent = new Intent(GroupChatActivity.this, MainActivity.class);
         startActivity(intent);
         finish();

@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,7 +28,7 @@ public class GroupFragment extends Fragment {
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> list_of_groups = new ArrayList<>();
     private DatabaseReference GroupRef;
-    private String currentUserID;
+    private String currentUserID = "";
 //    private Set<String> set;
 
     public GroupFragment() {
@@ -39,7 +40,8 @@ public class GroupFragment extends Fragment {
 
         ListView list_view = groupFragmentView.findViewById(R.id.list_view);
         GroupRef = FirebaseDatabase.getInstance().getReference().child("Groups"); // list groups
-        currentUserID = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {currentUserID = currentUser.getUid();}
         arrayAdapter = new ArrayAdapter<>(Objects.requireNonNull(getContext()),android.R.layout.simple_list_item_1, list_of_groups);
         list_view.setAdapter(arrayAdapter);
         RetrieveAndDisplayGroups();
