@@ -74,9 +74,6 @@ public class GroupFragment extends Fragment {
                         public void onCancelled(@NonNull DatabaseError databaseError) { }
                     });
                 }
-//                list_of_groups.clear();
-//                list_of_groups.addAll(set);
-//                arrayAdapter.notifyDataSetChanged();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }

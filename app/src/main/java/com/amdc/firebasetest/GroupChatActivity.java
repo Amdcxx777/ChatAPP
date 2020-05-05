@@ -134,7 +134,7 @@ public class GroupChatActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) { // item menu
         super.onOptionsItemSelected(item);
         if(item.getItemId() == R.id.group_admin) viewGroupAdmin();
-        if(item.getItemId() == R.id.add_user_to_group) {}
+        if(item.getItemId() == R.id.add_user_to_group) addUserToGroup();
         if(item.getItemId() == R.id.view_group_users) {}
         if(item.getItemId() == R.id.add_user_to_group) {}
         if(item.getItemId() == R.id.change_group_name) changeNameGroup();
@@ -143,6 +143,12 @@ public class GroupChatActivity extends AppCompatActivity {
         if(item.getItemId() == R.id.delete_group) deleteGroup();
         if(item.getItemId() == R.id.chat_inform) {}
         return true;
+    }
+
+    private void addUserToGroup() {
+        Intent contactIntent = new Intent(GroupChatActivity.this, ContactsFragment.class); //renew view item
+        contactIntent.putExtra("groupName" , currentGroupName);
+        startActivity(contactIntent);
     }
 
     private void changeNameGroup() {

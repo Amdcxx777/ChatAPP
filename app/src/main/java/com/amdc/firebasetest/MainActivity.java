@@ -112,18 +112,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private void RequestLogOut() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.AlertDialog);
-        builder.setTitle("Are you sure you want to log out and exit?");
-        builder.setPositiveButton("Exit", (dialogInterface, i) -> {
-            updateUserStatus("offline");
-            mAuth.signOut();
-            SendUserToLoginActivity();
-        });
-        builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
-        builder.show();
-    }
-
     private void RequestNewGroup() { // menu add new group
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.AlertDialog);
         builder.setTitle("Create new Group");
@@ -143,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
     private void CreateNewGroup(final String groupName) { // create new group with admin copyright and with settings
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         String messagePushID = RootRef.child("Groups").child("Users").push().getKey();
-
         HashMap<String, Object> userMap = new HashMap<>();
         userMap.put("userID", currentUserID);
         userMap.put("status", "admin");
@@ -157,7 +144,6 @@ public class MainActivity extends AppCompatActivity {
         groupMap.put("key", Objects.requireNonNull(messagePushID).substring(4));
         groupMap.put("time", new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime()));
         groupMap.put("date", new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(Calendar.getInstance().getTime()));
-
         RootRef.child("Groups").child(groupName).child("Users").child(currentUserID).setValue(userMap).addOnCompleteListener(task -> {
             if (task.isSuccessful()) RootRef.child("Groups").child(groupName).child("Settings").setValue(groupMap).addOnCompleteListener(task1 -> {
                 if (task1.isSuccessful()) Toast.makeText(MainActivity.this, "Group is Created Successfully", Toast.LENGTH_SHORT).show();
@@ -189,6 +175,18 @@ public class MainActivity extends AppCompatActivity {
         onlineStateMap.put("state", state);
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef.child("Users").child(currentUserID).child("userState").updateChildren(onlineStateMap);
+    }
+
+    private void RequestLogOut() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.AlertDialog);
+        builder.setTitle("Are you sure you want to log out and exit?");
+        builder.setPositiveButton("Exit", (dialogInterface, i) -> {
+            updateUserStatus("offline");
+            mAuth.signOut();
+            SendUserToLoginActivity();
+        });
+        builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
+        builder.show();
     }
 
     @SuppressLint("SimpleDateFormat")

@@ -1,7 +1,5 @@
 package com.amdc.firebasetest;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.content.Context;
@@ -13,6 +11,8 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -52,7 +52,7 @@ public class ViewerFilesActivity extends AppCompatActivity {
             DownloadManager.Request request = new DownloadManager.Request(uri);
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             request.setDestinationInExternalFilesDir(ViewerFilesActivity.this, DIRECTORY_DOWNLOADS, fileName);
-            downloadManager.enqueue(request);
+            Objects.requireNonNull(downloadManager).enqueue(request);
             lookingFile(uri);
         }).addOnFailureListener(e -> Toast.makeText(this, "Error download", Toast.LENGTH_SHORT).show());
     }
