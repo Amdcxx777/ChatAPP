@@ -50,7 +50,7 @@
     <string name="sound">Sound</string>
     <string name="vibration">Vibration</string>
     <string name="group_administrator">Group Administrator</string>
-    <string name="add_user_to_group">add user to group</string>
+    <string name="add_user_to_group">Add user to group</string>
     <string name="view_group_users">View group users</string>
     <string name="get_out_from_group">Get out from group</string>
     <string name="change_group_name">Change group name</string>

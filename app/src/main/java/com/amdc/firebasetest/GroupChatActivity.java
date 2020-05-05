@@ -56,7 +56,6 @@ public class GroupChatActivity extends AppCompatActivity {
         currentGroupName = Objects.requireNonNull(Objects.requireNonNull(getIntent().getExtras()).get("groupName")).toString();
         currentUserID = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         UsersRef = FirebaseDatabase.getInstance().getReference().child("Users");
-//        GroupRef = FirebaseDatabase.getInstance().getReference().child("Groups");
         GroupNameRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(currentGroupName);
         GroupNameMessageRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(currentGroupName).child("Mesages");
         initializeFields();
@@ -135,20 +134,41 @@ public class GroupChatActivity extends AppCompatActivity {
         super.onOptionsItemSelected(item);
         if(item.getItemId() == R.id.group_admin) viewGroupAdmin();
         if(item.getItemId() == R.id.add_user_to_group) addUserToGroup();
-        if(item.getItemId() == R.id.view_group_users) {}
-        if(item.getItemId() == R.id.add_user_to_group) {}
+        if(item.getItemId() == R.id.view_group_users) viewUserGroup();
+        if(item.getItemId() == R.id.get_out_from_group) {}
         if(item.getItemId() == R.id.change_group_name) changeNameGroup();
         if(item.getItemId() == R.id.change_crypt_key) renewSecurityKey(); // new key
-        if(item.getItemId() == R.id.delete_user) {}
+        if(item.getItemId() == R.id.delete_user) deleteUserFromGroup();
         if(item.getItemId() == R.id.delete_group) deleteGroup();
         if(item.getItemId() == R.id.chat_inform) {}
         return true;
     }
 
+    private void deleteUserFromGroup() {
+        if (!currentUserID.equals(adminGroupID)) Toast.makeText(GroupChatActivity.this, "This function is available only to the administrator!!!", Toast.LENGTH_SHORT).show();
+        else {
+            Intent intentUser = new Intent(this, UserListActivity.class);
+            intentUser.putExtra("group", currentGroupName);
+            intentUser.putExtra("status", "delete");
+            startActivity(intentUser);
+        }
+    }
+
+    private void viewUserGroup() {
+        Intent intentUser = new Intent(this, UserListActivity.class);
+        intentUser.putExtra("group", currentGroupName);
+        intentUser.putExtra("status", "view");
+        startActivity(intentUser);
+    }
+
     private void addUserToGroup() {
-        Intent contactIntent = new Intent(GroupChatActivity.this, ContactsFragment.class); //renew view item
-        contactIntent.putExtra("groupName" , currentGroupName);
-        startActivity(contactIntent);
+        if (!currentUserID.equals(adminGroupID)) Toast.makeText(GroupChatActivity.this, "This function is available only to the administrator!!!", Toast.LENGTH_SHORT).show();
+        else {
+            Intent intentUser = new Intent(this, UserListActivity.class);
+            intentUser.putExtra("group", currentGroupName);
+            intentUser.putExtra("status", "add");
+            startActivity(intentUser);
+        }
     }
 
     private void changeNameGroup() {

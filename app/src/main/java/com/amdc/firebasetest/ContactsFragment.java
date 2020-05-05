@@ -1,17 +1,16 @@
 package com.amdc.firebasetest;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -32,8 +31,7 @@ public class ContactsFragment extends Fragment {
     private RecyclerView myContactsList;
     private DatabaseReference ContactsRef, UsersRef;
 
-    public ContactsFragment() {
-    }
+    public ContactsFragment() { }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,7 +88,7 @@ public class ContactsFragment extends Fragment {
         adapter.startListening();
     }
 
-    public static class ContactsViewHolder extends RecyclerView.ViewHolder {
+    private static class ContactsViewHolder extends RecyclerView.ViewHolder {
         TextView userName, userStatus;
         CircleImageView profileImage;
         ImageView onlineIcon;
