@@ -65,7 +65,7 @@ public class ContactsFragment extends Fragment {
                             if (dataSnapshot.hasChild("image")) {
                                 holder.userName.setText((String) dataSnapshot.child("name").getValue());
                                 holder.userStatus.setText((String) dataSnapshot.child("status").getValue());
-                                Picasso.get().load((String) dataSnapshot.child("image").getValue()).resize(90, 90).placeholder(R.drawable.profile_image).into(holder.profileImage);
+                                Picasso.get().load((String) dataSnapshot.child("image").getValue()).resize(120, 120).placeholder(R.drawable.profile_image).into(holder.profileImage);
                             } else {
                                 holder.userName.setText((String) dataSnapshot.child("name").getValue());
                                 holder.userStatus.setText((String) dataSnapshot.child("status").getValue());

@@ -33,7 +33,7 @@ public class LoginPhoneActivity extends AppCompatActivity {
     private DatabaseReference RootRef;
     private ProgressDialog loadingBar;
     private String mVerificationId;
-    private PhoneAuthProvider.ForceResendingToken mResendToken;
+//    private PhoneAuthProvider.ForceResendingToken mResendToken;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +98,7 @@ public class LoginPhoneActivity extends AppCompatActivity {
 
             public void onCodeSent(@NonNull String verificationId, @NonNull PhoneAuthProvider.ForceResendingToken token) {
                 mVerificationId = verificationId;
-                mResendToken = token;
+//                mResendToken = token;
                 loadingBar.dismiss();
                 Toast.makeText(LoginPhoneActivity.this, "Code has been sent, please check and verify...", Toast.LENGTH_SHORT).show();
                 SendVerificationCodeButton.setVisibility(View.INVISIBLE);
@@ -112,12 +112,13 @@ public class LoginPhoneActivity extends AppCompatActivity {
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
         mAuth.signInWithCredential(credential).addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
-                String deviceToken = FirebaseInstanceId.getInstance().getToken(); //ID device (key)
-                String currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
-                RootRef.child("Users").child(currentUserID).child("device_token").setValue(deviceToken);
-                loadingBar.dismiss();
-                Toast.makeText(LoginPhoneActivity.this, "Congratulations, you're logged in successfully...", Toast.LENGTH_SHORT).show();
-                SendUserToMainActivity();
+                FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
+                    String currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+                    RootRef.child("Users").child(currentUserID).child("device_token").setValue(instanceIdResult.getToken());
+                    loadingBar.dismiss();
+                    Toast.makeText(LoginPhoneActivity.this, "Congratulations, you're logged in successfully...", Toast.LENGTH_SHORT).show();
+                    SendUserToMainActivity();
+                });
             } else {
                 String message = Objects.requireNonNull(task.getException()).toString();
                 Toast.makeText(LoginPhoneActivity.this, "Error : "  +  message, Toast.LENGTH_SHORT).show();

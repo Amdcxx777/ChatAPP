@@ -1,7 +1,5 @@
 package com.amdc.firebasetest;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,6 +10,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -57,13 +57,15 @@ public class RegisterActivity extends AppCompatActivity {
             loadingBar.show();
             mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    String deviceToken = FirebaseInstanceId.getInstance().getToken(); //ID device (key)
-                    String currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
-                    RootRef.child("Users").child(currentUserID).setValue("");
-                    RootRef.child("Users").child(currentUserID).child("device_token").setValue(deviceToken);
-                    SendUserToMainActivity();
-                    Toast.makeText(RegisterActivity.this, "Account Created Successfully...", Toast.LENGTH_SHORT).show();
-                    loadingBar.dismiss();
+                    FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
+//                    String deviceToken = FirebaseInstanceId.getInstance().getToken(); //ID device (key)
+                        String currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+                        RootRef.child("Users").child(currentUserID).setValue("");
+                        RootRef.child("Users").child(currentUserID).child("device_token").setValue(instanceIdResult.getToken());
+                        SendUserToMainActivity();
+                        Toast.makeText(RegisterActivity.this, "Account Created Successfully...", Toast.LENGTH_SHORT).show();
+                        loadingBar.dismiss();
+                            });
                 } else {
                     String message = Objects.requireNonNull(task.getException()).toString();
                     Toast.makeText(RegisterActivity.this, "Error : " + message, Toast.LENGTH_SHORT).show();

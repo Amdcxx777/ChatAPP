@@ -2,6 +2,7 @@ package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
+import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -204,7 +205,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                         builder.setTitle("Copy/Delete Message").setIcon(R.drawable.delete);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
-                                ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
+                                ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setPrimaryClip(ClipData.newPlainText("text copy from chat", messages.getMessage())); // setText(messages.getMessage());
                                 Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
                             } if (i == 1) { deleteMessageForEveryOne(position, messageViewHolder);
                             } if (i == 2) { deleteSentMessage(position, messageViewHolder); }
@@ -272,7 +273,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageViewHol
                         builder.setTitle("Copy/Delete Message").setIcon(R.drawable.delete);
                         builder.setItems(options, (dialogInterface, i) -> {
                             if (i == 0) {
-                                ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
+                                ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setPrimaryClip(ClipData.newPlainText("text copy from chat", messages.getMessage())); //setText(messages.getMessage());
                                 Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
                             } if (i == 1) { deleteReceiverMessage(position, messageViewHolder); }
                         });

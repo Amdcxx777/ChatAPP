@@ -25,7 +25,7 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressDialog loadingBar; //old method
     private Button LoginButton, PhoneLoginButton;
     private EditText UserEmail, UserPassword;
-    private TextView NeedNewAccountLink, ForgetPasswordLink;
+    private TextView NeedNewAccountLink; //, ForgetPasswordLink;
     private DatabaseReference UsersRef;
     private String currentUserID;
 
@@ -64,15 +64,16 @@ public class LoginActivity extends AppCompatActivity {
             mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
-//                    String deviceToken = FirebaseInstanceId.getInstance().getInstanceId().toString();
-                    String deviceToken = FirebaseInstanceId.getInstance().getToken(); // second variant
-                    UsersRef.child(currentUserID).child("device_token").setValue(deviceToken).addOnCompleteListener(task1 -> {
-                        if (task.isSuccessful()) {
-                            SendUserToMainActivity();
-                            Toast.makeText(LoginActivity.this, "Logged in Successful...", Toast.LENGTH_SHORT).show();
-                            loadingBar.dismiss();
-                        }
-                            });
+                    FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> { // get Token
+//                      String deviceToken = FirebaseInstanceId.getInstance().getToken(); // second variant
+                        UsersRef.child(currentUserID).child("device_token").setValue(instanceIdResult.getToken()).addOnCompleteListener(task1 -> {
+                            if (task.isSuccessful()) {
+                                SendUserToMainActivity();
+                                Toast.makeText(LoginActivity.this, "Logged in Successful...", Toast.LENGTH_SHORT).show();
+                                loadingBar.dismiss();
+                            }
+                        });
+                    });
                 } else {
                     Toast.makeText(LoginActivity.this, "Wrong login or password", Toast.LENGTH_SHORT).show();
                     loadingBar.dismiss();
@@ -87,7 +88,7 @@ public class LoginActivity extends AppCompatActivity {
         UserEmail = findViewById(R.id.login_email);
         UserPassword = findViewById(R.id.login_password);
         NeedNewAccountLink = findViewById(R.id.need_new_account_link);
-        ForgetPasswordLink = findViewById(R.id.forget_password_link); //not realization
+//        ForgetPasswordLink = findViewById(R.id.forget_password_link); //not realization
         loadingBar = new ProgressDialog(this);
     }
 

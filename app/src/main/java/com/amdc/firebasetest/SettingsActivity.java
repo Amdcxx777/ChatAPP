@@ -1,12 +1,7 @@
 package com.amdc.firebasetest;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
@@ -15,6 +10,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -112,7 +111,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GalleryPick  &&  resultCode == RESULT_OK  &&  data != null) {
-            Uri ImageUri = data.getData();
+//            Uri ImageUri = data.getData();
         CropImage.activity().setGuidelines(CropImageView.Guidelines.ON)
                     .setMinCropResultSize(100,100)
                     .setMaxCropResultSize(300, 300)
@@ -125,32 +124,8 @@ public class SettingsActivity extends AppCompatActivity {
                 loadingBar.setMessage("Please wait, your profile image is updating...");
                 loadingBar.setCanceledOnTouchOutside(false);
                 loadingBar.show();
-                Uri resultUri = Objects.requireNonNull(result).getUri();
+//                Uri resultUri = Objects.requireNonNull(result).getUri();
                 final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("Profile images").child(currentUserID + ".jpg");
-
-//                Bitmap bitmap = CropImage.getActivityResult(data).getBitmap();
-//
-////                Drawable drawable = getDrawable(R.drawable.bird);
-////                Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
-//                File file;
-//                String path = Environment.getExternalStorageDirectory().toString();
-//                file = new File(path, "UniqueFileName"+".jpg");
-//
-//                try {
-//                    OutputStream stream = null;
-//                    stream = new FileOutputStream(file);
-//                    bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
-//                    stream.flush();
-//                    stream.close();
-//                    Toast.makeText(SettingsActivity.this, "File saved successful", Toast.LENGTH_SHORT).show();
-//                }
-//                catch (Exception e) {
-//                    e.printStackTrace();
-//                    Toast.makeText(SettingsActivity.this, "Error saved file", Toast.LENGTH_SHORT).show();
-//                }
-//                Uri savedImageURI = Uri.parse(file.getAbsolutePath());
-
-
                 filePath.putFile(Objects.requireNonNull(result).getUri()).addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> { // resultUr
                     RootRef.child("Users").child(currentUserID).child("image").setValue(uri.toString()).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {

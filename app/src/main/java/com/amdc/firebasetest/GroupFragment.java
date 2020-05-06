@@ -29,7 +29,6 @@ public class GroupFragment extends Fragment {
     private ArrayList<String> list_of_groups = new ArrayList<>();
     private DatabaseReference GroupRef;
     private String currentUserID = "";
-//    private Set<String> set;
 
     public GroupFragment() {
     }

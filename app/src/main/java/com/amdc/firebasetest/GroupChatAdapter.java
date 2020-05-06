@@ -2,6 +2,7 @@ package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -30,6 +31,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
     private List<Messages> userMessagesList;
     private DatabaseReference rootRef;
     private FirebaseAuth mAuth;
+    private Context context;
 
     GroupChatAdapter(List<Messages> userMessagesList) {
         this.userMessagesList = userMessagesList;
@@ -59,7 +61,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
     @Override
     public void onBindViewHolder(@NonNull final GroupMessageViewHolder holder, final int position) {
         String messageSenderId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
-        Context context = holder.itemView.getContext();
+        context = holder.itemView.getContext();
         Messages messages = userMessagesList.get(position);
         String fromUserID = messages.getFrom();
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference().child("Users").child(fromUserID);
@@ -85,13 +87,13 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
                 builder.setTitle("Delete Message").setIcon(R.drawable.file);
                 builder.setItems(options, (dialogInterface, i) -> {
                     if (i == 0) {
-                        ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
+                        ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setPrimaryClip(ClipData.newPlainText("text copy from group", messages.getMessage())); //setText(messages.getMessage());
                         Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
                     }
                     if (i == 1) { // delete message
                         rootRef.child("Groups").child(currentGroupName).child("Mesages").child(userMessagesList.get(position).getMessageID()).removeValue().addOnCompleteListener(task -> {
-                            if(task.isSuccessful()) Toast.makeText(holder.itemView.getContext(),"Deleted Successfully",Toast.LENGTH_SHORT).show();
-                            else Toast.makeText(holder.itemView.getContext(),"Delete Error",Toast.LENGTH_SHORT).show();
+                            if(task.isSuccessful()) Toast.makeText(context,"Deleted Successfully",Toast.LENGTH_SHORT).show();
+                            else Toast.makeText(context,"Delete Error",Toast.LENGTH_SHORT).show();
                         });
                     }
                 });
@@ -105,7 +107,7 @@ public class GroupChatAdapter extends RecyclerView.Adapter<GroupChatAdapter.Grou
                 builder.setTitle("Delete Message").setIcon(R.drawable.file);
                 builder.setItems(options, (dialogInterface, i) -> {
                     if (i == 0) {
-                        ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setText(messages.getMessage());
+                        ((ClipboardManager) Objects.requireNonNull(context.getSystemService(Context.CLIPBOARD_SERVICE))).setPrimaryClip(ClipData.newPlainText("text copy from group", messages.getMessage())); //setText(messages.getMessage());
                         Toast.makeText(context,"Copied to clipboard",Toast.LENGTH_SHORT).show();
                     }
                     if (i == 1) {

@@ -45,8 +45,8 @@ public class GroupChatActivity extends AppCompatActivity {
     private RecyclerView userMessagesList;
     private final List<Messages> messagesList = new ArrayList<>();
     private DatabaseReference UsersRef, GroupNameRef, GroupNameMessageRef;
-    static String currentGroupName, currentUserID;
-    private String currentUserName, msmID, snow, adminGroupID;
+    private String currentUserID, currentUserName, msmID, snow, adminGroupID;
+    static String currentGroupName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
