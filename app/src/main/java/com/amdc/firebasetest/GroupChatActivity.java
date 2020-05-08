@@ -3,6 +3,7 @@ package com.amdc.firebasetest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -33,13 +34,15 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import static com.amdc.firebasetest.Decryption.decryptedSMS;
 import static com.amdc.firebasetest.Encryption.encryptedBytes;
 
 public class GroupChatActivity extends AppCompatActivity {
-    private ImageButton SendMessageButton;
+    private final int RECOGNIZER_VOICE_RESULT = 1;
+    private ImageButton sendMessageButton;
     private EditText userMessageInput;
     private GroupChatAdapter groupChatAdapter;
     private RecyclerView userMessagesList;
@@ -60,11 +63,20 @@ public class GroupChatActivity extends AppCompatActivity {
         GroupNameMessageRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(currentGroupName).child("Mesages");
         initializeFields();
         getUserInfo();
-        SendMessageButton.setOnClickListener(view -> {
+        sendMessageButton.setOnClickListener(view -> {
             try { sendMessageToGroupChat(); }
             catch (Exception e) { Toast.makeText(this, "Send message error", Toast.LENGTH_SHORT).show(); }
             userMessageInput.setText("");
         });
+        sendMessageButton.setOnLongClickListener(v -> {
+            Intent speakIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            speakIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            speakIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+            speakIntent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Hi speak Something");
+            startActivityForResult(speakIntent, RECOGNIZER_VOICE_RESULT);
+            return false;
+        });
+
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~ Get ID admin and key group ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         GroupNameRef.child("Settings").addValueEventListener(new ValueEventListener() {
@@ -112,7 +124,7 @@ public class GroupChatActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
         setSupportActionBar(findViewById(R.id.group_chat_bar_layout)); // my toolbar
         Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#F3FB00'>" + "Group chat: " + currentGroupName + "</font>"));
-        SendMessageButton = findViewById(R.id.send_message_button);
+        sendMessageButton = findViewById(R.id.send_message_button);
         userMessageInput = findViewById(R.id.input_group_message);
         groupChatAdapter = new GroupChatAdapter(messagesList);
         userMessagesList = findViewById(R.id.private_messages_list_from_users);
@@ -196,6 +208,17 @@ public class GroupChatActivity extends AppCompatActivity {
 //            builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
 //            builder.show();
 //        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RECOGNIZER_VOICE_RESULT) { // for voice to text
+            if (resultCode == RESULT_OK && data != null) {
+                ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                userMessageInput.setText(Objects.requireNonNull(result).get(0));
+            }
+        }
     }
 
     private void renewSecurityKey() {

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -53,11 +54,12 @@ import static com.amdc.firebasetest.MainActivity.userSet;
 public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageSenderID, messageReceiverName, messageReceiverImage, saveCurrentTime,
             saveCurrentDate, checker = "", msmID, messageSenderRef, messageReceiverRef, messageCounterOutput;
+    private final int RECOGNIZER_FILE_RESULT = 443, RECOGNIZER_VOICE_RESULT = 1;
     private TextView userName, userLastSeen;
     private EditText messageInputText;
     private CircleImageView userImage;
     private DatabaseReference RootRef;
-    private ImageButton SendMessageButton, SendFilesButton;
+    private ImageButton sendMessageButton, SendFilesButton;
     private final List<Messages> messagesList = new ArrayList<>();
     private ChatAdapter messageAdapter;
     private RecyclerView userMessagesList;
@@ -80,9 +82,17 @@ public class ChatActivity extends AppCompatActivity {
         InitializeControllers();
         userName.setText(messageReceiverName); // for chat bar
         Picasso.get().load(messageReceiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
-        SendMessageButton.setOnClickListener(view -> {
+        sendMessageButton.setOnClickListener(view -> { //listener for send messages
             try { SendMessage();
             } catch (Exception e) { e.printStackTrace(); }
+        });
+        sendMessageButton.setOnLongClickListener(v -> { //listener for voice to text
+            Intent speakIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            speakIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            speakIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+            speakIntent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Hi speak Something");
+            startActivityForResult(speakIntent, RECOGNIZER_VOICE_RESULT);
+            return false;
         });
         DisplayLastSeen();
         SendFilesButton.setOnClickListener(view -> {
@@ -94,12 +104,12 @@ public class ChatActivity extends AppCompatActivity {
                 if(i == 0) { checker = "image";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
-                    startActivityForResult(Intent.createChooser(intent,"Select Image"),443); //443
+                    startActivityForResult(Intent.createChooser(intent,"Select Image"),RECOGNIZER_FILE_RESULT);
                 }
                 if(i == 1) { checker = "pdf";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/pdf");
-                    startActivityForResult(Intent.createChooser(intent,"Select PDF"),443);
+                    startActivityForResult(Intent.createChooser(intent,"Select PDF"),RECOGNIZER_FILE_RESULT);
                 }
                 if(i == 2) { checker = "xls";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -107,7 +117,7 @@ public class ChatActivity extends AppCompatActivity {
                     final String[] mineTypes = {"application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}; // filter xml files
                     intent.setType("*/*");
                     intent.putExtra(Intent.EXTRA_MIME_TYPES, mineTypes);
-                    startActivityForResult(Intent.createChooser(intent,"Select Excel Files"),443);
+                    startActivityForResult(Intent.createChooser(intent,"Select Excel Files"),RECOGNIZER_FILE_RESULT);
                 }
                 if(i == 3) { checker = "doc";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -115,12 +125,12 @@ public class ChatActivity extends AppCompatActivity {
                     final String[] mineTypes = {"application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document"}; // filter word files
                     intent.setType("*/*");
                     intent.putExtra(Intent.EXTRA_MIME_TYPES, mineTypes);
-                    startActivityForResult(Intent.createChooser(intent,"Select Word Files"),443);
+                    startActivityForResult(Intent.createChooser(intent,"Select Word Files"),RECOGNIZER_FILE_RESULT);
                 }
                 if(i == 4) { checker = "zip";
                     Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/zip");
-                    startActivityForResult(Intent.createChooser(intent,"Select Zip Files"),443);
+                    startActivityForResult(Intent.createChooser(intent,"Select Zip Files"),RECOGNIZER_FILE_RESULT);
                 }
             });
             builder.show();
@@ -253,7 +263,7 @@ public class ChatActivity extends AppCompatActivity {
         userName = findViewById(R.id.custom_profile_name);
         userImage = findViewById(R.id.custom_profile_image);
         userLastSeen = findViewById(R.id.custom_user_last_seen);
-        SendMessageButton = findViewById(R.id.send_message_btn);
+        sendMessageButton = findViewById(R.id.send_message_btn);
         SendFilesButton = findViewById(R.id.send_files_btn);
         messageInputText = findViewById(R.id.input_message);
         messageAdapter = new ChatAdapter(messagesList);
@@ -272,7 +282,13 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 443 && resultCode == RESULT_OK && data != null && data.getData() != null) { //443, 438
+        if (requestCode == RECOGNIZER_VOICE_RESULT) { // for voice to text
+            if (resultCode == RESULT_OK && data != null) {
+                ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                messageInputText.setText(Objects.requireNonNull(result).get(0));
+            }
+        }
+        if(requestCode == RECOGNIZER_FILE_RESULT && resultCode == RESULT_OK && data != null && data.getData() != null) { //443, 438
             loadingBar.setTitle("Sending File");
             loadingBar.setMessage("Please wait, sending...");
             loadingBar.setCanceledOnTouchOutside(false);
