@@ -1,6 +1,7 @@
 package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -13,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.app.AlertDialog;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,6 +30,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Objects;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static android.os.Environment.DIRECTORY_DOWNLOADS;

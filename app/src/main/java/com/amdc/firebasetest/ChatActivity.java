@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -34,6 +35,11 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.sinch.android.rtc.PushPair;
+import com.sinch.android.rtc.Sinch;
+import com.sinch.android.rtc.SinchClient;
+import com.sinch.android.rtc.calling.Call;
+import com.sinch.android.rtc.calling.CallListener;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -59,13 +65,17 @@ public class ChatActivity extends AppCompatActivity {
     private EditText messageInputText;
     private CircleImageView userImage;
     private DatabaseReference RootRef;
+    private Button btnCall;
     private ImageButton sendMessageButton, SendFilesButton;
     private final List<Messages> messagesList = new ArrayList<>();
     private ChatAdapter messageAdapter;
     private RecyclerView userMessagesList;
     private ProgressDialog loadingBar;
     private Uri fileUri;
-    private int count;
+    private SinchClient sinchClient;
+    private AlertDialog alertDialogCall;
+    private Call call;
+    private int counterMessages;
     static boolean keyEnable;
 
     @Override
@@ -73,8 +83,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        messageSenderID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+        messageSenderID = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         RootRef = FirebaseDatabase.getInstance().getReference();
         messageReceiverID = (String) Objects.requireNonNull(getIntent().getExtras()).get("visit_user_id");
         messageReceiverName = (String) getIntent().getExtras().get("visit_user_name");
@@ -82,6 +91,35 @@ public class ChatActivity extends AppCompatActivity {
         InitializeControllers();
         userName.setText(messageReceiverName); // for chat bar
         Picasso.get().load(messageReceiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
+        DisplayLastSeen();
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Calling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        sinchClient = Sinch.getSinchClientBuilder().context(this).userId(messageSenderID)
+                .applicationKey("00ef7168-1938-40ae-a2eb-eba4ea2b5b19")
+                .applicationSecret("E2ZKJPMif06ufEVFqkoZOA==")
+                .environmentHost("clientapi.sinch.com")
+                .build();
+        sinchClient.setSupportCalling(true);
+        sinchClient.startListeningOnActiveConnection();
+        sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) -> { // incoming calls
+            alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
+            alertDialogCall.setTitle("Incoming Call");
+            alertDialogCall.setIcon(android.R.drawable.sym_call_incoming);
+            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
+                call = incomingCall;
+                call.hangup();
+                dialog.dismiss();
+            });
+            alertDialogCall.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
+                call = incomingCall;
+                call.answer();
+                call.addCallListener(new SinchCallListener());
+            });
+            alertDialogCall.show();
+        });
+        sinchClient.start();
+
+        //~~~~~~~~~~~~~~~~~~~~ Button for send messages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         sendMessageButton.setOnClickListener(view -> { //listener for send messages
             try { SendMessage();
             } catch (Exception e) { e.printStackTrace(); }
@@ -94,25 +132,41 @@ public class ChatActivity extends AppCompatActivity {
             startActivityForResult(speakIntent, RECOGNIZER_VOICE_RESULT);
             return false;
         });
-        DisplayLastSeen();
+
+        //~~~~~~~~~~~~~~~~~~~~ Button for Calling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        btnCall.setOnClickListener(v -> { // Voice Caller
+            call = sinchClient.getCallClient().callUser(messageReceiverID);
+            call.addCallListener(new SinchCallListener());
+            alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
+            alertDialogCall.setTitle("Outgoing Calling");
+            alertDialogCall.setIcon(android.R.drawable.sym_call_outgoing);
+            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
+                call.hangup();
+                dialog.dismiss();
+            });
+            alertDialogCall.show();
+        });
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~ Button Send File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         SendFilesButton.setOnClickListener(view -> {
             CharSequence[] options = new CharSequence[] {"Images", "PDF Files", "Excel Files", "MS Word Files", "Zip Type Files", "Exit"}; // list dialog-menu
             AlertDialog.Builder builder = new AlertDialog.Builder(ChatActivity.this);
             builder.setTitle("Select File"); // title dialog-menu
             builder.setIcon(R.drawable.send_files); //icon dialog-menu
             builder.setItems(options, (dialogInterface, i) -> {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 if(i == 0) { checker = "image";
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
                     startActivityForResult(Intent.createChooser(intent,"Select Image"),RECOGNIZER_FILE_RESULT);
                 }
                 if(i == 1) { checker = "pdf";
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/pdf");
                     startActivityForResult(Intent.createChooser(intent,"Select PDF"),RECOGNIZER_FILE_RESULT);
                 }
                 if(i == 2) { checker = "xls";
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
                     final String[] mineTypes = {"application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}; // filter xml files
                     intent.setType("*/*");
@@ -120,7 +174,7 @@ public class ChatActivity extends AppCompatActivity {
                     startActivityForResult(Intent.createChooser(intent,"Select Excel Files"),RECOGNIZER_FILE_RESULT);
                 }
                 if(i == 3) { checker = "doc";
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
                     final String[] mineTypes = {"application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document"}; // filter word files
                     intent.setType("*/*");
@@ -128,7 +182,7 @@ public class ChatActivity extends AppCompatActivity {
                     startActivityForResult(Intent.createChooser(intent,"Select Word Files"),RECOGNIZER_FILE_RESULT);
                 }
                 if(i == 4) { checker = "zip";
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                     intent.setType("application/zip");
                     startActivityForResult(Intent.createChooser(intent,"Select Zip Files"),RECOGNIZER_FILE_RESULT);
                 }
@@ -140,7 +194,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    count = Integer.parseInt(((String) Objects.requireNonNull(dataSnapshot.child("Counter").getValue())));
+                    counterMessages = Integer.parseInt(((String) Objects.requireNonNull(dataSnapshot.child("Counter").getValue())));
                 } else {
                     String messageCounterRef = "Message notifications/" + messageReceiverID + "/" + messageSenderID;
                     Map<String, String> messageCounter = new HashMap<>();
@@ -183,6 +237,33 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
+    }
+
+    private class SinchCallListener implements CallListener {
+        @Override
+        public void onCallProgressing(com.sinch.android.rtc.calling.Call call) {
+            Toast.makeText(getApplicationContext(), "Ringing...", Toast.LENGTH_SHORT).show();
+        }
+        @Override
+        public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) {
+            alertDialogCall.dismiss();
+            alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
+            alertDialogCall.setTitle("Speaking");
+            alertDialogCall.setIcon(android.R.drawable.sym_action_call);
+            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
+                dialog.dismiss();
+                call = speakCall;
+                call.hangup();
+            });
+            alertDialogCall.show();
+        }
+        @Override
+        public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) { call = endedCall;
+            Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
+            alertDialogCall.dismiss();
+        }
+        @Override
+        public void onShouldSendPushNotification(com.sinch.android.rtc.calling.Call call, List<PushPair> list) { }
     }
 
     @Override
@@ -263,6 +344,7 @@ public class ChatActivity extends AppCompatActivity {
         userName = findViewById(R.id.custom_profile_name);
         userImage = findViewById(R.id.custom_profile_image);
         userLastSeen = findViewById(R.id.custom_user_last_seen);
+        btnCall = findViewById(R.id.btnCalling);
         sendMessageButton = findViewById(R.id.send_message_btn);
         SendFilesButton = findViewById(R.id.send_files_btn);
         messageInputText = findViewById(R.id.input_message);
@@ -283,7 +365,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RECOGNIZER_VOICE_RESULT) { // for voice to text
-            if (resultCode == RESULT_OK && data != null) {
+            if (resultCode == RESULT_OK && data != null) { //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                 messageInputText.setText(Objects.requireNonNull(result).get(0));
             }
@@ -322,7 +404,7 @@ public class ChatActivity extends AppCompatActivity {
                     loadingBar.setMessage((int) p + "% Uploading...");
                 }).addOnCompleteListener(task -> {
                     Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
-                    messageCounter.put("Counter", (count + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+                    messageCounter.put("Counter", (counterMessages + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
                     Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
                     messageBodyCounter.put(messageCounterOutput, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
                     RootRef.updateChildren(messageBodyCounter); // ~~~~~~~~ update counter messages ~~~~~~~~ add one for counter messages
@@ -355,7 +437,7 @@ public class ChatActivity extends AppCompatActivity {
                     loadingBar.setMessage((int) p + "% Uploading...");
                 }).addOnCompleteListener(task -> {
                     Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
-                    messageCounter.put("Counter", (count + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+                    messageCounter.put("Counter", (counterMessages + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
                     Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
                     messageBodyCounter.put(messageCounterOutput, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
                     RootRef.updateChildren(messageBodyCounter); // ~~~~~~~~ update counter messages ~~~~~~~~ add one for counter messages
@@ -388,7 +470,7 @@ public class ChatActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(messageText)) Toast.makeText(this, "first write your message...", Toast.LENGTH_SHORT).show();
         else { new Encryption(messageText, userSet);
             Map<String, String> messageCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
-            messageCounter.put("Counter", (count + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
+            messageCounter.put("Counter", (counterMessages + 1) + ""); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
             Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
             messageBodyCounter.put(messageCounterOutput, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~ add one for counter messages
             RootRef.updateChildren(messageBodyCounter); // ~~~~~~~~ update counter messages ~~~~~~~~ add one for counter messages

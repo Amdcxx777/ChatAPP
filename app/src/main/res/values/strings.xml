@@ -57,4 +57,5 @@
     <string name="change_crypt_key">Change crypt key</string>
     <string name="delete_user">Delete user</string>
     <string name="delete_group">Delete group</string>
+    <string name="call">CALL</string>
 </resources>

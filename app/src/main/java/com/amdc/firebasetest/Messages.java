@@ -1,13 +1,12 @@
 package com.amdc.firebasetest;
 
 public class Messages {
-    private String from, message, type, to, messageID, time, date, name;
-    public Messages() {
+    private String from, message, type, to, messageID, time, date, name, email, password, userID, uid;
 
-    }
+    public Messages() {    }
 
     public Messages(String from, String message, String type, String to, String messageID, String time,
-                    String date, String name, String action, String userID) {
+                    String date, String name, String email, String password, String userID, String uid) {
         this.from = from;
         this.message = message;
         this.type = type;
@@ -16,7 +15,28 @@ public class Messages {
         this.time = time;
         this.date = date;
         this.name = name;
+        this.email = email;
+        this.password = password;
+        this.userID = userID;
+        this.uid = uid;
     }
+
+    public String getUid() { return uid; }
+
+    public void setUid(String uid) { this.uid = uid; }
+
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+
+    public void setPassword(String password) { this.password = password; }
+
+    public String getUserID() { return userID; }
+
+    public void setUserID(String userID) { this.userID = userID; }
+
     public String getFrom() {
         return from;
     }
