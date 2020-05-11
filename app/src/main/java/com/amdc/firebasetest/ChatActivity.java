@@ -8,11 +8,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.os.Vibrator;
 import android.speech.RecognizerIntent;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -43,9 +41,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.sinch.android.rtc.PushPair;
-import com.sinch.android.rtc.Sinch;
-import com.sinch.android.rtc.SinchClient;
-import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallListener;
 import com.squareup.picasso.Picasso;
 
@@ -64,7 +59,12 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import static android.os.PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK;
 import static com.amdc.firebasetest.Decryption.decryptedSMS;
 import static com.amdc.firebasetest.Encryption.encryptedBytes;
+import static com.amdc.firebasetest.MainActivity.alertDialogCall;
+import static com.amdc.firebasetest.MainActivity.call;
+import static com.amdc.firebasetest.MainActivity.sinchClient;
+import static com.amdc.firebasetest.MainActivity.sound;
 import static com.amdc.firebasetest.MainActivity.userSet;
+import static com.amdc.firebasetest.MainActivity.vibrator;
 
 public class ChatActivity extends AppCompatActivity implements SensorEventListener {
     private String messageReceiverID, messageSenderID, messageReceiverName, messageReceiverImage, saveCurrentTime,
@@ -81,11 +81,7 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
     private RecyclerView userMessagesList;
     private ProgressDialog loadingBar;
     private Uri fileUri;
-    private SinchClient sinchClient;
-    private AlertDialog alertDialogCall;
-    private Call call;
-    private Vibrator vibrator;
-    private MediaPlayer sound;
+//    private AlertDialog alertDialogCall;
     private int counterMessages;
     private SensorManager sensorManager;
     private Sensor proximitySensor;
@@ -104,49 +100,43 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
         messageReceiverID = (String) Objects.requireNonNull(getIntent().getExtras()).get("visit_user_id");
         messageReceiverName = (String) getIntent().getExtras().get("visit_user_name");
         messageReceiverImage = (String) getIntent().getExtras().get("visit_image");
-        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        sound = MediaPlayer.create(this, R.raw.ring);
+//        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+//        sound = MediaPlayer.create(this, R.raw.ring);
         InitializeControllers();
         userName.setText(messageReceiverName); // for chat bar
-        Picasso.get().load(messageReceiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
+        try { Picasso.get().load(messageReceiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
+        } catch (Exception e) { Toast.makeText(this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
         DisplayLastSeen();
 
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Calling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        sinchClient = Sinch.getSinchClientBuilder().context(this).userId(messageSenderID)
-                .applicationKey("00ef7168-1938-40ae-a2eb-eba4ea2b5b19")
-                .applicationSecret("E2ZKJPMif06ufEVFqkoZOA==")
-                .environmentHost("clientapi.sinch.com")
-                .build();
-        sinchClient.setSupportCalling(true);
-        sinchClient.startListeningOnActiveConnection();
-        sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) -> { // incoming calls
-            sound = MediaPlayer.create(this, R.raw.ring);
-            sound.start();
-            vibrator.vibrate(200); // vibrator when message was received
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Incoming Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) -> {
             alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
             alertDialogCall.setTitle("Incoming Call");
             alertDialogCall.setCancelable(false);
             alertDialogCall.setIcon(android.R.drawable.sym_call_incoming);
             alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
+                vibrator.cancel();
+                sound.stop();
                 call = incomingCall;
                 call.hangup();
-                sound.stop();
                 dialog.dismiss();
             });
             alertDialogCall.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
+                vibrator.cancel();
+//                sound.stop();
                 call = incomingCall;
                 call.answer();
                 call.addCallListener(new SinchCallListener());
             });
             alertDialogCall.show();
         });
-        sinchClient.start();
+//        sinchClient.start();
 
         //~~~~~~~~~~~~~~~~~~~~ Button for send messages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        sendMessageButton.setOnClickListener(view -> { //listener for send messages
+        sendMessageButton.setOnClickListener(view -> { //listener when push shot for send messages
             try { SendMessage(); } catch (Exception e) { e.printStackTrace(); }
         });
-        sendMessageButton.setOnLongClickListener(v -> { //listener for voice to text
+        sendMessageButton.setOnLongClickListener(v -> { //listener when push long for voice to text
             Intent speakIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             speakIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
             speakIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
@@ -225,7 +215,7 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
-        //~~~~~~~~~~~~~~~~~~~~ add/delete messages into messagesList ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //~~~~~~~~~~~~~~~~~~~~ add/delete messages from firebase into messagesList ~~~~~~~~~~~~~~~~~
         RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
@@ -262,7 +252,7 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
         if (proximitySensor != null)
         sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Sensor Proximity ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Sensor Proximity For Display OFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     @Override
     @SuppressLint("InvalidWakeLockTag")
     public void onSensorChanged(SensorEvent event) {
@@ -280,8 +270,8 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
                 }
             } catch (Exception ex) { ex.printStackTrace(); }
         }
-        else { // When something is far away.
-        }
+//        else { // When something is far away.
+//        }
     }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) { }
@@ -289,9 +279,7 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Listener Voice Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     private class SinchCallListener implements CallListener {
         @Override
-        public void onCallProgressing(com.sinch.android.rtc.calling.Call call) {
-            Toast.makeText(getApplicationContext(), "Ringing...", Toast.LENGTH_SHORT).show();
-        }
+        public void onCallProgressing(com.sinch.android.rtc.calling.Call call) { Toast.makeText(getApplicationContext(), "Ringing...", Toast.LENGTH_SHORT).show(); }
         @Override
         public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) {
             sound.stop();

@@ -26,20 +26,33 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.sinch.android.rtc.PushPair;
+import com.sinch.android.rtc.Sinch;
+import com.sinch.android.rtc.SinchClient;
+import com.sinch.android.rtc.calling.Call;
+import com.sinch.android.rtc.calling.CallListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
+    static long[] pattern = { 200, 200, 200, 200, 200, 500, 200, 200, 200, 200, 200, 500, 200, 200, 200, 200, 200, 500 };
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
     private String currentUserID;
+    static AlertDialog alertDialogCall;
+    static SinchClient sinchClient;
+    static Call call;
     static Vibrator vibrator;
     static MediaPlayer sound;
     static String userSet;
+
+//    static SensorManager sensorManager;
+//    static Sensor proximitySensor;
     static boolean bell = true, vibro = true;
 
     @Override
@@ -47,8 +60,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+//        proximitySensor = Objects.requireNonNull(sensorManager).getDefaultSensor(Sensor.TYPE_PROXIMITY);
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        sound = MediaPlayer.create(this, R.raw.viber);
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
@@ -59,6 +73,71 @@ public class MainActivity extends AppCompatActivity {
         myViewPager.setAdapter(myTabsAccessorAdapter);
         TabLayout myTabLayout = findViewById(R.id.main_tabs);
         myTabLayout.setupWithViewPager(myViewPager);
+        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Calling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        sinchClient = Sinch.getSinchClientBuilder().context(this).userId(currentUserID)
+                .applicationKey("00ef7168-1938-40ae-a2eb-eba4ea2b5b19")
+                .applicationSecret("E2ZKJPMif06ufEVFqkoZOA==")
+                .environmentHost("clientapi.sinch.com")
+                .build();
+        sinchClient.setSupportCalling(true);
+        sinchClient.startListeningOnActiveConnection();
+        sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) -> { // incoming calls
+            sound = MediaPlayer.create(this, R.raw.ring);
+            sound.start();
+            vibrator.vibrate(pattern, 2); // Vibration when incoming voice call
+            alertDialogCall = new AlertDialog.Builder(MainActivity.this).create();
+            alertDialogCall.setTitle("Incoming Call");
+            alertDialogCall.setCancelable(false);
+            alertDialogCall.setIcon(android.R.drawable.sym_call_incoming);
+            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
+                vibrator.cancel();
+                sound.stop();
+                call = incomingCall;
+                call.hangup();
+                dialog.dismiss();
+            });
+            alertDialogCall.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
+                call = incomingCall;
+                vibrator.cancel();
+//                sound.stop();
+                call.answer();
+                call.addCallListener(new SinchCallListener());
+            });
+            alertDialogCall.show();
+        });
+        sinchClient.start();
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Listener Voice Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public class SinchCallListener implements CallListener {
+        @Override
+        public void onCallProgressing(com.sinch.android.rtc.calling.Call call) {
+            Toast.makeText(getApplicationContext(), "Ringing...", Toast.LENGTH_SHORT).show();
+        }
+        @Override
+        public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) {
+            sound.stop();
+            alertDialogCall.dismiss();
+            alertDialogCall = new AlertDialog.Builder(MainActivity.this).create();
+            alertDialogCall.setTitle("Speaking");
+            alertDialogCall.setCancelable(false);
+            alertDialogCall.setIcon(android.R.drawable.sym_action_call);
+            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
+                dialog.dismiss();
+                call = speakCall;
+                call.hangup();
+            });
+            alertDialogCall.show();
+        }
+        @Override
+        public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) { call = endedCall;
+            Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
+            alertDialogCall.dismiss();
+            sound.stop();
+        }
+        @Override
+        public void onShouldSendPushNotification(com.sinch.android.rtc.calling.Call call, List<PushPair> list) { }
     }
 
     @Override
@@ -74,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void VerifyUserExistence() {
-        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+//        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -129,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("SimpleDateFormat")
     private void CreateNewGroup(final String groupName) { // create new group with admin copyright and with settings
-        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+//        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         String messagePushID = RootRef.child("Groups").child("Users").push().getKey();
         HashMap<String, Object> userMap = new HashMap<>();
         userMap.put("userID", currentUserID);
@@ -173,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
         onlineStateMap.put("time", new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime()));
         onlineStateMap.put("date", new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(Calendar.getInstance().getTime()));
         onlineStateMap.put("state", state);
-        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+//        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef.child("Users").child(currentUserID).child("userState").updateChildren(onlineStateMap);
     }
 
@@ -197,7 +276,9 @@ public class MainActivity extends AppCompatActivity {
                     FirebaseUser currentUser = mAuth.getCurrentUser();
                     if (currentUser != null) updateUserStatus("offline");
                     moveTaskToBack(true);
+
                 }).setNegativeButton("No", null).show();
+
     }
 }
 

@@ -2,6 +2,7 @@ package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -74,6 +75,7 @@ public class ChatFragment extends Fragment {
                                 if (count != 0) {
                                     holder.itemView.findViewById(R.id.message_counter).setVisibility(View.VISIBLE); // visibility counter message
                                     holder.messCounter.setText(count + "");
+                                    sound = MediaPlayer.create(getContext(), R.raw.viber); // sound message
                                     if (bell) sound.start(); // sound when message was received
                                     if (vibro) vibrator.vibrate(200); // vibrator when message was received
                                 }
