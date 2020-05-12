@@ -52,9 +52,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     static long[] pattern = { 200, 200, 200, 200, 200, 500, 200, 200, 200, 200, 200, 500, 200, 200, 200, 200, 200, 500 };
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
-    private String currentUserID;
+    private String currentUserID, incomingCallUser = "Unknown";
     static boolean bell = true, vibro = true, melody1, melody2, displayOFF = false;
-    static AlertDialog alertDialogCall;
+    private AlertDialog alertDialogCall;
     static SinchClient sinchClient;
     static Call call;
     static Vibrator vibrator;
@@ -101,31 +101,39 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sound.setLooping(true);
             if (bell) sound.start();
             if (vibro) vibrator.vibrate(pattern, 2); // Vibration when incoming voice call
-            alertDialogCall = new AlertDialog.Builder(this).create();
-            alertDialogCall.setTitle("Incoming Call");
-            alertDialogCall.setCancelable(false);
-            alertDialogCall.setIcon(android.R.drawable.sym_call_incoming);
-            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
-                if (sound != null && sound.isPlaying()) sound.stop();
-                vibrator.cancel();
-                call = incomingCall;
-                call.hangup();
-                dialog.dismiss();
+            RootRef.child("Users").child(incomingCall.getRemoteUserId()).addValueEventListener(new ValueEventListener() {
+                @Override // search Name incoming user
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.exists()) incomingCallUser = (String) dataSnapshot.child("name").getValue();
+                    alertDialogCall = new AlertDialog.Builder(MainActivity.this).create();
+                    alertDialogCall.setTitle("Incoming Call from " + incomingCallUser);
+                    alertDialogCall.setCancelable(false);
+                    alertDialogCall.setIcon(android.R.drawable.sym_call_incoming);
+                    alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
+                        if (sound != null && sound.isPlaying()) sound.stop();
+                        vibrator.cancel();
+                        call = incomingCall;
+                        call.hangup();
+                        dialog.dismiss();
+                    });
+                    alertDialogCall.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
+                        if (sound != null && sound.isPlaying()) sound.stop();
+                        call = incomingCall;
+                        vibrator.cancel();
+                        call.answer();
+                        call.addCallListener(new SinchCallListener());
+                    });
+                    if (!alertDialogCall.isShowing()) alertDialogCall.show();
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) { }
             });
-            alertDialogCall.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
-                if (sound != null && sound.isPlaying()) sound.stop();
-                call = incomingCall;
-                vibrator.cancel();
-                call.answer();
-                call.addCallListener(new SinchCallListener());
-            });
-            alertDialogCall.show();
         });
         sinchClient.start();
         }
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~ Listener proximity sensor ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //~~~~~~~~~~~~~~~~~~~~~~~~~ Listener proximity sensor for screen off ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("InvalidWakeLockTag")
     @Override
@@ -160,10 +168,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 call = speakCall;
                 call.hangup();
             });
-            alertDialogCall.show();
+            if (!alertDialogCall.isShowing()) alertDialogCall.show();
         }
         @Override
-        public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) { call = endedCall;
+        public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) {
+            call = endedCall;
             Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
             if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
             if (sound != null && sound.isPlaying()) sound.stop();
@@ -189,6 +198,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
         if (proximitySensor != null) sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Search User Name ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//    public String searchUserName(String user) {
+//        RootRef.child("Users").child(user).addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                if(dataSnapshot.exists()) incomingCallUser = (String) dataSnapshot.child("name").getValue();
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) { }
+//        });
+//        return incomingCallUser;
+//    }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Verify User and add user date ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     private void VerifyUserExistence() {

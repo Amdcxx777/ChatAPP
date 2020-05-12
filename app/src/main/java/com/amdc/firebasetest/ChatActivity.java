@@ -63,7 +63,7 @@ import static com.amdc.firebasetest.MainActivity.vibrator;
 
 public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageSenderID, messageReceiverName, messageReceiverImage, saveCurrentTime,
-            saveCurrentDate, checker = "", msmID, messageSenderRef, messageReceiverRef, messageCounterOutput;
+            saveCurrentDate, checker = "", msmID, messageSenderRef, messageReceiverRef, messageCounterOutput, incomingCallUser = "Unknown";
     private final int RECOGNIZER_FILE_RESULT = 443, RECOGNIZER_VOICE_RESULT = 1;
     private TextView userName, userLastSeen;
     private EditText messageInputText;
@@ -76,7 +76,7 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView userMessagesList;
     private ProgressDialog loadingBar;
     private Uri fileUri;
-    private AlertDialog alertDialogCalling;
+    private AlertDialog alertDialogCall;
     private int counterMessages;
     static boolean keyEnable;
 
@@ -92,32 +92,39 @@ public class ChatActivity extends AppCompatActivity {
         messageReceiverImage = (String) getIntent().getExtras().get("visit_image");
         InitializeControllers();
         userName.setText(messageReceiverName); // for chat bar
-        try { Picasso.get().load(messageReceiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
+        try { Picasso.get().load(messageReceiverImage).resize(47, 47).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
         } catch (Exception e) { Toast.makeText(this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
         DisplayLastSeen();
 
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Incoming Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) -> {
-            alertDialogCalling = new AlertDialog.Builder(this).create();
-            alertDialogCalling.setTitle("Incoming Call");
-            alertDialogCalling.setCancelable(false);
-            alertDialogCalling.setIcon(android.R.drawable.sym_call_incoming);
-            alertDialogCalling.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
-                if (sound != null && sound.isPlaying()) sound.stop();
-                vibrator.cancel();
-                call = incomingCall;
-                call.hangup();
-                dialog.dismiss();
-                alertDialogCalling.dismiss();
-            });
-            alertDialogCalling.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
-                vibrator.cancel();
-                call = incomingCall;
-                call.answer();
-                call.addCallListener(new SinchCallListener());
-            });
-            alertDialogCalling.show();
-        });
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Incoming Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) ->
+                RootRef.child("Users").child(incomingCall.getRemoteUserId()).addValueEventListener(new ValueEventListener() {
+            @Override // search Name incoming user
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) incomingCallUser = (String) dataSnapshot.child("name").getValue();
+                alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
+                alertDialogCall.setTitle("Incoming Call from " + incomingCallUser);
+                alertDialogCall.setCancelable(false);
+                alertDialogCall.setIcon(android.R.drawable.sym_call_incoming);
+                alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
+                    if (sound != null && sound.isPlaying()) sound.stop();
+                    vibrator.cancel();
+                    call = incomingCall;
+                    call.hangup();
+                    dialog.dismiss();
+                });
+                alertDialogCall.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
+                    if (sound != null && sound.isPlaying()) sound.stop();
+                    call = incomingCall;
+                    vibrator.cancel();
+                    call.answer();
+                    call.addCallListener(new SinchCallListener());
+                });
+                if (!alertDialogCall.isShowing()) alertDialogCall.show();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        }));
         sinchClient.startListeningOnActiveConnection();
 
         //~~~~~~~~~~~~~~~~~~~~ Button for send messages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,19 +140,19 @@ public class ChatActivity extends AppCompatActivity {
             return false;
         });
 
-        //~~~~~~~~~~~~~~~~~~~~ Button for Calling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //~~~~~~~~~~~~~~~~~~~~ Button for Voice Calling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         btnCall.setOnClickListener(v -> { // Voice Caller
             call = sinchClient.getCallClient().callUser(messageReceiverID);
             call.addCallListener(new SinchCallListener());
-            alertDialogCalling = new AlertDialog.Builder(ChatActivity.this).create();
-            alertDialogCalling.setTitle("Outgoing Calling");
-            alertDialogCalling.setCancelable(false);
-            alertDialogCalling.setIcon(android.R.drawable.sym_call_outgoing);
-            alertDialogCalling.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
+            alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
+            alertDialogCall.setTitle("Outgoing Calling");
+            alertDialogCall.setCancelable(false);
+            alertDialogCall.setIcon(android.R.drawable.sym_call_outgoing);
+            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
                 call.hangup();
                 dialog.dismiss();
             });
-            alertDialogCalling.show();
+            if (!alertDialogCall.isShowing()) alertDialogCall.show();
         });
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~ Button Send File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -248,22 +255,22 @@ public class ChatActivity extends AppCompatActivity {
         public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) {
             if (sound != null && sound.isPlaying()) sound.stop();
             displayOFF = true;
-            if (alertDialogCalling.isShowing()) alertDialogCalling.dismiss();
-            alertDialogCalling = new AlertDialog.Builder(ChatActivity.this).create();
-            alertDialogCalling.setTitle("Speaking");
-            alertDialogCalling.setCancelable(false);
-            alertDialogCalling.setIcon(android.R.drawable.sym_action_call);
-            alertDialogCalling.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
+            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+            alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
+            alertDialogCall.setTitle("Speaking");
+            alertDialogCall.setCancelable(false);
+            alertDialogCall.setIcon(android.R.drawable.sym_action_call);
+            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
                 dialog.dismiss();
                 call = speakCall;
                 call.hangup();
             });
-            alertDialogCalling.show();
+            if (!alertDialogCall.isShowing()) alertDialogCall.show();
         }
         @Override
         public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) { call = endedCall;
             Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
-            if (alertDialogCalling.isShowing()) alertDialogCalling.dismiss();
+            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
             if (sound != null && sound.isPlaying()) sound.stop();
             displayOFF = false;
         }

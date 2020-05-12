@@ -2,6 +2,7 @@ package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.text.Html;
@@ -27,6 +28,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.sinch.android.rtc.PushPair;
+import com.sinch.android.rtc.calling.CallListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,6 +42,11 @@ import java.util.Objects;
 
 import static com.amdc.firebasetest.Decryption.decryptedSMS;
 import static com.amdc.firebasetest.Encryption.encryptedBytes;
+import static com.amdc.firebasetest.MainActivity.call;
+import static com.amdc.firebasetest.MainActivity.displayOFF;
+import static com.amdc.firebasetest.MainActivity.sinchClient;
+import static com.amdc.firebasetest.MainActivity.sound;
+import static com.amdc.firebasetest.MainActivity.vibrator;
 
 public class GroupChatActivity extends AppCompatActivity {
     private final int RECOGNIZER_VOICE_RESULT = 1;
@@ -46,10 +54,12 @@ public class GroupChatActivity extends AppCompatActivity {
     private EditText userMessageInput;
     private GroupChatAdapter groupChatAdapter;
     private RecyclerView userMessagesList;
+    private AlertDialog alertDialogCall;
     private final List<Messages> messagesList = new ArrayList<>();
-    private DatabaseReference UsersRef, GroupNameRef, GroupNameMessageRef;
-    private String currentUserID, currentUserName, msmID, snow, adminGroupID;
+    private DatabaseReference RootRef, UsersRef, GroupNameRef, GroupNameMessageRef;
+    private String currentUserID, currentUserName, msmID, snow, adminGroupID, incomingCallUser = "Unknown";
     static String currentGroupName;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,17 +68,51 @@ public class GroupChatActivity extends AppCompatActivity {
 
         currentGroupName = Objects.requireNonNull(Objects.requireNonNull(getIntent().getExtras()).get("groupName")).toString();
         currentUserID = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+        RootRef = FirebaseDatabase.getInstance().getReference();
         UsersRef = FirebaseDatabase.getInstance().getReference().child("Users");
         GroupNameRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(currentGroupName);
         GroupNameMessageRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(currentGroupName).child("Mesages");
         initializeFields();
         getUserInfo();
-        sendMessageButton.setOnClickListener(view -> {
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Incoming Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) ->
+                RootRef.child("Users").child(incomingCall.getRemoteUserId()).addValueEventListener(new ValueEventListener() {
+            @Override // search Name incoming user
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) incomingCallUser = (String) dataSnapshot.child("name").getValue();
+                alertDialogCall = new AlertDialog.Builder(GroupChatActivity.this).create();
+                alertDialogCall.setTitle("Incoming Call from " + incomingCallUser);
+                alertDialogCall.setCancelable(false);
+                alertDialogCall.setIcon(android.R.drawable.sym_call_incoming);
+                alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
+                    if (sound != null && sound.isPlaying()) sound.stop();
+                    vibrator.cancel();
+                    call = incomingCall;
+                    call.hangup();
+                    dialog.dismiss();
+                });
+                alertDialogCall.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
+                    if (sound != null && sound.isPlaying()) sound.stop();
+                    call = incomingCall;
+                    vibrator.cancel();
+                    call.answer();
+                    call.addCallListener(new SinchCallListener());
+                });
+                if (!alertDialogCall.isShowing()) alertDialogCall.show();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        }));
+        sinchClient.startListeningOnActiveConnection();
+
+        //~~~~~~~~~~~~~~~~~~~~~~~~~ Button for send messages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        sendMessageButton.setOnClickListener(view -> { //listener when push shot for send messages
             try { sendMessageToGroupChat(); }
             catch (Exception e) { Toast.makeText(this, "Send message error", Toast.LENGTH_SHORT).show(); }
             userMessageInput.setText("");
         });
-        sendMessageButton.setOnLongClickListener(v -> {
+        sendMessageButton.setOnLongClickListener(v -> { //listener when push long for voice to text
             Intent speakIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             speakIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
             speakIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
@@ -76,7 +120,6 @@ public class GroupChatActivity extends AppCompatActivity {
             startActivityForResult(speakIntent, RECOGNIZER_VOICE_RESULT);
             return false;
         });
-
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~ Get ID admin and key group ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         GroupNameRef.child("Settings").addValueEventListener(new ValueEventListener() {
@@ -132,6 +175,42 @@ public class GroupChatActivity extends AppCompatActivity {
         linearLayoutManager.setStackFromEnd(true); //  item into list gravity from end to up
         userMessagesList.setLayoutManager(linearLayoutManager);
         userMessagesList.setAdapter(groupChatAdapter);
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Listener Voice Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    private class SinchCallListener implements CallListener {
+        @Override
+        public void onCallProgressing(com.sinch.android.rtc.calling.Call call) {
+            Toast.makeText(getApplicationContext(), "Ringing...", Toast.LENGTH_SHORT).show();
+            sound = MediaPlayer.create(GroupChatActivity.this, R.raw.beep);
+            sound.setLooping(true);
+            sound.start();
+        }
+        @Override
+        public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) {
+            if (sound != null && sound.isPlaying()) sound.stop();
+            displayOFF = true;
+            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+            alertDialogCall = new AlertDialog.Builder(GroupChatActivity.this).create();
+            alertDialogCall.setTitle("Speaking");
+            alertDialogCall.setCancelable(false);
+            alertDialogCall.setIcon(android.R.drawable.sym_action_call);
+            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
+                dialog.dismiss();
+                call = speakCall;
+                call.hangup();
+            });
+            if (!alertDialogCall.isShowing()) alertDialogCall.show();
+        }
+        @Override
+        public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) { call = endedCall;
+            Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
+            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+            if (sound != null && sound.isPlaying()) sound.stop();
+            displayOFF = false;
+        }
+        @Override
+        public void onShouldSendPushNotification(com.sinch.android.rtc.calling.Call call, List<PushPair> list) { }
     }
 
     @Override
