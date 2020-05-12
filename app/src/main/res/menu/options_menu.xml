@@ -35,6 +35,21 @@
     </item>
 
     <item
+        android:title="@string/ring_melody"
+        android:id="@+id/menu_melody"
+        app:showAsAction="never">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item android:id="@+id/melody1"
+                    android:title="@string/melody_1"
+                    android:checked="true"/>
+                <item android:id="@+id/melody2"
+                    android:title="@string/melody_2" />
+            </group>
+        </menu>
+    </item>
+
+    <item
         android:title="@string/logout"
         android:id="@+id/main_logout_option"
         app:showAsAction="never"> </item>

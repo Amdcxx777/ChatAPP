@@ -4,13 +4,9 @@ import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.speech.RecognizerIntent;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -56,17 +52,16 @@ import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static android.os.PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK;
 import static com.amdc.firebasetest.Decryption.decryptedSMS;
 import static com.amdc.firebasetest.Encryption.encryptedBytes;
-import static com.amdc.firebasetest.MainActivity.alertDialogCall;
 import static com.amdc.firebasetest.MainActivity.call;
+import static com.amdc.firebasetest.MainActivity.displayOFF;
 import static com.amdc.firebasetest.MainActivity.sinchClient;
 import static com.amdc.firebasetest.MainActivity.sound;
 import static com.amdc.firebasetest.MainActivity.userSet;
 import static com.amdc.firebasetest.MainActivity.vibrator;
 
-public class ChatActivity extends AppCompatActivity implements SensorEventListener {
+public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageSenderID, messageReceiverName, messageReceiverImage, saveCurrentTime,
             saveCurrentDate, checker = "", msmID, messageSenderRef, messageReceiverRef, messageCounterOutput;
     private final int RECOGNIZER_FILE_RESULT = 443, RECOGNIZER_VOICE_RESULT = 1;
@@ -81,27 +76,20 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
     private RecyclerView userMessagesList;
     private ProgressDialog loadingBar;
     private Uri fileUri;
-//    private AlertDialog alertDialogCall;
+    private AlertDialog alertDialogCalling;
     private int counterMessages;
-    private SensorManager sensorManager;
-    private Sensor proximitySensor;
     static boolean keyEnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Sensor Proximity ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        proximitySensor = Objects.requireNonNull(sensorManager).getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
         messageSenderID = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         RootRef = FirebaseDatabase.getInstance().getReference();
         messageReceiverID = (String) Objects.requireNonNull(getIntent().getExtras()).get("visit_user_id");
         messageReceiverName = (String) getIntent().getExtras().get("visit_user_name");
         messageReceiverImage = (String) getIntent().getExtras().get("visit_image");
-//        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-//        sound = MediaPlayer.create(this, R.raw.ring);
         InitializeControllers();
         userName.setText(messageReceiverName); // for chat bar
         try { Picasso.get().load(messageReceiverImage).resize(90, 90).placeholder(R.drawable.profile_image).into(userImage); // for chat bar
@@ -110,27 +98,27 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Incoming Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) -> {
-            alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
-            alertDialogCall.setTitle("Incoming Call");
-            alertDialogCall.setCancelable(false);
-            alertDialogCall.setIcon(android.R.drawable.sym_call_incoming);
-            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
+            alertDialogCalling = new AlertDialog.Builder(this).create();
+            alertDialogCalling.setTitle("Incoming Call");
+            alertDialogCalling.setCancelable(false);
+            alertDialogCalling.setIcon(android.R.drawable.sym_call_incoming);
+            alertDialogCalling.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
+                if (sound != null && sound.isPlaying()) sound.stop();
                 vibrator.cancel();
-                sound.stop();
                 call = incomingCall;
                 call.hangup();
                 dialog.dismiss();
+                alertDialogCalling.dismiss();
             });
-            alertDialogCall.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
+            alertDialogCalling.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
                 vibrator.cancel();
-//                sound.stop();
                 call = incomingCall;
                 call.answer();
                 call.addCallListener(new SinchCallListener());
             });
-            alertDialogCall.show();
+            alertDialogCalling.show();
         });
-//        sinchClient.start();
+        sinchClient.startListeningOnActiveConnection();
 
         //~~~~~~~~~~~~~~~~~~~~ Button for send messages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         sendMessageButton.setOnClickListener(view -> { //listener when push shot for send messages
@@ -149,15 +137,15 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
         btnCall.setOnClickListener(v -> { // Voice Caller
             call = sinchClient.getCallClient().callUser(messageReceiverID);
             call.addCallListener(new SinchCallListener());
-            alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
-            alertDialogCall.setTitle("Outgoing Calling");
-            alertDialogCall.setCancelable(false);
-            alertDialogCall.setIcon(android.R.drawable.sym_call_outgoing);
-            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
+            alertDialogCalling = new AlertDialog.Builder(ChatActivity.this).create();
+            alertDialogCalling.setTitle("Outgoing Calling");
+            alertDialogCalling.setCancelable(false);
+            alertDialogCalling.setIcon(android.R.drawable.sym_call_outgoing);
+            alertDialogCalling.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
                 call.hangup();
                 dialog.dismiss();
             });
-            alertDialogCall.show();
+            alertDialogCalling.show();
         });
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~ Button Send File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -247,59 +235,37 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
         });
     }
 
-    protected void onResume() {
-        super.onResume();
-        if (proximitySensor != null)
-        sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
-    }
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Sensor Proximity For Display OFF~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    @Override
-    @SuppressLint("InvalidWakeLockTag")
-    public void onSensorChanged(SensorEvent event) {
-        if(event.values[0] == 0) { // When something is near.
-            try {
-                PowerManager powerManager = (PowerManager) this.getSystemService(POWER_SERVICE);
-                if (powerManager != null) {
-                    PowerManager.WakeLock screenOffWakeLock = null;
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                        screenOffWakeLock = powerManager.newWakeLock(PROXIMITY_SCREEN_OFF_WAKE_LOCK, "OnOffScreen");
-                    }
-                    if (screenOffWakeLock != null) {
-                        screenOffWakeLock.acquire(30*60*1000L /*30 minutes*/);
-                    }
-                }
-            } catch (Exception ex) { ex.printStackTrace(); }
-        }
-//        else { // When something is far away.
-//        }
-    }
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
-
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Listener Voice Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     private class SinchCallListener implements CallListener {
         @Override
-        public void onCallProgressing(com.sinch.android.rtc.calling.Call call) { Toast.makeText(getApplicationContext(), "Ringing...", Toast.LENGTH_SHORT).show(); }
+        public void onCallProgressing(com.sinch.android.rtc.calling.Call call) {
+            Toast.makeText(getApplicationContext(), "Ringing...", Toast.LENGTH_SHORT).show();
+            sound = MediaPlayer.create(ChatActivity.this, R.raw.beep);
+            sound.setLooping(true);
+            sound.start();
+        }
         @Override
         public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) {
-            sound.stop();
-            alertDialogCall.dismiss();
-            alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
-            alertDialogCall.setTitle("Speaking");
-            alertDialogCall.setCancelable(false);
-            alertDialogCall.setIcon(android.R.drawable.sym_action_call);
-            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
+            if (sound != null && sound.isPlaying()) sound.stop();
+            displayOFF = true;
+            if (alertDialogCalling.isShowing()) alertDialogCalling.dismiss();
+            alertDialogCalling = new AlertDialog.Builder(ChatActivity.this).create();
+            alertDialogCalling.setTitle("Speaking");
+            alertDialogCalling.setCancelable(false);
+            alertDialogCalling.setIcon(android.R.drawable.sym_action_call);
+            alertDialogCalling.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
                 dialog.dismiss();
                 call = speakCall;
                 call.hangup();
             });
-            alertDialogCall.show();
+            alertDialogCalling.show();
         }
         @Override
         public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) { call = endedCall;
             Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
-            alertDialogCall.dismiss();
-            sound.stop();
+            if (alertDialogCalling.isShowing()) alertDialogCalling.dismiss();
+            if (sound != null && sound.isPlaying()) sound.stop();
+            displayOFF = false;
         }
         @Override
         public void onShouldSendPushNotification(com.sinch.android.rtc.calling.Call call, List<PushPair> list) { }
@@ -323,6 +289,7 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
         return true;
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~ Create New Security Key ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     @SuppressLint("SetTextI18n")
     private void createNewSecurityKey() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this,R.style.AlertDialog).setIcon(android.R.drawable.ic_menu_edit)
@@ -347,6 +314,7 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
         builder.show();
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~ Check View With New Key ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     private void checkerViewCrypt(MenuItem item) { // user key used or not used renew activity
         if(item.isChecked()) { item.setChecked(false); keyEnable = false; }
         else { item.setChecked(true); keyEnable = true; }
@@ -357,6 +325,7 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
         startActivity(chatIntent);
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~ Press Button Back ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     @Override
     public void onBackPressed() {
         final String messageCounterInput = "Message notifications/" + messageSenderID + "/" + messageReceiverID; // counter input messages to zero
@@ -365,6 +334,7 @@ public class ChatActivity extends AppCompatActivity implements SensorEventListen
         final Map<String, Object> messageBodyCounter = new HashMap<>(); //~~~~~~~~~~~~~~~~~~~~~~~~~~
         messageBodyCounter.put(messageCounterInput, messageCounter); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         RootRef.updateChildren(messageBodyCounter); // update counter messages
+        sinchClient.stopListeningOnActiveConnection(); //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Sinch Client STOP Listener This
         Intent intent = new Intent(ChatActivity.this, MainActivity.class);
         startActivity(intent);
         finish();

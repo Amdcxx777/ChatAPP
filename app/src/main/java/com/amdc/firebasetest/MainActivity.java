@@ -2,8 +2,14 @@ package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.Vibrator;
 import android.text.Html;
 import android.text.TextUtils;
@@ -14,6 +20,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
@@ -39,29 +46,32 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+import static android.os.PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK;
+
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
     static long[] pattern = { 200, 200, 200, 200, 200, 500, 200, 200, 200, 200, 200, 500, 200, 200, 200, 200, 200, 500 };
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
     private String currentUserID;
+    static boolean bell = true, vibro = true, melody1, melody2, displayOFF = false;
     static AlertDialog alertDialogCall;
     static SinchClient sinchClient;
     static Call call;
     static Vibrator vibrator;
     static MediaPlayer sound;
     static String userSet;
-
-//    static SensorManager sensorManager;
-//    static Sensor proximitySensor;
-    static boolean bell = true, vibro = true;
+    static PowerManager.WakeLock proximityWakeLock;
+    static SensorManager sensorManager;
+    static Sensor proximitySensor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-//        proximitySensor = Objects.requireNonNull(sensorManager).getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Sensor Proximity ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        proximitySensor = Objects.requireNonNull(sensorManager).getDefaultSensor(Sensor.TYPE_PROXIMITY);
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
@@ -73,8 +83,10 @@ public class MainActivity extends AppCompatActivity {
         myViewPager.setAdapter(myTabsAccessorAdapter);
         TabLayout myTabLayout = findViewById(R.id.main_tabs);
         myTabLayout.setupWithViewPager(myViewPager);
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
         currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Calling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Calling Setting Sinch ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         sinchClient = Sinch.getSinchClientBuilder().context(this).userId(currentUserID)
                 .applicationKey("00ef7168-1938-40ae-a2eb-eba4ea2b5b19")
                 .applicationSecret("E2ZKJPMif06ufEVFqkoZOA==")
@@ -82,32 +94,51 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         sinchClient.setSupportCalling(true);
         sinchClient.startListeningOnActiveConnection();
+        //~~~~~~~~~~~~~~~~~~~~~~~~~ Listener for incoming voice call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) -> { // incoming calls
-            sound = MediaPlayer.create(this, R.raw.ring);
-            sound.start();
-            vibrator.vibrate(pattern, 2); // Vibration when incoming voice call
-            alertDialogCall = new AlertDialog.Builder(MainActivity.this).create();
+            if (melody2) sound = MediaPlayer.create(this, R.raw.ring_my);
+            else sound = MediaPlayer.create(this, R.raw.ring);
+            sound.setLooping(true);
+            if (bell) sound.start();
+            if (vibro) vibrator.vibrate(pattern, 2); // Vibration when incoming voice call
+            alertDialogCall = new AlertDialog.Builder(this).create();
             alertDialogCall.setTitle("Incoming Call");
             alertDialogCall.setCancelable(false);
             alertDialogCall.setIcon(android.R.drawable.sym_call_incoming);
             alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
+                if (sound != null && sound.isPlaying()) sound.stop();
                 vibrator.cancel();
-                sound.stop();
                 call = incomingCall;
                 call.hangup();
                 dialog.dismiss();
             });
             alertDialogCall.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
+                if (sound != null && sound.isPlaying()) sound.stop();
                 call = incomingCall;
                 vibrator.cancel();
-//                sound.stop();
                 call.answer();
                 call.addCallListener(new SinchCallListener());
             });
             alertDialogCall.show();
         });
         sinchClient.start();
+        }
     }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~ Listener proximity sensor ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @SuppressLint("InvalidWakeLockTag")
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        PowerManager powerManager = (PowerManager) this.getSystemService(POWER_SERVICE);
+        if (event.values[0] == 0 && displayOFF) { // When something is near.
+            if (proximityWakeLock != null) return;
+            proximityWakeLock = Objects.requireNonNull(powerManager).newWakeLock(PROXIMITY_SCREEN_OFF_WAKE_LOCK, "OnOffScreen");
+            proximityWakeLock.acquire(30*60*1000L /*30 minutes*/);
+        } else { if (proximityWakeLock != null) { proximityWakeLock.release(); proximityWakeLock = null; } }
+    }
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Listener Voice Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     public class SinchCallListener implements CallListener {
@@ -117,8 +148,9 @@ public class MainActivity extends AppCompatActivity {
         }
         @Override
         public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) {
-            sound.stop();
-            alertDialogCall.dismiss();
+            if (sound != null && sound.isPlaying()) sound.stop();
+            displayOFF = true;
+            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
             alertDialogCall = new AlertDialog.Builder(MainActivity.this).create();
             alertDialogCall.setTitle("Speaking");
             alertDialogCall.setCancelable(false);
@@ -133,8 +165,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) { call = endedCall;
             Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
-            alertDialogCall.dismiss();
-            sound.stop();
+            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+            if (sound != null && sound.isPlaying()) sound.stop();
+            displayOFF = false;
         }
         @Override
         public void onShouldSendPushNotification(com.sinch.android.rtc.calling.Call call, List<PushPair> list) { }
@@ -152,8 +185,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    protected void onResume() {
+        super.onResume();
+        if (proximitySensor != null) sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Verify User and add user date ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     private void VerifyUserExistence() {
-//        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef.child("Users").child(currentUserID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -164,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Option Menu ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
@@ -173,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~ Option Menu Select ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) { // item menu
         super.onOptionsItemSelected(item);
@@ -188,6 +229,14 @@ public class MainActivity extends AppCompatActivity {
             if(item.isChecked()) { item.setChecked(false); vibro = false; }
             else { item.setChecked(true); vibro = true; }
         }
+        switch (item.getItemId()) {
+            case R.id.melody1:
+            case R.id.melody2:
+                if (item.isChecked()) item.setChecked(false);
+                else item.setChecked(true);
+        }
+        if(item.getItemId() == R.id.melody1) { if (item.isChecked()) { melody1 = true; melody2 = false; } }
+        if(item.getItemId() == R.id.melody2) { if (item.isChecked()) { melody2 = true; melody1 = false; } }
         return true;
     }
 
@@ -208,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("SimpleDateFormat")
     private void CreateNewGroup(final String groupName) { // create new group with admin copyright and with settings
-//        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         String messagePushID = RootRef.child("Groups").child("Users").push().getKey();
         HashMap<String, Object> userMap = new HashMap<>();
         userMap.put("userID", currentUserID);
@@ -246,19 +295,21 @@ public class MainActivity extends AppCompatActivity {
         startActivity(findFriendsIntent);
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ User status ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     @SuppressLint("SimpleDateFormat")
     private void updateUserStatus(String state) { //status user
         HashMap<String, Object> onlineStateMap = new HashMap<>();
         onlineStateMap.put("time", new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime()));
         onlineStateMap.put("date", new SimpleDateFormat("dd.MMM.yyyy", Locale.US).format(Calendar.getInstance().getTime()));
         onlineStateMap.put("state", state);
-//        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         RootRef.child("Users").child(currentUserID).child("userState").updateChildren(onlineStateMap);
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Logout from chat ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     private void RequestLogOut() {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.AlertDialog);
-        builder.setTitle("Are you sure you want to log out and exit?");
+        builder.setTitle("You want to logout and exit?");
         builder.setPositiveButton("Exit", (dialogInterface, i) -> {
             updateUserStatus("offline");
             mAuth.signOut();
@@ -268,15 +319,15 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Exit from program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     @SuppressLint("SimpleDateFormat")
     @Override
     public void onBackPressed() { // exit program with request
-        new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit")
-                .setMessage("Are you sure you want to exit from chat?").setPositiveButton("Yes", (dialog, which) -> {
+        new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit From Chat")
+                .setMessage("You want to exit from chat?").setPositiveButton("Yes", (dialog, which) -> {
                     FirebaseUser currentUser = mAuth.getCurrentUser();
                     if (currentUser != null) updateUserStatus("offline");
                     moveTaskToBack(true);
-
                 }).setNegativeButton("No", null).show();
 
     }

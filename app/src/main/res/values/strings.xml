@@ -58,4 +58,7 @@
     <string name="delete_user">Delete user</string>
     <string name="delete_group">Delete group</string>
     <string name="call">CALL</string>
+    <string name="melody_1">Melody_1</string>
+    <string name="melody_2">Melody_2</string>
+    <string name="ring_melody">Ring Melody</string>
 </resources>
