@@ -30,7 +30,7 @@
         android:textStyle="bold"
         android:textColor="@color/colorPrimaryDark"
         android:layout_marginTop="30dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="5dp"
         android:hint="@string/incoming_call_user" />
 
     </LinearLayout>

@@ -428,6 +428,7 @@ public class GroupChatActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        sinchClient.stopListeningOnActiveConnection(); // Sinch Client STOP Listener This Activity
         Intent intent = new Intent(GroupChatActivity.this, MainActivity.class);
         startActivity(intent);
         finish();

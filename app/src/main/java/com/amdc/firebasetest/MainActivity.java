@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     static Vibrator vibrator;
     static MediaPlayer sound;
     static String userSet;
-//    LayoutInflater inflater;
     static PowerManager.WakeLock proximityWakeLock;
     static SensorManager sensorManager;
     static Sensor proximitySensor;
@@ -83,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
         InitializeControllers();
-//        inflater = MainActivity.this.getLayoutInflater();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) { currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Calling Setting Sinch ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -156,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (event.values[0] == 0 && displayOFF) { // When something is near.
             if (proximityWakeLock != null) return;
             proximityWakeLock = Objects.requireNonNull(powerManager).newWakeLock(PROXIMITY_SCREEN_OFF_WAKE_LOCK, "OnOffScreen");
-            proximityWakeLock.acquire(30*60*1000L /*30 minutes*/);
+            proximityWakeLock.acquire(60*60*1000L /*60 minutes*/);
         } else { if (proximityWakeLock != null) { proximityWakeLock.release(); proximityWakeLock = null; } }
     }
     @Override
@@ -171,32 +169,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         @SuppressLint({"InflateParams", "SetTextI18n"})
         @Override
         public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) {
-            if (sound != null && sound.isPlaying()) sound.stop();
+            if (sound != null && sound.isPlaying()) sound.reset();
             displayOFF = true;
-//            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
             view.findViewById(R.id.incoming_accept_btn).setVisibility(View.INVISIBLE);
             view.findViewById(R.id.incoming_cancel_btn).setVisibility(View.INVISIBLE);
             view.findViewById(R.id.speaking_cancel_btn).setVisibility(View.VISIBLE);
             incomingUserName.setText(incomingCallUser + " online");
-//            alertDialogCall = new AlertDialog.Builder(MainActivity.this).create();
-////            alertDialogCall.setView(inflater.inflate(R.layout.dialog_speaking, null));
-//            alertDialogCall.setTitle("    Speaking");
-//            alertDialogCall.setCancelable(false);
-//            alertDialogCall.setIcon(android.R.drawable.sym_action_call);
-//            call = speakCall;
-//            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
-//                dialog.dismiss();
-//                call = speakCall;
-//                call.hangup();
-//            });
-//            if (!alertDialogCall.isShowing()) alertDialogCall.show();
         }
         @Override
         public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) {
             call = endedCall;
             Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
             if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-            if (sound != null && sound.isPlaying()) sound.stop();
+            if (sound != null && sound.isPlaying()) sound.reset();
             sound = MediaPlayer.create(MainActivity.this, R.raw.telephone_busy);
             sound.start();
             displayOFF = false;
@@ -221,6 +206,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
         if (proximitySensor != null) sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sinchClient.stopListeningOnActiveConnection(); // Sinch Client STOP Listener This Activity
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Verify User and add user date ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -356,24 +347,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     //~~~~~~~~~~~~~~~~~~~~~~~~ Buttons for incoming call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     public void onClickAcceptIncomingCall(View view) {
-//        if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-        if (sound != null && sound.isPlaying()) sound.stop();
+        if (sound != null && sound.isPlaying()) sound.reset();
         call.addCallListener(new SinchCallListener());
         if (vibrator.hasVibrator()) vibrator.cancel();
         call.answer();
     }
-
     public void onClickCancelIncomingCall(View view) {
         if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-        if (sound != null && sound.isPlaying()) sound.stop();
+        if (sound != null && sound.isPlaying()) sound.reset();
         if (vibrator.hasVibrator()) vibrator.cancel();
         call.hangup();
     }
-
-    public void onClickSpeakingHangUp(View view) {
-        call.hangup();
-//        if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-    }
+    public void onClickSpeakingHangUp(View view) { call.hangup(); }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Exit from program with request ~~~~~~~~~~~~~~~~~~~~~~~~~~
     @SuppressLint("SimpleDateFormat")

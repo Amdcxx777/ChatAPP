@@ -66,23 +66,21 @@ public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageSenderID, messageReceiverName, messageReceiverImage, saveCurrentTime,
             saveCurrentDate, checker = "", msmID, messageSenderRef, messageReceiverRef, messageCounterOutput, incomingCallUser = "Unknown";
     private final int RECOGNIZER_FILE_RESULT = 443, RECOGNIZER_VOICE_RESULT = 1;
-    private TextView userName, userLastSeen;
+    private TextView userName, userLastSeen, incomingUserName;
     private EditText messageInputText;
-    private CircleImageView userImage;
+    private CircleImageView userImage, incomingUserImage;
+    private LinearLayout view;
     private DatabaseReference RootRef;
     private Button btnCall;
-    private TextView incomingUserName;
-    private CircleImageView incomingUserImage;
     private ImageButton sendMessageButton, SendFilesButton;
     private final List<Messages> messagesList = new ArrayList<>();
     private ChatAdapter messageAdapter;
     private RecyclerView userMessagesList;
     private ProgressDialog loadingBar;
-    private Uri fileUri;
     private AlertDialog alertDialogCall;
+    private Uri fileUri;
     private int counterMessages;
     static boolean keyEnable;
-    private LinearLayout view;
     final String[] retImage = {"default_image"};
 
     @Override
@@ -143,17 +141,31 @@ public class ChatActivity extends AppCompatActivity {
 
         //~~~~~~~~~~~~~~~~~~~~ Button for Voice Calling ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         btnCall.setOnClickListener(v -> { // Voice Caller
-            call = sinchClient.getCallClient().callUser(messageReceiverID);
-            call.addCallListener(new SinchCallListener());
-            alertDialogCall = new AlertDialog.Builder(ChatActivity.this).create();
-            alertDialogCall.setTitle("Outgoing Calling");
-            alertDialogCall.setCancelable(false);
-            alertDialogCall.setIcon(android.R.drawable.sym_call_outgoing);
-            alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
-                call.hangup();
-                dialog.dismiss();
+            RootRef.child("Users").child(messageReceiverID).addValueEventListener(new ValueEventListener() {
+                @SuppressLint({"InflateParams", "SetTextI18n"})
+                @Override // search Name incoming user
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.exists()) {
+                        incomingCallUser = (String) dataSnapshot.child("name").getValue();
+                        retImage[0] = (String) dataSnapshot.child("image").getValue();
+                    }
+                    view = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_incoming_call, null);
+                    alertDialogCall = new AlertDialog.Builder(ChatActivity.this).setCancelable(false).setView(view).create();
+                    incomingUserName = view.findViewById(R.id.incoming_user_name);
+                    incomingUserImage = view.findViewById(R.id.incoming_user_image);
+                    view.findViewById(R.id.incoming_accept_btn).setVisibility(View.INVISIBLE);
+                    view.findViewById(R.id.incoming_cancel_btn).setVisibility(View.INVISIBLE);
+                    view.findViewById(R.id.speaking_cancel_btn).setVisibility(View.VISIBLE);
+                    incomingUserName.setText("Call to " + incomingCallUser);
+                    try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
+                    } catch (Exception e) { Toast.makeText(ChatActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
+                    if (!alertDialogCall.isShowing()) alertDialogCall.show();
+                    call = sinchClient.getCallClient().callUser(messageReceiverID);
+                    call.addCallListener(new SinchCallListener());
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) { }
             });
-            if (!alertDialogCall.isShowing()) alertDialogCall.show();
         });
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~ Button Send File ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -359,7 +371,7 @@ public class ChatActivity extends AppCompatActivity {
         userName = findViewById(R.id.custom_profile_name);
         userImage = findViewById(R.id.custom_profile_image);
         userLastSeen = findViewById(R.id.custom_user_last_seen);
-        btnCall = findViewById(R.id.btnCalling);
+        btnCall = findViewById(R.id.btn_outgoing_calling);
         sendMessageButton = findViewById(R.id.send_message_btn);
         SendFilesButton = findViewById(R.id.send_files_btn);
         messageInputText = findViewById(R.id.input_message);
@@ -523,6 +535,7 @@ public class ChatActivity extends AppCompatActivity {
         call.hangup();
     }
     public void onClickSpeakingHangUp(View view) {
+        if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
         call.hangup();
     }
 }

@@ -74,8 +74,7 @@
         </activity>
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-            android:theme="@android:style/Theme.Holo.Dialog" />
-<!--            android:theme="@style/Base.Theme.AppCompat" />-->
+            android:theme="@style/Base.Theme.AppCompat" />
     </application>
 
 </manifest>

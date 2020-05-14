@@ -17,7 +17,7 @@
         android:layout_marginEnd="10dp" />
 
     <Button
-        android:id="@+id/btnCalling"
+        android:id="@+id/btn_outgoing_calling"
         style="@style/Widget.AppCompat.Button.Small"
         android:layout_width="60dp"
         android:layout_height="42dp"
