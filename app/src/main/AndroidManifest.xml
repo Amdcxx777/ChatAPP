@@ -11,9 +11,10 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.DEVICE_POWER"
+    <uses-permission
+        android:name="android.permission.DEVICE_POWER"
         tools:ignore="ProtectedPermissions" />
 
     <application
@@ -21,37 +22,49 @@
         android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:roundIcon="@drawable/icon"
+        android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:screenOrientation="portrait"
         tools:ignore="AllowBackup">
         <activity
             android:name=".ChatActivity"
-            android:screenOrientation="locked"
-            android:parentActivityName=".MainActivity" />
-        <activity android:name=".UserListActivity"
-            android:screenOrientation="locked"/>
-        <activity android:name=".GroupChatActivity"
-            android:screenOrientation="locked"/>
-        <activity android:name=".FindFriendsActivity"
-            android:screenOrientation="locked"/>
-        <activity android:name=".ProfileActivity"
-            android:screenOrientation="locked"/>
-        <activity android:name=".SettingsActivity"
-            android:screenOrientation="locked"/>
-        <activity android:name=".RegisterActivity"
-            android:screenOrientation="locked"/>
-        <activity android:name=".LoginPhoneActivity"
-            android:screenOrientation="locked"/>
-        <activity android:name=".LoginActivity"
-            android:screenOrientation="locked"/>
-        <activity android:name=".ContactsFragment"
-            android:screenOrientation="locked"/>
-        <activity android:name=".ViewerImagesActivity"
-            android:screenOrientation="locked"/>
-        <activity android:name=".ViewerFilesActivity"
-            android:screenOrientation="locked"/>
-        <activity android:name=".MainActivity"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".UserListActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".GroupChatActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".FindFriendsActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".ProfileActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".SettingsActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".RegisterActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".LoginPhoneActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".LoginActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".ContactsFragment"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".ViewerImagesActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".ViewerFilesActivity"
+            android:screenOrientation="locked" />
+        <activity
+            android:name=".MainActivity"
             android:screenOrientation="locked">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -61,7 +74,8 @@
         </activity>
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.AppCompat" />
+            android:theme="@android:style/Theme.Holo.Dialog" />
+<!--            android:theme="@style/Base.Theme.AppCompat" />-->
     </application>
 
 </manifest>

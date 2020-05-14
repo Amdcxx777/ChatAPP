@@ -192,7 +192,7 @@ public class ChatActivity extends AppCompatActivity {
             });
             builder.show();
         });
-        //~~~~~~~~~~~~~~~~~ read or create new counter messages ~~~~~~~~~~~~~~~~~~~~~~~~~
+        //~~~~~~~~~~~~~~~~~ read or create new counter messages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         RootRef.child("Message notifications").child(messageReceiverID).child(messageSenderID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -210,6 +210,7 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
+
         //~~~~~~~~~~~~~~~~~~~~ add/delete messages from firebase into messagesList ~~~~~~~~~~~~~~~~~
         RootRef.child("Messages").child(messageSenderID).child(messageReceiverID).addChildEventListener(new ChildEventListener() {
             @Override

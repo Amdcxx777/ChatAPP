@@ -61,4 +61,6 @@
     <string name="melody_1">Melody_1</string>
     <string name="melody_2">Melody_2</string>
     <string name="ring_melody">Ring Melody</string>
+    <string name="incoming_call_user">Incoming Call</string>
+    <string name="hang_up">Hang up</string>
 </resources>

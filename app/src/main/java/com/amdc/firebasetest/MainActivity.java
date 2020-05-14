@@ -13,10 +13,14 @@ import android.os.PowerManager;
 import android.os.Vibrator;
 import android.text.Html;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -38,6 +42,7 @@ import com.sinch.android.rtc.Sinch;
 import com.sinch.android.rtc.SinchClient;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallListener;
+import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -46,12 +51,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 import static android.os.PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     static long[] pattern = { 200, 200, 200, 200, 200, 500, 200, 200, 200, 200, 200, 500, 200, 200, 200, 200, 200, 500 };
     private FirebaseAuth mAuth;
     private DatabaseReference RootRef;
+    private TextView incomingUserName;
+    private CircleImageView incomingUserImage;
     private String currentUserID, incomingCallUser = "Unknown";
     static boolean bell = true, vibro = true, melody1, melody2, displayOFF = false;
     private AlertDialog alertDialogCall;
@@ -60,32 +69,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     static Vibrator vibrator;
     static MediaPlayer sound;
     static String userSet;
+    LayoutInflater inflater;
     static PowerManager.WakeLock proximityWakeLock;
     static SensorManager sensorManager;
     static Sensor proximitySensor;
+    private LinearLayout view;
+    final int DIALOG = 1;
+    final String[] retImage = {"default_image"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Sensor Proximity ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-        proximitySensor = Objects.requireNonNull(sensorManager).getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         mAuth = FirebaseAuth.getInstance();
         RootRef = FirebaseDatabase.getInstance().getReference();
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
-        setSupportActionBar(findViewById(R.id.main_page_toolbar)); // my toolbar
-        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#03DAC5'>" + "WhatsApp" + "</font>")); // name toolbar
-        ViewPager myViewPager = findViewById(R.id.main_tabs_pager);
-        MenuSelectionAdapter myTabsAccessorAdapter = new MenuSelectionAdapter(getSupportFragmentManager());
-        myViewPager.setAdapter(myTabsAccessorAdapter);
-        TabLayout myTabLayout = findViewById(R.id.main_tabs);
-        myTabLayout.setupWithViewPager(myViewPager);
+        InitializeControllers();
+        inflater = MainActivity.this.getLayoutInflater();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-        currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+        if (currentUser != null) { currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Calling Setting Sinch ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         sinchClient = Sinch.getSinchClientBuilder().context(this).userId(currentUserID)
                 .applicationKey("00ef7168-1938-40ae-a2eb-eba4ea2b5b19")
@@ -101,28 +103,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sound.setLooping(true);
             if (bell) sound.start();
             if (vibro) vibrator.vibrate(pattern, 2); // Vibration when incoming voice call
+            call = incomingCall;
             RootRef.child("Users").child(incomingCall.getRemoteUserId()).addValueEventListener(new ValueEventListener() {
+                @SuppressLint({"InflateParams", "SetTextI18n"})
                 @Override // search Name incoming user
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.exists()) incomingCallUser = (String) dataSnapshot.child("name").getValue();
-                    alertDialogCall = new AlertDialog.Builder(MainActivity.this).create();
-                    alertDialogCall.setTitle("Incoming Call from " + incomingCallUser);
-                    alertDialogCall.setCancelable(false);
-                    alertDialogCall.setIcon(android.R.drawable.sym_call_incoming);
-                    alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", (dialog, which) -> {
-                        if (sound != null && sound.isPlaying()) sound.stop();
-                        vibrator.cancel();
-                        call = incomingCall;
-                        call.hangup();
-                        dialog.dismiss();
-                    });
-                    alertDialogCall.setButton(AlertDialog.BUTTON_POSITIVE, "Talk", (dialog, which) -> {
-                        if (sound != null && sound.isPlaying()) sound.stop();
-                        call = incomingCall;
-                        vibrator.cancel();
-                        call.answer();
-                        call.addCallListener(new SinchCallListener());
-                    });
+                    if(dataSnapshot.exists()) {
+                        incomingCallUser = (String) dataSnapshot.child("name").getValue();
+                        retImage[0] = (String) dataSnapshot.child("image").getValue();
+                    }
+                    view = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_incoming_call, null);
+                    alertDialogCall = new AlertDialog.Builder(MainActivity.this).setCancelable(false).setView(view).create();
+//                    alertDialogCall.setView(view);
+//                    alertDialogCall.setCancelable(false);
+                    incomingUserName = view.findViewById(R.id.incoming_user_name);
+                    incomingUserImage = view.findViewById(R.id.incoming_user_image);
+                    incomingUserName.setText(incomingCallUser + " is calling");
+                    try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
+                    } catch (Exception e) { Toast.makeText(MainActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
                     if (!alertDialogCall.isShowing()) alertDialogCall.show();
                 }
                 @Override
@@ -131,6 +129,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
         sinchClient.start();
         }
+    }
+
+    @SuppressLint("InflateParams")
+    private void InitializeControllers() {
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Sensor Proximity ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        proximitySensor = Objects.requireNonNull(sensorManager).getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN); //full screen
+        setSupportActionBar(findViewById(R.id.main_page_toolbar)); // my toolbar
+        Objects.requireNonNull(getSupportActionBar()).setTitle(Html.fromHtml("<font color='#03DAC5'>" + "WhatsApp" + "</font>")); // name toolbar
+        ViewPager myViewPager = findViewById(R.id.main_tabs_pager);
+        MenuSelectionAdapter myTabsAccessorAdapter = new MenuSelectionAdapter(getSupportFragmentManager());
+        myViewPager.setAdapter(myTabsAccessorAdapter);
+        TabLayout myTabLayout = findViewById(R.id.main_tabs);
+        myTabLayout.setupWithViewPager(myViewPager);
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~ Listener proximity sensor for screen off ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -154,15 +169,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void onCallProgressing(com.sinch.android.rtc.calling.Call call) {
             Toast.makeText(getApplicationContext(), "Ringing...", Toast.LENGTH_SHORT).show();
         }
+        @SuppressLint("InflateParams")
         @Override
         public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) {
             if (sound != null && sound.isPlaying()) sound.stop();
             displayOFF = true;
             if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
             alertDialogCall = new AlertDialog.Builder(MainActivity.this).create();
-            alertDialogCall.setTitle("Speaking");
+//            alertDialogCall.setView(inflater.inflate(R.layout.dialog_speaking, null));
+            alertDialogCall.setTitle("    Speaking");
             alertDialogCall.setCancelable(false);
             alertDialogCall.setIcon(android.R.drawable.sym_action_call);
+            call = speakCall;
             alertDialogCall.setButton(AlertDialog.BUTTON_NEUTRAL, "Hang up", (dialog, which) -> {
                 dialog.dismiss();
                 call = speakCall;
@@ -198,19 +216,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
         if (proximitySensor != null) sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Search User Name ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//    public String searchUserName(String user) {
-//        RootRef.child("Users").child(user).addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                if(dataSnapshot.exists()) incomingCallUser = (String) dataSnapshot.child("name").getValue();
-//            }
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) { }
-//        });
-//        return incomingCallUser;
-//    }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Verify User and add user date ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     private void VerifyUserExistence() {
@@ -330,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Logout from chat ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     private void RequestLogOut() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this,R.style.AlertDialog);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, R.style.AlertDialog);
         builder.setTitle("You want to logout and exit?");
         builder.setPositiveButton("Exit", (dialogInterface, i) -> {
             updateUserStatus("offline");
@@ -341,17 +346,37 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         builder.show();
     }
 
+    public void onClickAcceptIncomingCall(View view) {
+        if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+        if (sound != null && sound.isPlaying()) sound.stop();
+        call.addCallListener(new SinchCallListener());
+        vibrator.cancel();
+        call.answer();
+//        call.addCallListener(new SinchCallListener());
+    }
+
+    public void onClickCancelIncomingCall(View view) {
+        if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+        if (sound != null && sound.isPlaying()) sound.stop();
+        vibrator.cancel();
+        call.hangup();
+    }
+
+    public void onClickHangUp(View view) {
+        call.hangup();
+        if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+    }
+
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Exit from program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     @SuppressLint("SimpleDateFormat")
     @Override
     public void onBackPressed() { // exit program with request
-        new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit From Chat")
+                new AlertDialog.Builder(this).setIcon(android.R.drawable.ic_dialog_alert).setTitle("Exit From Chat")
                 .setMessage("You want to exit from chat?").setPositiveButton("Yes", (dialog, which) -> {
                     FirebaseUser currentUser = mAuth.getCurrentUser();
                     if (currentUser != null) updateUserStatus("offline");
                     moveTaskToBack(true);
                 }).setNegativeButton("No", null).show();
-
     }
 }
 
