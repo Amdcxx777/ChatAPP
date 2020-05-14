@@ -113,12 +113,13 @@ public class SettingsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GalleryPick  &&  resultCode == RESULT_OK  &&  data != null) {
             Uri ImageUri = data.getData();
-        CropImage.activity(ImageUri).setGuidelines(CropImageView.Guidelines.ON)
-                    .setMinCropResultSize(100,100)
+            CropImage.activity(ImageUri).setGuidelines(CropImageView.Guidelines.ON)
+                    .setCropShape(CropImageView.CropShape.OVAL)
+                    .setMinCropResultSize(150,150)
                     .setMaxCropResultSize(5000, 5000)
-                    .setAspectRatio(300, 300).start(this);
+                    .setRequestedSize(300, 300)
+                    .setAspectRatio(1, 1).start(this);
         }
-//        setRequestedSize(300, 300, CropImageView.RequestSizeOptions.RESIZE_INSIDE);
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
@@ -127,10 +128,7 @@ public class SettingsActivity extends AppCompatActivity {
                 loadingBar.setMessage("Please wait, your profile image is updating...");
                 loadingBar.setCanceledOnTouchOutside(false);
                 loadingBar.show();
-
                 Uri resultUri = Objects.requireNonNull(result).getUri();
-//                mProfilePicture.setImageURI(resultUri);
-
                 final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("Profile images").child(currentUserID + ".jpg");
                 filePath.putFile(Objects.requireNonNull(result).getUri()).addOnSuccessListener(taskSnapshot ->
                         filePath.getDownloadUrl().addOnSuccessListener(uri -> { // resultUr
