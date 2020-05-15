@@ -2,6 +2,7 @@ package com.amdc.firebasetest;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
@@ -70,7 +71,6 @@ public class GroupChatActivity extends AppCompatActivity {
     private LinearLayout view;
     final String[] retImage = {"default_image"};
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,30 +86,50 @@ public class GroupChatActivity extends AppCompatActivity {
         getUserInfo();
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Incoming Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) ->
-                RootRef.child("Users").child(incomingCall.getRemoteUserId()).addValueEventListener(new ValueEventListener() {
-            @SuppressLint({"SetTextI18n", "InflateParams"})
-            @Override // search Name incoming user
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()) {
-                    incomingCallUser = (String) dataSnapshot.child("name").getValue();
-                    retImage[0] = (String) dataSnapshot.child("image").getValue();
+        sinchClient.getCallClient().addCallClientListener((callClient, incomingCall) -> {
+            call = incomingCall;
+            RootRef.child("Users").child(incomingCall.getRemoteUserId()).addValueEventListener(new ValueEventListener() {
+                @SuppressLint({"SetTextI18n", "InflateParams"})
+                @Override // search Name incoming user
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        incomingCallUser = (String) dataSnapshot.child("name").getValue();
+                        if (dataSnapshot.hasChild("image")) retImage[0] = (String) dataSnapshot.child("image").getValue();
+                    }
+                    if (call == incomingCall) {
+                        view = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_incoming_call, null);
+                        view.findViewById(R.id.incoming_accept_btn).setVisibility(View.VISIBLE);
+                        view.findViewById(R.id.incoming_cancel_btn).setVisibility(View.VISIBLE);
+                        alertDialogCall = new AlertDialog.Builder(GroupChatActivity.this).setCancelable(false).setView(view).create();
+                        incomingUserName = view.findViewById(R.id.incoming_user_name);
+                        incomingUserName.setText(incomingCallUser + " is calling");
+                        incomingUserName.setTextColor(Color.BLUE);
+                        incomingUserImage = view.findViewById(R.id.incoming_user_image);
+                        try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
+                        } catch (Exception e) { Toast.makeText(GroupChatActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
+                        view.findViewById(R.id.incoming_accept_btn).setOnClickListener(v -> {
+                            if (sound != null && sound.isPlaying()) sound.stop();
+                            if (vibrator.hasVibrator()) vibrator.cancel();
+                            call = incomingCall;
+                            call.answer();
+                            call.addCallListener(new SinchCallListener());
+                        });
+                        view.findViewById(R.id.incoming_cancel_btn).setOnClickListener(v -> {
+                            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+                            if (sound != null && sound.isPlaying()) sound.stop();
+                            if (vibrator.hasVibrator()) vibrator.cancel();
+                            call = incomingCall;
+                            call.hangup();
+                            call.addCallListener(new SinchCallListener());
+                            call = null;
+                        });
+                        if (!alertDialogCall.isShowing()) alertDialogCall.show();
+                    }
                 }
-                view = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_incoming_call, null);
-                alertDialogCall = new AlertDialog.Builder(GroupChatActivity.this).setCancelable(false).setView(view).create();
-                incomingUserName = view.findViewById(R.id.incoming_user_name);
-                incomingUserImage = view.findViewById(R.id.incoming_user_image);
-                view.findViewById(R.id.incoming_accept_btn).setVisibility(View.VISIBLE);
-                view.findViewById(R.id.incoming_cancel_btn).setVisibility(View.VISIBLE);
-                view.findViewById(R.id.speaking_cancel_btn).setVisibility(View.INVISIBLE);
-                incomingUserName.setText(incomingCallUser + " is calling");
-                try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
-                } catch (Exception e) { Toast.makeText(GroupChatActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
-                if (!alertDialogCall.isShowing()) alertDialogCall.show();
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) { }
-        }));
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) { }
+            });
+        });
         sinchClient.startListeningOnActiveConnection();
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~ Button for send messages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -188,21 +208,38 @@ public class GroupChatActivity extends AppCompatActivity {
         @Override
         public void onCallProgressing(com.sinch.android.rtc.calling.Call call) {
         }
-        @SuppressLint("SetTextI18n")
+        @SuppressLint({"SetTextI18n", "InflateParams"})
         @Override
-        public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) {
+        public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) { call = speakCall;
             if (sound != null && sound.isPlaying()) sound.stop();
             displayOFF = true;
-            view.findViewById(R.id.incoming_accept_btn).setVisibility(View.INVISIBLE);
-            view.findViewById(R.id.incoming_cancel_btn).setVisibility(View.INVISIBLE);
+            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+            view = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_incoming_call, null);
+            alertDialogCall = new AlertDialog.Builder(GroupChatActivity.this).setCancelable(false).setView(view).create();
+            incomingUserName = view.findViewById(R.id.incoming_user_name);
+            incomingUserImage = view.findViewById(R.id.incoming_user_image);
             view.findViewById(R.id.speaking_cancel_btn).setVisibility(View.VISIBLE);
             incomingUserName.setText(incomingCallUser + " online");
+            incomingUserName.setTextColor(Color.RED);
+            try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
+            } catch (Exception e) { Toast.makeText(GroupChatActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
+            view.findViewById(R.id.speaking_cancel_btn).setOnClickListener(v1 -> {
+                if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+                call = speakCall;
+                call.hangup();
+                call = null;
+            });
+            if (!alertDialogCall.isShowing()) alertDialogCall.show();
         }
         @Override
-        public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) { call = endedCall;
+        public void onCallEnded(com.sinch.android.rtc.calling.Call endedCall) {
             Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
-            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+            if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
             if (sound != null && sound.isPlaying()) sound.stop();
+//            if (sound != null && sound.isPlaying()) sound.reset();
+            call = endedCall;
+            call.hangup();
+            call = null;
             sound = MediaPlayer.create(GroupChatActivity.this, R.raw.telephone_busy);
             sound.start();
             displayOFF = false;
@@ -406,23 +443,6 @@ public class GroupChatActivity extends AppCompatActivity {
                 }
             });
         }
-    }
-
-    //~~~~~~~~~~~~~~~~~~~~~~~~ Buttons for incoming call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    public void onClickAcceptIncomingCall(View view) {
-        if (sound != null && sound.isPlaying()) sound.stop();
-        call.addCallListener(new SinchCallListener());
-        if (vibrator.hasVibrator()) vibrator.cancel();
-        call.answer();
-    }
-    public void onClickCancelIncomingCall(View view) {
-        if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-        if (sound != null && sound.isPlaying()) sound.stop();
-        if (vibrator.hasVibrator()) vibrator.cancel();
-        call.hangup();
-    }
-    public void onClickSpeakingHangUp(View view) {
-        call.hangup();
     }
 
     @Override
