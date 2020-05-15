@@ -125,22 +125,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         incomingUserName.setTextColor(R.color.colorPrimaryDark);
                         try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
                         } catch (Exception e) { Toast.makeText(MainActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
-                        view.findViewById(R.id.incoming_accept_btn).setOnClickListener(v -> {
-                            if (sound != null && sound.isPlaying()) sound.stop();
-                            if (vibrator.hasVibrator()) vibrator.cancel();
-                            call = incomingCall;
-                            call.answer();
-                            call.addCallListener(new SinchCallListener());
-                        });
-                        view.findViewById(R.id.incoming_cancel_btn).setOnClickListener(v -> {
-                            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-                            if (sound != null && sound.isPlaying()) sound.stop();
-                            if (vibrator.hasVibrator()) vibrator.cancel();
-                            call = incomingCall;
-                            call.hangup();
-                            call.addCallListener(new SinchCallListener());
-                            call = null;
-                        });
+//                        view.findViewById(R.id.incoming_accept_btn).setOnClickListener(v -> {
+//                            if (sound != null && sound.isPlaying()) sound.stop();
+//                            if (vibrator.hasVibrator()) vibrator.cancel();
+//                            call = incomingCall;
+//                            call.answer();
+//                            call.addCallListener(new SinchCallListener());
+//                        });
+//                        view.findViewById(R.id.incoming_cancel_btn).setOnClickListener(v -> {
+//                            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+//                            if (sound != null && sound.isPlaying()) sound.stop();
+//                            if (vibrator.hasVibrator()) vibrator.cancel();
+//                            call = incomingCall;
+//                            call.hangup();
+//                            call.addCallListener(new SinchCallListener());
+//                            call = null;
+//                        });
                         if (alertDialogCall != null && !alertDialogCall.isShowing()) alertDialogCall.show();
                     }
                 }
@@ -192,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         @Override
         public void onCallEstablished(com.sinch.android.rtc.calling.Call speakCall) { call = speakCall;
             if (sound != null && sound.isPlaying()) sound.stop();
-//            if (sound != null && sound.isPlaying()) sound.reset();
             displayOFF = true;
             if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
             view = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_incoming_call, null);
@@ -204,12 +203,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             incomingUserName.setTextColor(Color.RED);
             try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
             } catch (Exception e) { Toast.makeText(MainActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
-            view.findViewById(R.id.speaking_cancel_btn).setOnClickListener(v1 -> {
-                if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-                call = speakCall;
-                call.hangup();
-                call = null;
-            });
+//            view.findViewById(R.id.speaking_cancel_btn).setOnClickListener(v1 -> {
+//                if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+//                call = speakCall;
+//                call.hangup();
+//                call = null;
+//            });
             if (!alertDialogCall.isShowing()) alertDialogCall.show();
         }
         @Override
@@ -217,7 +216,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
             if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
             if (sound != null && sound.isPlaying()) sound.stop();
-//            if (sound != null && sound.isPlaying()) sound.reset();
             call = endedCall;
             call.hangup();
             call = null;
@@ -382,6 +380,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
         builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
         builder.show();
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~ Buttons Speaking Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public void btnIncomingAcceptSpeaking(View view) {
+        if (sound != null && sound.isPlaying()) sound.stop();
+        if (vibrator.hasVibrator()) vibrator.cancel();
+        if (call != null) {
+            call.answer();
+            call.addCallListener(new SinchCallListener());
+        }
+    }
+
+    public void btnIncomingCancelSpeaking(View view) {
+        if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
+        if (sound != null && sound.isPlaying()) sound.stop();
+        if (vibrator.hasVibrator()) vibrator.cancel();
+        if (call != null) {
+            call.hangup();
+            call.addCallListener(new SinchCallListener());
+        }
+        call = null;
+    }
+
+    public void btnCancelSpeaking(View view) {
+        if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
+        if (call != null) {
+            call.hangup();
+            call.addCallListener(new SinchCallListener());
+        }
+        call = null;
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Exit from program with request ~~~~~~~~~~~~~~~~~~~~~~~~~~

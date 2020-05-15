@@ -122,22 +122,20 @@ public class ChatActivity extends AppCompatActivity {
                         incomingUserImage = view.findViewById(R.id.incoming_user_image);
                         try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
                         } catch (Exception e) { Toast.makeText(ChatActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
-                        view.findViewById(R.id.incoming_accept_btn).setOnClickListener(v -> {
-                            if (sound != null && sound.isPlaying()) sound.stop();
-                            if (vibrator.hasVibrator()) vibrator.cancel();
-                            call = incomingCall;
-                            call.answer();
-                            call.addCallListener(new SinchCallListener());
-                        });
-                        view.findViewById(R.id.incoming_cancel_btn).setOnClickListener(v -> {
-                            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-                            if (sound != null && sound.isPlaying()) sound.stop();
-                            if (vibrator.hasVibrator()) vibrator.cancel();
-                            call = incomingCall;
-                            call.hangup();
-                            call.addCallListener(new SinchCallListener());
-                            call = null;
-                        });
+//                        view.findViewById(R.id.incoming_accept_btn).setOnClickListener(v -> {
+//                            if (sound != null && sound.isPlaying()) sound.stop();
+//                            if (vibrator.hasVibrator()) vibrator.cancel();
+//                            call.answer();
+//                            call.addCallListener(new SinchCallListener());
+//                        });
+//                        view.findViewById(R.id.incoming_cancel_btn).setOnClickListener(v -> {
+//                            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+//                            if (sound != null && sound.isPlaying()) sound.stop();
+//                            if (vibrator.hasVibrator()) vibrator.cancel();
+//                            call.hangup();
+//                            call.addCallListener(new SinchCallListener());
+//                            call = null;
+//                        });
                         if (alertDialogCall != null && !alertDialogCall.isShowing()) alertDialogCall.show();
                     }
                 }
@@ -180,19 +178,20 @@ public class ChatActivity extends AppCompatActivity {
                             view.findViewById(R.id.speaking_cancel_btn).setVisibility(View.VISIBLE);
                             incomingUserName.setText("Call to " + incomingCallUser);
                             incomingUserName.setTextColor(Color.GREEN);
-                            try {
-                                Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
-                            } catch (Exception e) {
-                                Toast.makeText(ChatActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show();
-                            }
+                            try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
+                            } catch (Exception e) { Toast.makeText(ChatActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
                             if (!alertDialogCall.isShowing()) alertDialogCall.show();
                             call = sinchClient.getCallClient().callUser(messageReceiverID);
                             call.addCallListener(new SinchCallListener());
-                            view.findViewById(R.id.speaking_cancel_btn).setOnClickListener(v1 -> {
-                                if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-                                if (call != null) call.hangup();
-                                btnCalling = false;
-                            });
+//                            view.findViewById(R.id.speaking_cancel_btn).setOnClickListener(v1 -> {
+//                                if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+//                                if (call != null) {
+//                                    call.hangup();
+//                                    call.addCallListener(new SinchCallListener());
+//                                }
+//                                call = null;
+//                                btnCalling = false;
+//                            });
                         }
                     }
                     @Override
@@ -313,11 +312,14 @@ public class ChatActivity extends AppCompatActivity {
             incomingUserName.setTextColor(Color.RED);
             try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
             } catch (Exception e) { Toast.makeText(ChatActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
-            view.findViewById(R.id.speaking_cancel_btn).setOnClickListener(v1 -> {
-                if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-                call = speakCall;
-                call.hangup();
-            });
+            call = speakCall;
+//            view.findViewById(R.id.speaking_cancel_btn).setOnClickListener(v -> {
+//                if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+//                btnCalling = false;
+//                call = speakCall;
+//                call.hangup();
+//                call = null;
+//            });
             if (!alertDialogCall.isShowing()) alertDialogCall.show();
         }
         @Override
@@ -552,6 +554,38 @@ public class ChatActivity extends AppCompatActivity {
                 messageInputText.setText("");
             });
         }
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~ Buttons Speaking Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public void btnIncomingAcceptSpeaking(View view) {
+        if (sound != null && sound.isPlaying()) sound.stop();
+        if (vibrator.hasVibrator()) vibrator.cancel();
+        if (call != null) {
+            call.answer();
+            call.addCallListener(new SinchCallListener());
+        }
+    }
+
+    public void btnIncomingCancelSpeaking(View view) {
+        if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
+        if (sound != null && sound.isPlaying()) sound.stop();
+        if (vibrator.hasVibrator()) vibrator.cancel();
+        if (call != null) {
+            call.hangup();
+            call.addCallListener(new SinchCallListener());
+        }
+        btnCalling = false;
+        call = null;
+    }
+
+    public void btnCancelSpeaking(View view) {
+        if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
+        if (call != null) {
+            call.hangup();
+            call.addCallListener(new SinchCallListener());
+        }
+        btnCalling = false;
+        call = null;
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~ Press Button Back ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

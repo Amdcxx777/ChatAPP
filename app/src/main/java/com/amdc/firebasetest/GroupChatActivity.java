@@ -107,22 +107,22 @@ public class GroupChatActivity extends AppCompatActivity {
                         incomingUserImage = view.findViewById(R.id.incoming_user_image);
                         try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
                         } catch (Exception e) { Toast.makeText(GroupChatActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
-                        view.findViewById(R.id.incoming_accept_btn).setOnClickListener(v -> {
-                            if (sound != null && sound.isPlaying()) sound.stop();
-                            if (vibrator.hasVibrator()) vibrator.cancel();
-                            call = incomingCall;
-                            call.answer();
-                            call.addCallListener(new SinchCallListener());
-                        });
-                        view.findViewById(R.id.incoming_cancel_btn).setOnClickListener(v -> {
-                            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-                            if (sound != null && sound.isPlaying()) sound.stop();
-                            if (vibrator.hasVibrator()) vibrator.cancel();
-                            call = incomingCall;
-                            call.hangup();
-                            call.addCallListener(new SinchCallListener());
-                            call = null;
-                        });
+//                        view.findViewById(R.id.incoming_accept_btn).setOnClickListener(v -> {
+//                            if (sound != null && sound.isPlaying()) sound.stop();
+//                            if (vibrator.hasVibrator()) vibrator.cancel();
+//                            call = incomingCall;
+//                            call.answer();
+//                            call.addCallListener(new SinchCallListener());
+//                        });
+//                        view.findViewById(R.id.incoming_cancel_btn).setOnClickListener(v -> {
+//                            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+//                            if (sound != null && sound.isPlaying()) sound.stop();
+//                            if (vibrator.hasVibrator()) vibrator.cancel();
+//                            call = incomingCall;
+//                            call.hangup();
+//                            call.addCallListener(new SinchCallListener());
+//                            call = null;
+//                        });
                         if (!alertDialogCall.isShowing()) alertDialogCall.show();
                     }
                 }
@@ -223,12 +223,12 @@ public class GroupChatActivity extends AppCompatActivity {
             incomingUserName.setTextColor(Color.RED);
             try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
             } catch (Exception e) { Toast.makeText(GroupChatActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
-            view.findViewById(R.id.speaking_cancel_btn).setOnClickListener(v1 -> {
-                if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-                call = speakCall;
-                call.hangup();
-                call = null;
-            });
+//            view.findViewById(R.id.speaking_cancel_btn).setOnClickListener(v1 -> {
+//                if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
+//                call = speakCall;
+//                call.hangup();
+//                call = null;
+//            });
             if (!alertDialogCall.isShowing()) alertDialogCall.show();
         }
         @Override
@@ -236,7 +236,6 @@ public class GroupChatActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Call Ended", Toast.LENGTH_SHORT).show();
             if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
             if (sound != null && sound.isPlaying()) sound.stop();
-//            if (sound != null && sound.isPlaying()) sound.reset();
             call = endedCall;
             call.hangup();
             call = null;
@@ -298,30 +297,6 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
     private void changeNameGroup() {
-//        if (!currentUserID.equals(adminGroupID)) Toast.makeText(GroupChatActivity.this, "This function is available only to the administrator!!!", Toast.LENGTH_SHORT).show();
-//        else {
-//            AlertDialog.Builder builder = new AlertDialog.Builder(GroupChatActivity.this,R.style.AlertDialog).setIcon(android.R.drawable.ic_menu_edit)
-//                    .setTitle("Change name this group");
-//            final EditText fieldGroupName = new EditText(GroupChatActivity.this); //enter text
-//            fieldGroupName.setText(currentGroupName); // preview old key
-//            builder.setView(fieldGroupName);
-//            builder.setPositiveButton("Change", (dialogInterface, i) -> {
-//                final String newGroupName = fieldGroupName.getText().toString();
-//                if (TextUtils.isEmpty(newGroupName)) Toast.makeText(GroupChatActivity.this, "This field cannot be empty", Toast.LENGTH_SHORT).show();
-//                else {
-//                    GroupNameRef.child("Settings").child("key").setValue(newGroupName).addOnCompleteListener(task -> {
-//                        if (task.isSuccessful()) {
-//                            snow = userKey;
-//                            Intent chatIntent = new Intent(GroupChatActivity.this, GroupChatActivity.class); //renew view item
-//                            chatIntent.putExtra("groupName" , currentGroupName);
-//                            startActivity(chatIntent);
-//                        }
-//                    });
-//                }
-//            });
-//            builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
-//            builder.show();
-//        }
     }
 
     @Override
@@ -443,6 +418,36 @@ public class GroupChatActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~ Buttons Speaking Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    public void btnIncomingAcceptSpeaking(View view) {
+        if (sound != null && sound.isPlaying()) sound.stop();
+        if (vibrator.hasVibrator()) vibrator.cancel();
+        if (call != null) {
+            call.answer();
+            call.addCallListener(new SinchCallListener());
+        }
+    }
+
+    public void btnIncomingCancelSpeaking(View view) {
+        if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
+        if (sound != null && sound.isPlaying()) sound.stop();
+        if (vibrator.hasVibrator()) vibrator.cancel();
+        if (call != null) {
+            call.hangup();
+            call.addCallListener(new SinchCallListener());
+        }
+        call = null;
+    }
+
+    public void btnCancelSpeaking(View view) {
+        if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
+        if (call != null) {
+            call.hangup();
+            call.addCallListener(new SinchCallListener());
+        }
+        call = null;
     }
 
     @Override

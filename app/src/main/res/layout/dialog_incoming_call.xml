@@ -10,7 +10,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        tools:ignore="UselessParent">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/incoming_user_image"
@@ -61,6 +62,7 @@
                     android:textAllCaps="false"
                     android:textSize="16sp"
                     tools:ignore="ButtonStyle"
+                    android:onClick="btnIncomingAcceptSpeaking"
                     android:visibility="invisible"/>
 
                 <Button
@@ -75,6 +77,7 @@
                     android:text="@string/cancel"
                     android:textAllCaps="false"
                     android:textSize="16sp"
+                    android:onClick="btnIncomingCancelSpeaking"
                     android:visibility="invisible"/>
 
                 <Button
@@ -91,6 +94,7 @@
                     android:textAllCaps="false"
                     android:background="@drawable/btn_cancel"
                     tools:ignore="RtlHardcoded"
+                    android:onClick="btnCancelSpeaking"
                     android:visibility="invisible"/>
 
             </RelativeLayout>
