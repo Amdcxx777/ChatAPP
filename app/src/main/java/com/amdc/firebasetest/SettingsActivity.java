@@ -99,7 +99,8 @@ public class SettingsActivity extends AppCompatActivity {
                     userStatus.setText((String) dataSnapshot.child("status").getValue()); //status
                 }if((dataSnapshot.exists()) && (dataSnapshot.hasChild("image"))) {
                     photoUrl = (String) dataSnapshot.child("image").getValue();
-                    Picasso.get().load(photoUrl).resize(300, 300).placeholder(R.drawable.profile_image).into(userProfileImage);
+                    try { Picasso.get().load(photoUrl).resize(300, 300).placeholder(R.drawable.profile_image).into(userProfileImage);
+                    } catch (Exception e) { Toast.makeText(SettingsActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
                 } else Toast.makeText(SettingsActivity.this, "Please set & update your profile information...", Toast.LENGTH_SHORT).show();
             }
             @Override
@@ -128,7 +129,7 @@ public class SettingsActivity extends AppCompatActivity {
                 loadingBar.setMessage("Please wait, your profile image is updating...");
                 loadingBar.setCanceledOnTouchOutside(false);
                 loadingBar.show();
-                Uri resultUri = Objects.requireNonNull(result).getUri();
+//                Uri resultUri = Objects.requireNonNull(result).getUri();
                 final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("Profile images").child(currentUserID + ".jpg");
                 filePath.putFile(Objects.requireNonNull(result).getUri()).addOnSuccessListener(taskSnapshot ->
                         filePath.getDownloadUrl().addOnSuccessListener(uri -> { // resultUr

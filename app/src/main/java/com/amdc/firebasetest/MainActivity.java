@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     static boolean bell = true, vibro = true, melody1, melody2, displayOFF = false;
     private AlertDialog alertDialogCall;
     static SinchClient sinchClient;
+//    static long incomingCallTime;
     static Call call;
     static Vibrator vibrator;
     static MediaPlayer sound;
@@ -84,7 +85,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         RootRef = FirebaseDatabase.getInstance().getReference();
         InitializeControllers();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null)  currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+        if (currentUser != null) {
+            currentUserID = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Voice Calling Setting Sinch ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         sinchClient = Sinch.getSinchClientBuilder().context(this).userId(currentUserID)
                 .applicationKey("00ef7168-1938-40ae-a2eb-eba4ea2b5b19")
@@ -119,28 +122,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         incomingUserImage = view.findViewById(R.id.incoming_user_image);
                         view.findViewById(R.id.incoming_accept_btn).setVisibility(View.VISIBLE);
                         view.findViewById(R.id.incoming_cancel_btn).setVisibility(View.VISIBLE);
-                        view.findViewById(R.id.speaking_cancel_btn).setVisibility(View.INVISIBLE);
+//                        view.findViewById(R.id.speaking_cancel_btn).setVisibility(View.INVISIBLE);
                         incomingUserImage = view.findViewById(R.id.incoming_user_image);
                         incomingUserName.setText(incomingCallUser + " is calling");
                         incomingUserName.setTextColor(R.color.colorPrimaryDark);
-                        try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
-                        } catch (Exception e) { Toast.makeText(MainActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
-//                        view.findViewById(R.id.incoming_accept_btn).setOnClickListener(v -> {
-//                            if (sound != null && sound.isPlaying()) sound.stop();
-//                            if (vibrator.hasVibrator()) vibrator.cancel();
-//                            call = incomingCall;
-//                            call.answer();
-//                            call.addCallListener(new SinchCallListener());
-//                        });
-//                        view.findViewById(R.id.incoming_cancel_btn).setOnClickListener(v -> {
-//                            if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-//                            if (sound != null && sound.isPlaying()) sound.stop();
-//                            if (vibrator.hasVibrator()) vibrator.cancel();
-//                            call = incomingCall;
-//                            call.hangup();
-//                            call.addCallListener(new SinchCallListener());
-//                            call = null;
-//                        });
+                        try {
+                            Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show();
+                        }
                         if (alertDialogCall != null && !alertDialogCall.isShowing()) alertDialogCall.show();
                     }
                 }
@@ -149,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             });
         });
         sinchClient.start();
-//        }
+        }
     }
 
     @SuppressLint("InflateParams")
@@ -203,12 +193,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             incomingUserName.setTextColor(Color.RED);
             try { Picasso.get().load(retImage[0]).resize(90, 90).placeholder(R.drawable.profile_image).into(incomingUserImage); // for chat bar
             } catch (Exception e) { Toast.makeText(MainActivity.this, "Error download User-Image", Toast.LENGTH_SHORT).show(); }
-//            view.findViewById(R.id.speaking_cancel_btn).setOnClickListener(v1 -> {
-//                if (alertDialogCall.isShowing()) alertDialogCall.dismiss();
-//                call = speakCall;
-//                call.hangup();
-//                call = null;
-//            });
             if (!alertDialogCall.isShowing()) alertDialogCall.show();
         }
         @Override
@@ -248,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        sinchClient.stopListeningOnActiveConnection(); // Sinch Client STOP Listener This Activity
+//        sinchClient.stopListeningOnActiveConnection(); // Sinch Client STOP Listener This Activity
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Verify User and add user date ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -383,6 +367,40 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~ Buttons Speaking Call ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//    public void incomingCallButton() {
+//        incomingCallTime = System.currentTimeMillis();
+//        do {
+////            LinearLayout view = (LinearLayout) getLayoutInflater().inflate(R.layout.dialog_incoming_call, null);
+//            view.findViewById(R.id.incoming_accept_btn).setOnClickListener(v -> {
+//                if (sound != null && sound.isPlaying()) sound.stop();
+//                if (vibrator.hasVibrator()) vibrator.cancel();
+//                if (call != null) {
+//                    call.answer();
+//                    call.addCallListener(new SinchCallListener());
+//                }
+//            });
+//            view.findViewById(R.id.incoming_cancel_btn).setOnClickListener(v -> {
+//                if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
+//                if (sound != null && sound.isPlaying()) sound.stop();
+//                if (vibrator.hasVibrator()) vibrator.cancel();
+//                if (call != null) {
+//                    call.hangup();
+//                    call.addCallListener(new SinchCallListener());
+//                }
+//                call = null;
+//            });
+//        } while (incomingCallTime + 10000 > System.currentTimeMillis());
+//        if (alertDialogCall != null && alertDialogCall.isShowing()) alertDialogCall.dismiss();
+//        if (sound != null && sound.isPlaying()) sound.stop();
+//        if (vibrator.hasVibrator()) vibrator.cancel();
+//        if (call != null) {
+//            call.hangup();
+//            call.addCallListener(new SinchCallListener());
+//        }
+//        call = null;
+//    }
+
     public void btnIncomingAcceptSpeaking(View view) {
         if (sound != null && sound.isPlaying()) sound.stop();
         if (vibrator.hasVibrator()) vibrator.cancel();
