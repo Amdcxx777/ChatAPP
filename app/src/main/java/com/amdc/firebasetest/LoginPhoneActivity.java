@@ -33,7 +33,6 @@ public class LoginPhoneActivity extends AppCompatActivity {
     private DatabaseReference RootRef;
     private ProgressDialog loadingBar;
     private String mVerificationId;
-//    private PhoneAuthProvider.ForceResendingToken mResendToken;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

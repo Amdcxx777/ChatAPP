@@ -10,7 +10,7 @@
     <string name="write_your_message_here">write your message here…</string>
     <string name="write_phone_number_here">Write phone number here…</string>
     <string name="write_verification_code_here">Write verification code here…</string>
-    <string name="send_verification_code">Send Verification Code</string>
+    <string name="send_verification_code">Send Phone Number</string>
     <string name="verify">Verify Code</string>
     <string name="cancel_chat_request">Cancel Chat Request</string>
     <string name="send_message">Send Message</string>
